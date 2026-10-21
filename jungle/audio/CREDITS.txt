@@ -37,5 +37,43 @@ peacock-sound.mp3
   "Pavo cristatus (call).ogg" by Ke4roh. Public domain
   https://commons.wikimedia.org/wiki/File:Pavo_cristatus_(call).ogg
 
+cat-sound.mp3
+  "Meow of a pleading cat.oga" by Heismark. Public domain
+  https://commons.wikimedia.org/wiki/File:Meow_of_a_pleading_cat.oga
+
+dog-sound.mp3
+  "Barking of a dog.ogg" by Amada44. CC BY-SA 3.0
+  https://commons.wikimedia.org/wiki/File:Barking_of_a_dog.ogg
+
+cow-sound.mp3
+  "Single Cow Moo.ogg" by MichaeltheFox8621. CC BY-SA 4.0
+  https://commons.wikimedia.org/wiki/File:Single_Cow_Moo.ogg
+
+horse-sound.mp3
+  "Wiehern.ogg" by Hü.. Public domain
+  https://commons.wikimedia.org/wiki/File:Wiehern.ogg
+
+donkey-sound.mp3
+  "157763 felix-blume a-donkey-is-braying-in-his-enclosure-in-south-of-france.wav" by felix-blume. CC0
+  https://commons.wikimedia.org/wiki/File:157763_felix-blume_a-donkey-is-braying-in-his-enclosure-in-south-of-france.wav
+
+rooster-sound.mp3
+  "Rooster crowing.ogg" by Filo gèn'. CC BY-SA 4.0
+  https://commons.wikimedia.org/wiki/File:Rooster_crowing.ogg
+
+pig-sound.mp3
+  "Mudchute pig 2.ogg" by Secretlondon. CC BY-SA 3.0
+  https://commons.wikimedia.org/wiki/File:Mudchute_pig_2.ogg
+  "Mudchute pig 1.ogg" by Secretlondon. CC BY-SA 3.0
+  https://commons.wikimedia.org/wiki/File:Mudchute_pig_1.ogg
+
+sheep-sound.mp3
+  "Sheep bleating.ogg" by earthcalling. Public domain
+  https://commons.wikimedia.org/wiki/File:Sheep_bleating.ogg
+
+duck-sound.mp3
+  "Anas platyrhynchos - Mallard XC62258.mp3" by Jonathon Jongsma. CC BY-SA 3.0
+  https://commons.wikimedia.org/wiki/File:Anas_platyrhynchos_-_Mallard_XC62258.mp3
+
 Licenses: https://creativecommons.org/licenses/by/4.0/ · https://creativecommons.org/licenses/by-sa/4.0/ · https://creativecommons.org/licenses/by-sa/3.0/
 The snake hiss, gorilla chest-drumming and crocodile jaw snaps are generated in the browser.

@@ -3,7 +3,7 @@
 Small learning games for Sofia (3½), in Russian and Latvian, made to run in Safari on an iPad.
 
 - `index.html` – game menu
-- `jungle/` – София в джунглях: tap the bush, meet an animal, hear its sound and its name. There are 12 animals; each game picks 6 at random. After each animal a red mic button appears next to Sofia: one tap records her for 3 seconds and plays it straight back (nothing is saved).
+- `jungle/` – София в джунглях: tap the bush, meet an animal, hear its sound and its name. There are 21 animals (jungle and farm); each game picks 6 at random. After each animal a red mic button appears next to Sofia: one tap records her for 3 seconds and plays it straight back (nothing is saved).
 
 Sofia walks through the jungle as a cartoon girl (inline SVG in `jungle/index.html`) drawn after her portrait `jungle/sofia.png`: round cheeks, side-swept bangs, a top-knot curling right. Her hair color is the `.hair` fill in the CSS.
 
