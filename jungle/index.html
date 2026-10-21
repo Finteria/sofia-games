@@ -75,6 +75,9 @@ body{margin:0;background:var(--sky);color:var(--ink);font-family:var(--display);
 #overlay .big svg{width:46%;height:46%}
 #overlay .row{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
 #overlay .mini{width:84px;height:84px}
+#overlay .home{position:absolute;top:max(16px,env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));width:64px;height:64px;border-radius:50%;background:#ffffff33;display:flex;align-items:center;justify-content:center}
+#overlay .home svg{width:36px;height:36px}
+#overlay .home:focus-visible{outline:4px solid var(--sun)}
 .star{position:absolute;width:40px;height:40px;z-index:9;pointer-events:none;animation:fly 1.6s ease-out forwards}
 @keyframes fly{from{transform:translate(0,0) scale(.3) rotate(0);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(1.2) rotate(240deg);opacity:0}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important}}
@@ -124,6 +127,7 @@ body{margin:0;background:var(--sky);color:var(--ink);font-family:var(--display);
   <div id="overlay">
     <h1>Соня в джунглях</h1>
     <p>Sofija džungļos</p>
+    <a class="home" href="../index.html" aria-label="Меню"><svg viewBox="0 0 40 40"><path d="M6 19L20 7l14 12M11 16v16h18V16" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
     <button class="big" id="play" aria-label="Играть"><svg viewBox="0 0 40 40"><path d="M12 7l22 13-22 13z" fill="#fff"/></svg></button>
   </div>
 </div>
@@ -263,6 +267,7 @@ function finale(){
   sounds.yay(); stars(); overlay.hidden=false;
   overlay.innerHTML=`<h1>Молодец, Соня!</h1><p>Malacis, Sofija!</p>
    <div class="row">${animals.map((a,i)=>`<button class="mini" data-i="${i}" aria-label="${a.ru}" style="border:0;background:#fffdf6;border-radius:24px;padding:6px;cursor:pointer">${a.svg}</button>`).join("")}</div>
+   <a class="home" href="../index.html" aria-label="Меню"><svg viewBox="0 0 40 40"><path d="M6 19L20 7l14 12M11 16v16h18V16" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
    <button class="big" id="again" aria-label="Ещё раз"><svg viewBox="0 0 40 40"><path d="M30 14a12 12 0 1 0 2 10" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M32 5v10H22" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
   say("Молодец, Соня!","ru").then(()=>say("Malacis, Sofija!","lv"));
   overlay.querySelectorAll(".mini").forEach(b=>b.onclick=async()=>{const a=animals[+b.dataset.i];sounds[a.sound]();await wait(900);await say(a.ru,"ru");say(a.lv,"lv")});
