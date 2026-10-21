@@ -33,15 +33,41 @@ body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:
 .dot{width:22px;height:22px;border-radius:50% 0 50% 0;background:#ffffff99;border:3px solid var(--leaf-dark);transition:background .3s,transform .3s}
 .dot.done{background:var(--leaf-light);transform:rotate(45deg) scale(1.1)}
 
-#sofia{position:absolute;left:max(4%,env(safe-area-inset-left,0px));bottom:8%;width:min(32vw,290px);z-index:3;animation:bob 2.4s ease-in-out infinite}
-#sofia .paper{position:relative;background:var(--card);border:5px solid var(--leaf-dark);border-radius:22px;padding:6px;rotate:-4deg}
-#sofia img,#sofia svg{display:block;width:100%;height:auto}
-#sofia svg{position:absolute;inset:6px;width:calc(100% - 12px)}
-#sofia.walk{animation:walk .35s ease-in-out infinite}
-#sofia.talk{animation:talk .3s ease-in-out infinite}
+/* Sofia: her drawn head on an ink-style body; limbs swing from shoulders and hips when she walks */
+#sofia{position:absolute;left:max(3%,env(safe-area-inset-left,0px));bottom:7%;height:min(64vh,560px);aspect-ratio:800/1730;z-index:3;
+  transform-origin:50% 100%;animation:bob 2.4s ease-in-out infinite}
+#sofia svg{display:block;width:100%;height:100%;overflow:visible}
+#sofia svg *{transform-box:view-box}
+#sofia .ink{stroke:#1b1717;stroke-linecap:round;stroke-linejoin:round}
+#sofia .skin{fill:#ffe3cf}
+#sofia .hair{fill:#3b2a20}
+#sofia .eye{transform-box:fill-box;transform-origin:center;animation:blink 4.2s infinite}
+#sofia .mouth.open{opacity:0}
+#sofia.talk .mouth.open{animation:flap .3s steps(1,end) infinite}
+#sofia.talk .mouth.shut{animation:flap .3s steps(1,end) infinite -.15s}
+#sofia .head{transform-origin:400px 870px}
+#sofia .arm.l{transform-origin:262px 955px;animation:sway 2.4s ease-in-out infinite}
+#sofia .arm.r{transform-origin:538px 955px;animation:sway 2.4s ease-in-out infinite reverse}
+#sofia .leg.l{transform-origin:335px 1390px}
+#sofia .leg.r{transform-origin:465px 1390px}
+#sofia.walk{animation:stride .6s ease-in-out infinite}
+#sofia.walk .leg.l{animation:stepL .6s ease-in-out infinite}
+#sofia.walk .leg.r{animation:stepR .6s ease-in-out infinite}
+#sofia.walk .arm.l{animation:swingL .6s ease-in-out infinite}
+#sofia.walk .arm.r{animation:swingR .6s ease-in-out infinite}
+#sofia.walk .head{animation:nod .6s ease-in-out infinite}
+#sofia.talk .head{animation:chat .32s ease-in-out infinite}
 @keyframes bob{50%{transform:translateY(-6px)}}
-@keyframes walk{50%{transform:translateY(-14px) rotate(-3deg)}}
-@keyframes talk{50%{transform:scale(1.04)}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+@keyframes flap{0%{opacity:1}50%{opacity:0}}
+@keyframes sway{50%{transform:rotate(4deg)}}
+@keyframes stride{0%,50%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-3%) rotate(-2deg)}75%{transform:translateY(-3%) rotate(2deg)}}
+@keyframes stepL{0%,50%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-60px) rotate(7deg)}}
+@keyframes stepR{0%,50%,100%{transform:translateY(0) rotate(0)}75%{transform:translateY(-60px) rotate(-7deg)}}
+@keyframes swingL{0%,100%{transform:rotate(-16deg)}50%{transform:rotate(10deg)}}
+@keyframes swingR{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(16deg)}}
+@keyframes nod{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(3deg)}75%{transform:rotate(-3deg)}}
+@keyframes chat{0%,100%{transform:rotate(-3deg) scale(1)}50%{transform:rotate(3deg) scale(1.03)}}
 
 #spot{position:absolute;right:max(6%,env(safe-area-inset-right,0px));bottom:12%;width:min(48vw,400px);aspect-ratio:1/1;max-width:100%;z-index:2;
   border:0;background:none;padding:0;cursor:pointer}
@@ -118,7 +144,7 @@ body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:
 .star{position:absolute;width:40px;height:40px;z-index:9;pointer-events:none;animation:fly 1.6s ease-out forwards}
 @keyframes fly{from{transform:translate(0,0) scale(.3) rotate(0);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(1.2) rotate(240deg);opacity:0}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important}}
-@media (max-height:520px){#card{top:44px;padding:6px 18px}#sofia{width:min(20vw,170px)}}
+@media (max-height:520px){#card{top:44px;padding:6px 18px}#sofia{height:60vh}}
 </style>
 </head>
 <body>
@@ -129,16 +155,59 @@ body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:
   <div id="progress" aria-label="Животные"></div>
   <div id="card" aria-live="polite"><div class="ru"></div><div class="lv"></div><div class="snd"></div></div>
 
-  <div id="sofia" aria-label="София">
-    <div class="paper">
-      <img src="sofia.png" alt="София" width="800" height="914">
-      <svg viewBox="0 0 800 914" aria-hidden="true">
-        <ellipse cx="250" cy="640" rx="50" ry="28" fill="#f48fb1" opacity=".35"/>
-        <ellipse cx="535" cy="655" rx="46" ry="26" fill="#f48fb1" opacity=".35"/>
-        <path d="M500 205 L438 160 L444 252 Z M500 205 L566 168 L556 256 Z" fill="#f06292" stroke="#c2185b" stroke-width="5" stroke-linejoin="round"/>
-        <circle cx="500" cy="207" r="20" fill="#e04a7f" stroke="#c2185b" stroke-width="5"/>
-      </svg>
-    </div>
+  <div id="sofia" role="img" aria-label="София">
+    <svg viewBox="0 0 800 1730" aria-hidden="true">
+      <defs>
+        <g id="leg">
+          <path class="ink" d="M335 1380 L331 1640" fill="none" stroke-width="68"/>
+          <path d="M335 1380 L331 1640" stroke="#ffe3cf" stroke-width="50" stroke-linecap="round"/>
+          <path d="M331 1590 L331 1640" stroke="#fff" stroke-width="50"/>
+          <path d="M305 1592 H357" stroke="#f06292" stroke-width="10" stroke-linecap="round"/>
+          <ellipse class="ink" cx="318" cy="1672" rx="60" ry="34" fill="#d6453d" stroke-width="9"/>
+          <ellipse cx="300" cy="1660" rx="16" ry="8" fill="#fff" opacity=".5"/>
+        </g>
+        <g id="arm">
+          <path class="ink" d="M262 965 Q232 1085 218 1200" fill="none" stroke-width="64"/>
+          <circle cx="216" cy="1222" r="34" fill="#1b1717"/>
+          <path d="M262 965 Q232 1085 218 1200" fill="none" stroke="#ffe3cf" stroke-width="46" stroke-linecap="round"/>
+          <circle class="skin" cx="216" cy="1222" r="25"/>
+          <ellipse class="ink" cx="266" cy="955" rx="58" ry="48" fill="#f7a8c4" stroke-width="9"/>
+        </g>
+      </defs>
+      <g class="leg l"><use href="#leg"/></g>
+      <g class="leg r"><use href="#leg" transform="translate(800 0) scale(-1 1)"/></g>
+      <path class="skin ink" d="M352 820 L350 925 Q400 950 450 925 L448 820Z" stroke-width="8"/>
+      <path class="ink" d="M305 900 Q400 945 495 900 L535 918 Q565 990 562 1080 L640 1420 Q400 1478 160 1420 L238 1080 Q235 990 265 918 Z" fill="#f7a8c4" stroke-width="9"/>
+      <path d="M190 1385 Q400 1440 610 1385" fill="none" stroke="#f06292" stroke-width="12" stroke-linecap="round" stroke-dasharray="2 34"/>
+      <g fill="#fff" opacity=".8"><circle cx="330" cy="1060" r="13"/><circle cx="450" cy="1110" r="13"/><circle cx="390" cy="1210" r="13"/><circle cx="280" cy="1270" r="13"/><circle cx="510" cy="1260" r="13"/><circle cx="400" cy="1340" r="13"/><circle cx="240" cy="1370" r="12"/><circle cx="560" cy="1370" r="12"/></g>
+      <path class="ink" d="M308 902 Q322 980 400 950 L400 930 Q352 936 308 902Z M492 902 Q478 980 400 950 L400 930 Q448 936 492 902Z" fill="#fff" stroke-width="7"/>
+      <g class="arm l"><use href="#arm"/></g>
+      <g class="arm r"><use href="#arm" transform="translate(800 0) scale(-1 1)"/></g>
+      <g class="head"><g transform="rotate(-4 400 560)">
+        <!-- cartoon Sofia after her portrait: round cheeks, top-knot curling right; Amélie-style bob with short blunt bangs -->
+        <path class="hair ink" d="M118 600 C92 360 212 168 400 166 C588 168 708 360 682 600 L694 770 C698 812 650 822 616 800 L184 800 C150 822 102 812 106 770Z" stroke-width="9"/>
+        <g class="tuft">
+          <path class="hair ink" d="M448 230 C400 175 345 150 290 158 C345 118 425 140 472 212Z" stroke-width="9"/>
+          <path class="hair ink" d="M450 225 C428 140 455 70 515 25 C512 95 512 160 490 228Z" stroke-width="9"/>
+          <path class="hair ink" d="M462 228 C495 120 600 62 688 102 C712 150 680 196 648 170 C668 140 632 118 600 128 C555 145 525 185 500 240Z" stroke-width="9"/>
+          <path d="M468 200 C470 140 485 95 508 60 M495 210 C530 145 590 112 650 115" fill="none" stroke="#6b4a36" stroke-width="6" stroke-linecap="round"/>
+        </g>
+        <path class="skin ink" d="M158 540 C158 360 270 280 400 280 C530 280 642 360 642 540 C642 700 610 795 530 842 C475 872 325 872 270 842 C190 795 158 700 158 540Z" stroke-width="9"/>
+        <path d="M262 505 Q300 485 340 500 M462 508 Q502 490 542 506" fill="none" stroke="#3b2a20" stroke-width="10" stroke-linecap="round"/>
+        <g class="eye"><ellipse cx="300" cy="575" rx="27" ry="33" fill="#1b1717"/><circle cx="290" cy="563" r="10" fill="#fff"/><circle cx="310" cy="590" r="4.5" fill="#fff"/></g>
+        <g class="eye"><ellipse cx="500" cy="580" rx="27" ry="33" fill="#1b1717"/><circle cx="490" cy="568" r="10" fill="#fff"/><circle cx="510" cy="595" r="4.5" fill="#fff"/></g>
+        <ellipse cx="252" cy="668" rx="46" ry="30" fill="#ff8fab" opacity=".45"/>
+        <ellipse cx="548" cy="672" rx="46" ry="30" fill="#ff8fab" opacity=".45"/>
+        <path d="M388 640 Q400 656 414 640" fill="none" stroke="#c98f7a" stroke-width="8" stroke-linecap="round"/>
+        <path class="mouth shut" d="M345 705 Q400 752 455 705" fill="none" stroke="#1b1717" stroke-width="10" stroke-linecap="round"/>
+        <g class="mouth open"><path d="M350 700 Q400 706 450 700 Q444 768 400 772 Q356 768 350 700Z" fill="#8e2a3a" stroke="#1b1717" stroke-width="8" stroke-linejoin="round"/><ellipse cx="400" cy="752" rx="26" ry="12" fill="#f28b9b"/></g>
+        <path class="hair ink" d="M168 430 C142 560 146 700 172 795 C196 812 232 800 228 776 C210 690 206 560 222 440Z M632 430 C658 560 654 700 628 795 C604 812 568 800 572 776 C590 690 594 560 578 440Z" stroke-width="9"/>
+        <path class="hair ink" d="M170 480 C150 320 265 208 400 208 C535 208 650 320 630 480 C560 458 480 452 400 454 C320 452 240 458 170 480Z" stroke-width="9"/>
+        <path d="M250 300 C320 255 470 250 550 290 M300 452 L304 418 M400 450 L400 414 M500 452 L496 418 M196 560 L192 700 M604 560 L608 700" fill="none" stroke="#6b4a36" stroke-width="7" stroke-linecap="round"/>
+        <path d="M470 215 L408 172 L414 262 Z M470 215 L536 178 L526 266 Z" fill="#f06292" stroke="#c2185b" stroke-width="6" stroke-linejoin="round"/>
+        <circle cx="470" cy="217" r="21" fill="#e04a7f" stroke="#c2185b" stroke-width="6"/>
+      </g></g>
+    </svg>
   </div>
 
   <button id="spot" aria-label="Кто там? Нажми на куст">
@@ -262,7 +331,7 @@ async function playClip(key,talker){
   talker&&talker.classList.add("talk"); await playBuffer(buf); talker&&talker.classList.remove("talk"); return true;
 }
 
-/* fallback animal sounds, used only until a real one is recorded */
+/* generated animal sounds, used only when there is no recording and no file in audio/ (e.g. the snake) */
 function tone(type,f0,f1,t0,dur,vol=.3,filt){
   const c=ac(),o=c.createOscillator(),g=c.createGain(); o.type=type;
   o.frequency.setValueAtTime(f0,t0); o.frequency.exponentialRampToValueAtTime(f1,t0+dur);
@@ -324,6 +393,11 @@ function stars(){for(let i=0;i<24;i++){const s=document.createElementNS("http://
 const homeBtn=`<a class="corner home" href="../index.html" aria-label="Меню"><svg viewBox="0 0 40 40"><path d="M6 19L20 7l14 12M11 16v16h18V16" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`;
 const gearBtn=`<button class="corner" id="gear" aria-label="Голоса для родителей: удерживайте"><svg viewBox="0 0 40 40"><rect x="15" y="5" width="10" height="18" rx="5" fill="none" stroke="#fff" stroke-width="3.5"/><path d="M9 19a11 11 0 0 0 22 0M20 30v5" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg></button>`;
 
+async function walkIn(){
+  sofia.classList.add("walk");
+  await sofia.animate([{translate:"-45vw 0"},{translate:"0 0"}],{duration:1800,easing:"ease-out"}).finished.catch(()=>{});
+  sofia.classList.remove("walk");
+}
 async function countRecorded(){let n=0;for(const c of clips) if(await getRec(c.key)) n++;return n}
 async function startScreen(){
   overlay.hidden=false;
@@ -331,7 +405,7 @@ async function startScreen(){
     <button class="big" id="play" aria-label="Играть"><svg viewBox="0 0 40 40"><path d="M12 7l22 13-22 13z" fill="#fff"/></svg></button>
     <div class="note" id="note" hidden>Для родителей: удерживайте микрофон в углу, чтобы записать слова своим голосом.</div>`;
   bindGear();
-  $("play").onclick=async()=>{ac();synth.pop();overlay.hidden=true;await wait(300);await playClip("greet-ru",sofia);await wait(250);playClip("greet-lv",sofia)};
+  $("play").onclick=async()=>{ac();synth.pop();overlay.hidden=true;await walkIn();await playClip("greet-ru",sofia);await wait(250);playClip("greet-lv",sofia)};
   if(await countRecorded()===0) $("note").hidden=false;
 }
 function finale(){
@@ -371,7 +445,8 @@ async function openParent(){
    <div id="perr" hidden></div>
    <div class="group"><h3>Начало</h3>${intro.map(clipRow).join("")}</div>
    ${animals.map(a=>`<div class="group"><h3>${a.svg}${a.ru} · ${a.lv}</h3>${clips.filter(c=>c.group===a).map(clipRow).join("")}</div>`).join("")}
-   <div class="group"><h3>Конец</h3>${outro.map(clipRow).join("")}</div></div>`;
+   <div class="group"><h3>Конец</h3>${outro.map(clipRow).join("")}</div>
+   <p class="lead" style="font-size:14px">Звуки животных взяты с Wikimedia Commons: <a href="audio/CREDITS.txt">авторы и лицензии</a>. Ваша запись звука заменяет их.</p></div>`;
   parent.hidden=false; parent.scrollTop=0;
   $("pclose").onclick=()=>{if(recorder&&recorder.state==="recording")recorder.stop();parent.hidden=true;startScreen()};
   for(const row of parent.querySelectorAll(".clip")) refreshRow(row);

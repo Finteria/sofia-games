@@ -1,0 +1,25 @@
+Animal sounds, from Wikimedia Commons. Each clip was trimmed, faded and loudness-normalized.
+
+lion-sound.mp3
+  "Lionroar.wav" by Jonathan Growcott, Alex Lobora, Andrew Markham, Charlotte E. Searle,
+  Johan Wahlström, Matthew Wijers, Benno I. Simmons. CC BY 4.0
+  https://commons.wikimedia.org/wiki/File:Lionroar.wav
+
+elephant-sound.mp3
+  "Elephant voice - trumpeting.ogg" by தகவலுழவன். CC0
+  https://commons.wikimedia.org/wiki/File:Elephant_voice_-_trumpeting.ogg
+
+monkey-sound.mp3
+  "Pant-hoot call made by a male chimpanzee.ogg" by Pawel Fedurek et al. CC BY 4.0
+  https://commons.wikimedia.org/wiki/File:Pant-hoot_call_made_by_a_male_chimpanzee.ogg
+
+parrot-sound.mp3
+  "Scarlet macaw 01.wav" by Ganesh Mohan T. CC BY-SA 4.0
+  https://commons.wikimedia.org/wiki/File:Scarlet_macaw_01.wav
+
+frog-sound.mp3
+  "Single Frog Croak.oga" by MichaeltheFox8621. CC BY-SA 4.0
+  https://commons.wikimedia.org/wiki/File:Single_Frog_Croak.oga
+
+Licenses: https://creativecommons.org/licenses/by/4.0/ · https://creativecommons.org/licenses/by-sa/4.0/
+The snake hiss is generated in the browser.
