@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Игры Сони</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap">
+<style>
+:root{--bg:#bfe9d6;--ink:#24352b;--leaf:#2f8f5b;--card:#fffdf6;--pink:#f06292;color-scheme:light}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Nunito","Trebuchet MS",system-ui,sans-serif;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;text-align:center;
+  padding-block:24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;box-sizing:border-box}
+h1{margin:0;font-size:clamp(40px,8vw,72px);font-weight:900;line-height:1}
+.games{display:flex;flex-wrap:wrap;gap:20px;justify-content:center}
+a.game{display:flex;flex-direction:column;align-items:center;gap:8px;width:min(70vw,240px);padding:20px;border-radius:32px;
+  background:var(--card);border:5px solid var(--leaf);color:var(--ink);text-decoration:none;font-size:28px;font-weight:900}
+a.game:active{transform:scale(.96)}
+a.game svg{width:70%;height:auto}
+a.game small{font-size:20px;color:var(--leaf);font-weight:700}
+</style>
+</head>
+<body>
+<h1>Игры Сони</h1>
+<div class="games">
+  <a class="game" href="jungle/">
+    <svg viewBox="0 0 200 200" aria-hidden="true">
+      <circle cx="44" cy="88" r="22" fill="#8a5a3b"/><circle cx="156" cy="88" r="22" fill="#8a5a3b"/>
+      <circle cx="44" cy="88" r="12" fill="#e8c39e"/><circle cx="156" cy="88" r="12" fill="#e8c39e"/>
+      <circle cx="100" cy="96" r="60" fill="#8a5a3b"/>
+      <path d="M60 106 Q60 70 86 74 Q100 84 114 74 Q140 70 140 106 Q140 142 100 144 Q60 142 60 106Z" fill="#e8c39e"/>
+      <circle cx="84" cy="98" r="8" fill="#24352b"/><circle cx="116" cy="98" r="8" fill="#24352b"/>
+      <path d="M82 122 Q100 136 118 122" fill="none" stroke="#24352b" stroke-width="5" stroke-linecap="round"/>
+    </svg>
+    Джунгли
+    <small>Džungļi</small>
+  </a>
+</div>
+</body>
+</html>
