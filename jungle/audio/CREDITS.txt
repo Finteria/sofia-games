@@ -25,10 +25,6 @@ tiger-sound.mp3
   "439280 schots angry-tiger.wav" by schots. CC0
   https://commons.wikimedia.org/wiki/File:439280_schots_angry-tiger.wav
 
-toucan-sound.mp3
-  "Keel-billed toucan.ogg" by Thatcher. CC BY-SA 3.0
-  https://commons.wikimedia.org/wiki/File:Keel-billed_toucan.ogg
-
 zebra-sound.mp3
   "Grévys zebra (Sound Effects).ogg" by DiegoC472. CC BY-SA 4.0
   https://commons.wikimedia.org/wiki/File:Gr%C3%A9vys_zebra_(Sound_Effects).ogg
