@@ -89,8 +89,8 @@ body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:
   background:var(--card);border:4px solid var(--leaf-dark);border-radius:26px;padding:12px 26px;
   text-align:center;transition:.4s;max-width:calc(100% - 32px);pointer-events:none}
 #card.show{opacity:1;transform:translate(-50%,0)}
-#card .ru{font-size:clamp(30px,6vw,52px);font-weight:900;line-height:1.1}
-#card .lv{font-size:clamp(22px,4.4vw,38px);font-weight:700;color:var(--leaf)}
+/* Russian and Latvian always get the same size, weight and colour: neither language is the "main" one */
+#card .ru,#card .lv{font-size:clamp(28px,5.2vw,46px);font-weight:900;line-height:1.15}
 #card .snd{font-size:clamp(18px,3.4vw,28px);color:var(--pink);font-weight:900;margin-top:2px}
 
 .big{position:absolute;z-index:7;border:0;cursor:pointer;font-family:var(--display);font-weight:900;color:#fff;
@@ -99,11 +99,21 @@ body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:
 .big:focus-visible{outline:5px solid var(--sun);outline-offset:4px}
 #next{right:max(20px,env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));padding:14px 30px;font-size:clamp(22px,4vw,32px)}
 #next svg{width:40px;height:40px}
+/* Sofia's own mic, beside her feet; the yellow ring runs down the 3 recording seconds */
+#mic{left:calc(max(3%,env(safe-area-inset-left,0px)) + min(64vh,560px)*.4624 + 4px);bottom:calc(7% + 10px);width:92px;height:92px;padding:0;
+  background:var(--red);box-shadow:0 8px 0 #9c2f29}
+#mic:active{box-shadow:0 2px 0 #9c2f29}
+#mic .ic{width:48px;height:48px}
+#mic .ring{position:absolute;inset:-9px;width:calc(100% + 18px);height:calc(100% + 18px);transform:rotate(-90deg);
+  fill:none;stroke:var(--sun);stroke-width:7;stroke-linecap:round;stroke-dasharray:289;stroke-dashoffset:0;opacity:0}
+#mic.rec{animation:micpulse .8s ease-in-out infinite}
+#mic.rec .ring{opacity:1;animation:ring 3s linear forwards}
+@keyframes micpulse{50%{transform:scale(1.1)}}
+@keyframes ring{to{stroke-dashoffset:289}}
 
 #overlay{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
   background:#1f6b43ee;color:#fff;text-align:center;padding:24px}
-#overlay h1{margin:0;font-size:clamp(40px,8vw,76px);font-weight:900;line-height:1;text-wrap:balance}
-#overlay p{margin:0;font-size:clamp(20px,3.6vw,30px);font-weight:700;color:#d8f5dc}
+#overlay h1{margin:0;font-size:clamp(34px,6.5vw,64px);font-weight:900;line-height:1.1;text-wrap:balance;display:flex;flex-direction:column;gap:.15em}
 #overlay .big{position:static;width:min(40vw,180px);aspect-ratio:1;max-width:100%}
 #overlay .big svg{width:46%;height:46%}
 #overlay .row{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
@@ -144,7 +154,7 @@ body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:
 .star{position:absolute;width:40px;height:40px;z-index:9;pointer-events:none;animation:fly 1.6s ease-out forwards}
 @keyframes fly{from{transform:translate(0,0) scale(.3) rotate(0);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(1.2) rotate(240deg);opacity:0}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important}}
-@media (max-height:520px){#card{top:44px;padding:6px 18px}#sofia{height:60vh}}
+@media (max-height:520px){#card{top:44px;padding:6px 18px}#sofia{height:60vh}#mic{left:calc(max(3%,env(safe-area-inset-left,0px)) + 60vh*.4624 + 4px);width:72px;height:72px}#mic .ic{width:38px;height:38px}}
 </style>
 </head>
 <body>
@@ -153,7 +163,7 @@ body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:
   <div class="layer" id="scroller"></div>
   <div class="layer" id="ground"></div>
   <div id="progress" aria-label="Животные"></div>
-  <div id="card" aria-live="polite"><div class="ru"></div><div class="lv"></div><div class="snd"></div></div>
+  <div id="card" aria-live="polite"><div class="ru"></div><div class="lv" lang="lv"></div><div class="snd"></div></div>
 
   <div id="sofia" role="img" aria-label="София">
     <svg viewBox="0 0 800 1730" aria-hidden="true">
@@ -223,6 +233,8 @@ body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:
 
   <button id="next" class="big" hidden aria-label="Дальше"><span>Дальше</span><svg viewBox="0 0 40 40"><path d="M8 20h22M20 9l11 11-11 11" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
 
+  <button id="mic" class="big" hidden aria-label="Скажи сама!"><svg class="ic" viewBox="0 0 40 40"><rect x="14" y="4" width="12" height="20" rx="6" fill="#fff"/><path d="M8 19a12 12 0 0 0 24 0M20 31v5" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/></svg><svg class="ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46"/></svg></button>
+
   <div id="overlay"></div>
   <div id="parent" hidden></div>
 </div>
@@ -277,7 +289,67 @@ const animals = [
   <circle cx="64" cy="68" r="16" fill="#fff"/><circle cx="136" cy="68" r="16" fill="#fff"/>
   <circle cx="66" cy="70" r="8" fill="#24352b"/><circle cx="134" cy="70" r="8" fill="#24352b"/>
   <path d="M58 118 Q100 150 142 118" fill="none" stroke="#24352b" stroke-width="5" stroke-linecap="round"/>
-  <circle cx="50" cy="118" r="10" fill="#f8a5b8" opacity=".7"/><circle cx="150" cy="118" r="10" fill="#f8a5b8" opacity=".7"/>`)}
+  <circle cx="50" cy="118" r="10" fill="#f8a5b8" opacity=".7"/><circle cx="150" cy="118" r="10" fill="#f8a5b8" opacity=".7"/>`)},
+ {id:"tiger", ru:"Тигр", lv:"Tīģeris", snd:"Р-р-ры!", svg:A(`
+  <circle cx="50" cy="52" r="22" fill="#f28c28"/><circle cx="150" cy="52" r="22" fill="#f28c28"/>
+  <circle cx="50" cy="52" r="11" fill="#ffd9b0"/><circle cx="150" cy="52" r="11" fill="#ffd9b0"/>
+  <ellipse cx="100" cy="105" rx="72" ry="64" fill="#f28c28"/>
+  <path d="M100 44V68M80 48l6 18M120 48l-6 18M30 98l22 7M30 118l22-3M170 98l-22 7M170 118l-22-3" fill="none" stroke="#3a2a20" stroke-width="7" stroke-linecap="round"/>
+  <ellipse cx="84" cy="130" rx="22" ry="18" fill="#fff"/><ellipse cx="116" cy="130" rx="22" ry="18" fill="#fff"/><ellipse cx="100" cy="148" rx="24" ry="13" fill="#fff"/>
+  <path d="M90 118h20l-10 12z" fill="#e2607a"/>
+  <path d="M100 130q-8 12-16 8M100 130q8 12 16 8" fill="none" stroke="#3a2a20" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="76" cy="96" r="8" fill="#24352b"/><circle cx="124" cy="96" r="8" fill="#24352b"/>
+  <circle cx="78" cy="93" r="3" fill="#fff"/><circle cx="126" cy="93" r="3" fill="#fff"/>`)},
+ {id:"gorilla", ru:"Горилла", lv:"Gorilla", snd:"Бум-бум-бум!", svg:A(`
+  <ellipse cx="100" cy="188" rx="74" ry="34" fill="#4a4a52"/>
+  <circle cx="34" cy="100" r="15" fill="#4a4a52"/><circle cx="166" cy="100" r="15" fill="#4a4a52"/>
+  <circle cx="34" cy="100" r="7" fill="#8a7f78"/><circle cx="166" cy="100" r="7" fill="#8a7f78"/>
+  <ellipse cx="100" cy="98" rx="68" ry="70" fill="#4a4a52"/>
+  <ellipse cx="100" cy="112" rx="50" ry="50" fill="#9c8f86"/>
+  <path d="M54 86Q100 64 146 86Q140 98 100 91Q60 98 54 86z" fill="#34343b"/>
+  <circle cx="82" cy="102" r="7" fill="#24352b"/><circle cx="118" cy="102" r="7" fill="#24352b"/>
+  <circle cx="84" cy="99" r="2.5" fill="#fff"/><circle cx="120" cy="99" r="2.5" fill="#fff"/>
+  <ellipse cx="100" cy="126" rx="21" ry="12" fill="#7a6d65"/><circle cx="93" cy="127" r="4" fill="#34343b"/><circle cx="107" cy="127" r="4" fill="#34343b"/>
+  <path d="M84 148q16 9 32 0" fill="none" stroke="#34343b" stroke-width="4" stroke-linecap="round"/>`)},
+ {id:"toucan", ru:"Тукан", lv:"Tukāns", snd:"Крр-крр!", svg:A(`
+  <path d="M14 186H190" stroke="#8a5a3b" stroke-width="10" stroke-linecap="round"/>
+  <ellipse cx="74" cy="132" rx="44" ry="54" fill="#24302a"/>
+  <circle cx="78" cy="78" r="36" fill="#24302a"/>
+  <ellipse cx="90" cy="98" rx="24" ry="26" fill="#fff3b0"/>
+  <path d="M106 60C150 46 188 62 196 88C170 98 138 98 106 92Z" fill="#f4a62a"/>
+  <path d="M106 60C150 46 188 62 196 88C180 74 150 64 108 70Z" fill="#7bc043"/>
+  <path d="M178 76C188 78 196 84 196 88C188 91 182 91 176 89Z" fill="#e2453c"/>
+  <path d="M108 80C140 82 170 86 196 88" fill="none" stroke="#a0601a" stroke-width="3"/>
+  <circle cx="86" cy="70" r="13" fill="#6cc3e0"/><circle cx="86" cy="70" r="7" fill="#24352b"/><circle cx="88" cy="67" r="2.5" fill="#fff"/>
+  <path d="M64 184v-8M84 184v-8" stroke="#f4a62a" stroke-width="5" stroke-linecap="round"/>`)},
+ {id:"zebra", ru:"Зебра", lv:"Zebra", snd:"И-го-го!", svg:A(`
+  <path d="M64 62L50 16L84 46ZM136 62L150 16L116 46Z" fill="#fff" stroke="#24352b" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M76 42L84 20L92 38L100 16L108 38L116 20L124 42Z" fill="#24352b"/>
+  <ellipse cx="100" cy="94" rx="54" ry="58" fill="#fff" stroke="#24352b" stroke-width="5"/>
+  <path d="M66 58Q100 72 134 58M52 80Q70 86 80 78M148 80Q130 86 120 78M48 104Q66 108 76 100M152 104Q134 108 124 100M86 50Q100 58 114 50" fill="none" stroke="#24352b" stroke-width="7" stroke-linecap="round"/>
+  <ellipse cx="100" cy="142" rx="40" ry="32" fill="#55555c"/>
+  <ellipse cx="86" cy="138" rx="6" ry="8" fill="#1b1717"/><ellipse cx="114" cy="138" rx="6" ry="8" fill="#1b1717"/>
+  <path d="M86 158q14 8 28 0" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="78" cy="96" r="8" fill="#24352b"/><circle cx="122" cy="96" r="8" fill="#24352b"/>
+  <circle cx="80" cy="93" r="3" fill="#fff"/><circle cx="124" cy="93" r="3" fill="#fff"/>`)},
+ {id:"peacock", ru:"Павлин", lv:"Pāvs", snd:"А-о-о! А-о-о!", svg:A(`
+  ${Array.from({length:9},(_, i)=>{const d=-80+i*20,a=d*Math.PI/180,x=100+66*Math.sin(a),y=128-66*Math.cos(a);
+    return `<ellipse cx="${x}" cy="${y}" rx="17" ry="30" transform="rotate(${d} ${x} ${y})" fill="#2e9c8f"/><circle cx="${x}" cy="${y}" r="10" fill="#1f5fbf"/><circle cx="${x}" cy="${y}" r="4.5" fill="#ffd25a"/>`}).join("")}
+  <ellipse cx="100" cy="150" rx="26" ry="40" fill="#1f6fd0"/>
+  <circle cx="100" cy="94" r="22" fill="#1f6fd0"/>
+  <path d="M100 72L90 52M100 72V48M100 72L110 52" stroke="#1f6fd0" stroke-width="3"/><circle cx="90" cy="52" r="4" fill="#1f6fd0"/><circle cx="100" cy="47" r="4" fill="#1f6fd0"/><circle cx="110" cy="52" r="4" fill="#1f6fd0"/>
+  <circle cx="92" cy="91" r="5" fill="#24352b"/><circle cx="108" cy="91" r="5" fill="#24352b"/><circle cx="93" cy="89" r="2" fill="#fff"/><circle cx="109" cy="89" r="2" fill="#fff"/>
+  <path d="M95 99h10l-5 10z" fill="#f4b23a"/>`)},
+ {id:"crocodile", ru:"Крокодил", lv:"Krokodils", snd:"Клац-клац!", svg:A(`
+  <path d="M16 124Q16 92 58 90L168 98Q192 102 190 118Q188 134 168 136L58 142Q16 144 16 124Z" fill="#5aa651"/>
+  <path d="M30 128Q40 142 60 142L168 136Q186 134 189 120L60 124Z" fill="#9ed46a"/>
+  <path d="M60 120L186 117" stroke="#2f6b2f" stroke-width="4" stroke-linecap="round"/>
+  ${[78,96,114,132,150,166].map(x=>`<path d="M${x} 119l5 9 5-9z" fill="#fff"/>`).join("")}
+  <circle cx="58" cy="84" r="19" fill="#5aa651"/><circle cx="92" cy="82" r="19" fill="#5aa651"/>
+  <circle cx="58" cy="82" r="11" fill="#fff"/><circle cx="92" cy="80" r="11" fill="#fff"/>
+  <circle cx="60" cy="83" r="6" fill="#24352b"/><circle cx="94" cy="81" r="6" fill="#24352b"/>
+  <circle cx="176" cy="104" r="3" fill="#2f6b2f"/><circle cx="168" cy="102" r="3" fill="#2f6b2f"/>
+  <ellipse cx="44" cy="118" rx="9" ry="6" fill="#f8a5b8" opacity=".7"/>`)}
 ];
 /* every voice clip the family can record; key = file name in the audio/ folder too */
 const clips = [
@@ -293,15 +365,25 @@ const clips = [
 
 const $ = id => document.getElementById(id);
 const spot=$("spot"), animalEl=$("animal"), card=$("card"), next=$("next"), hint=$("hint"), overlay=$("overlay"), scroller=$("scroller"), sofia=$("sofia"), parent=$("parent");
-let idx=0, opened=false, busy=false, ctx=null, scrollX=0;
+const mic=$("mic");
+let idx=0, opened=false, busy=false, ctx=null, scrollX=0, round=[];
+let micOK=!!(navigator.mediaDevices&&window.MediaRecorder);
 
-animals.forEach(()=>{const d=document.createElement("div");d.className="dot";$("progress").appendChild(d)});
+/* each game meets ROUND animals, picked at random */
+const ROUND=6;
+function newRound(){
+  const pool=[...animals]; for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}
+  round=pool.slice(0,ROUND); idx=0; scrollX=0;
+  scroller.style.transition="none"; scroller.style.transform="translateX(0)"; requestAnimationFrame(()=>scroller.style.transition="");
+  document.querySelectorAll(".dot").forEach(d=>d.classList.remove("done"));
+}
+for(let i=0;i<ROUND;i++){const d=document.createElement("div");d.className="dot";$("progress").appendChild(d)}
 for(let i=0;i<40;i++){const v=document.createElement("div");v.className="vine";
   v.style.left=(i*13+Math.random()*6)+"vw";v.style.height=(18+Math.random()*28)+"vh";scroller.appendChild(v)}
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 
 /* ---------- audio engine ---------- */
-function ac(){ if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)(); if(ctx.state==="suspended") ctx.resume(); return ctx }
+function ac(){ if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)(); if(ctx.state!=="running") ctx.resume(); return ctx }
 let current=null;
 function playBuffer(buf){return new Promise(res=>{const c=ac(),s=c.createBufferSource();s.buffer=buf;s.connect(c.destination);
   if(current) try{current.stop()}catch(e){}; current=s; s.onended=()=>res(); s.start(); setTimeout(res,buf.duration*1000+300)})}
@@ -321,7 +403,7 @@ async function loadClip(key){
   let buf=null;
   const blob=await getRec(key);
   if(blob){ try{buf=await decode(await blob.arrayBuffer())}catch(e){} }
-  if(!buf) for(const ext of ["m4a","mp3","wav"]){
+  if(!buf) for(const ext of ["mp3","m4a","wav"]){
     try{const r=await fetch(`audio/${key}.${ext}`); if(r.ok){buf=await decode(await r.arrayBuffer()); break}}catch(e){}
   }
   return cache[key]=buf;
@@ -354,17 +436,19 @@ const synth={
   lion(){const t=ac().currentTime;tone("sawtooth",140,70,t,1.3,.4,{type:"lowpass",f:500});noise(t,1.3,.35,"lowpass",700,1,200);return 1.4},
   parrot(){const t=ac().currentTime;[0,.32].forEach(d=>{tone("sawtooth",1300,2000,t+d,.12,.25,{type:"bandpass",f:1800,q:3});tone("square",2000,1100,t+d+.12,.12,.15,{type:"bandpass",f:1600,q:3})});return .8},
   snake(){const t=ac().currentTime;noise(t,1.4,.3,"highpass",3500,.7);return 1.4},
+  gorilla(){const t=ac().currentTime;[0,.13,.26,.39,.52,.65].forEach((d,i)=>{tone("sine",i%2?120:150,55,t+d,.12,.7);noise(t+d,.07,.25,"lowpass",400)});return .9},
+  crocodile(){const t=ac().currentTime;[0,.4].forEach(d=>{noise(t+d,.05,.6,"bandpass",2200,2);tone("square",700,120,t+d,.06,.25,{type:"lowpass",f:2000});tone("sine",110,60,t+d+.01,.12,.5)});return .7},
   frog(){const t=ac().currentTime;[0,.45].forEach(d=>{tone("square",180,120,t+d,.22,.3,{type:"lowpass",f:900});tone("square",240,160,t+d+.08,.14,.18,{type:"lowpass",f:900})});return 1},
   yay(){const t=ac().currentTime;[523,659,784,1047].forEach((f,i)=>tone("triangle",f,f,t+i*.12,.3,.25));return .7},
   pop(){const t=ac().currentTime;tone("sine",300,900,t,.12,.3);return .2}
 };
 
 /* ---------- game flow ---------- */
-function setAnimal(){const a=animals[idx];animalEl.innerHTML=a.svg;card.querySelector(".ru").textContent=a.ru;card.querySelector(".lv").textContent=a.lv;card.querySelector(".snd").textContent=a.snd}
+function setAnimal(){const a=round[idx];animalEl.innerHTML=a.svg;card.querySelector(".ru").textContent=a.ru;card.querySelector(".lv").textContent=a.lv;card.querySelector(".snd").textContent=a.snd}
 async function perform(){
-  if(busy) return; busy=true; const a=animals[idx];
+  if(busy) return; busy=true; const a=round[idx];
   spot.classList.add("talk");
-  if(!await playClip(a.id+"-sound")) await wait(synth[a.id]()*1000+200);
+  if(!await playClip(a.id+"-sound")) await wait((synth[a.id]||synth.pop)()*1000+200);
   spot.classList.remove("talk");
   await wait(200); await playClip(a.id+"-ru",sofia); await wait(250); await playClip(a.id+"-lv",sofia);
   busy=false;
@@ -373,12 +457,12 @@ spot.addEventListener("click",async()=>{
   ac();
   if(!opened){opened=true;hint.toggleAttribute("hidden",true);synth.pop();spot.classList.add("open");card.classList.add("show");
     document.querySelectorAll(".dot")[idx].classList.add("done");
-    await wait(500); await perform(); next.hidden=false; return}
+    await wait(500); await perform(); next.hidden=false; mic.hidden=!micOK; return}
   perform();
 });
 next.addEventListener("click",async()=>{
-  if(busy) return; next.hidden=true; card.classList.remove("show"); spot.classList.remove("open"); opened=false;
-  if(idx===animals.length-1){finale();return}
+  if(busy) return; next.hidden=true; mic.hidden=true; card.classList.remove("show"); spot.classList.remove("open"); opened=false;
+  if(idx===round.length-1){finale();return}
   busy=true; sofia.classList.add("walk"); scrollX-=60; scroller.style.transform=`translateX(${scrollX}vw)`;
   spot.style.transition="transform 1.1s ease-in-out"; spot.style.transform="translateX(120vw)";
   await wait(500); idx++; setAnimal(); spot.style.transition="none"; spot.style.transform="translateX(120vw)";
@@ -393,6 +477,23 @@ function stars(){for(let i=0;i<24;i++){const s=document.createElementNS("http://
 const homeBtn=`<a class="corner home" href="../index.html" aria-label="Меню"><svg viewBox="0 0 40 40"><path d="M6 19L20 7l14 12M11 16v16h18V16" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`;
 const gearBtn=`<button class="corner" id="gear" aria-label="Голоса для родителей: удерживайте"><svg viewBox="0 0 40 40"><rect x="15" y="5" width="10" height="18" rx="5" fill="none" stroke="#fff" stroke-width="3.5"/><path d="M9 19a11 11 0 0 0 22 0M20 30v5" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg></button>`;
 
+/* Sofia's turn: one tap records 3 s (no stop button for little hands), then plays it straight back */
+async function kidRecord(){
+  if(busy) return; busy=true; ac();
+  let stream;
+  try{stream=await navigator.mediaDevices.getUserMedia({audio:true})}
+  catch(e){micOK=false; mic.hidden=true; busy=false; return}
+  const chunks=[], r=new MediaRecorder(stream), stopped=new Promise(res=>r.onstop=res);
+  r.ondataavailable=e=>e.data.size&&chunks.push(e.data);
+  mic.classList.add("rec"); r.start(); await wait(3000); r.stop(); await stopped;
+  stream.getTracks().forEach(t=>t.stop()); mic.classList.remove("rec");
+  let buf=null; const blob=new Blob(chunks,{type:r.mimeType||"audio/mp4"});
+  if(blob.size>500) try{buf=await decode(await blob.arrayBuffer())}catch(e){}
+  if(buf){ await wait(200); sofia.classList.add("talk"); await playBuffer(buf); sofia.classList.remove("talk"); synth.yay(); stars() }
+  busy=false;
+}
+mic.addEventListener("click",kidRecord);
+
 async function walkIn(){
   sofia.classList.add("walk");
   await sofia.animate([{translate:"-45vw 0"},{translate:"0 0"}],{duration:1800,easing:"ease-out"}).finished.catch(()=>{});
@@ -401,7 +502,7 @@ async function walkIn(){
 async function countRecorded(){let n=0;for(const c of clips) if(await getRec(c.key)) n++;return n}
 async function startScreen(){
   overlay.hidden=false;
-  overlay.innerHTML=`${homeBtn}${gearBtn}<h1>София в джунглях</h1><p>Sofija džungļos</p>
+  overlay.innerHTML=`${homeBtn}${gearBtn}<h1><span>София в джунглях</span><span lang="lv">Sofija džungļos</span></h1>
     <button class="big" id="play" aria-label="Играть"><svg viewBox="0 0 40 40"><path d="M12 7l22 13-22 13z" fill="#fff"/></svg></button>
     <div class="note" id="note" hidden>Для родителей: удерживайте микрофон в углу, чтобы записать слова своим голосом.</div>`;
   bindGear();
@@ -410,14 +511,14 @@ async function startScreen(){
 }
 function finale(){
   synth.yay(); stars(); overlay.hidden=false;
-  overlay.innerHTML=`${homeBtn}<h1>Молодец, София!</h1><p>Malacis, Sofija!</p>
-   <div class="row">${animals.map((a,i)=>`<button class="mini" data-i="${i}" aria-label="${a.ru}">${a.svg}</button>`).join("")}</div>
+  overlay.innerHTML=`${homeBtn}<h1><span>Молодец, София!</span><span lang="lv">Malacis, Sofija!</span></h1>
+   <div class="row">${round.map((a,i)=>`<button class="mini" data-i="${i}" aria-label="${a.ru}">${a.svg}</button>`).join("")}</div>
    <button class="big" id="again" aria-label="Ещё раз"><svg viewBox="0 0 40 40"><path d="M30 14a12 12 0 1 0 2 10" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M32 5v10H22" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
   playClip("end-ru").then(()=>wait(250)).then(()=>playClip("end-lv"));
-  overlay.querySelectorAll(".mini").forEach(b=>b.onclick=async()=>{const a=animals[+b.dataset.i];
-    if(!await playClip(a.id+"-sound")) await wait(synth[a.id]()*1000);
+  overlay.querySelectorAll(".mini").forEach(b=>b.onclick=async()=>{const a=round[+b.dataset.i];
+    if(!await playClip(a.id+"-sound")) await wait((synth[a.id]||synth.pop)()*1000);
     await playClip(a.id+"-ru"); await wait(200); playClip(a.id+"-lv")});
-  $("again").onclick=()=>{idx=0;document.querySelectorAll(".dot").forEach(d=>d.classList.remove("done"));setAnimal();overlay.hidden=true;hint.toggleAttribute("hidden",false)};
+  $("again").onclick=()=>{newRound();setAnimal();overlay.hidden=true;hint.toggleAttribute("hidden",false)};
 }
 
 /* ---------- parent corner: record family voices ---------- */
@@ -480,6 +581,7 @@ async function act(kind,row,btn){
   }
 }
 
+newRound();
 setAnimal();
 startScreen();
 </script>

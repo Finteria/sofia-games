@@ -21,5 +21,21 @@ frog-sound.mp3
   "Single Frog Croak.oga" by MichaeltheFox8621. CC BY-SA 4.0
   https://commons.wikimedia.org/wiki/File:Single_Frog_Croak.oga
 
-Licenses: https://creativecommons.org/licenses/by/4.0/ · https://creativecommons.org/licenses/by-sa/4.0/
-The snake hiss is generated in the browser.
+tiger-sound.mp3
+  "439280 schots angry-tiger.wav" by schots. CC0
+  https://commons.wikimedia.org/wiki/File:439280_schots_angry-tiger.wav
+
+toucan-sound.mp3
+  "Keel-billed toucan.ogg" by Thatcher. CC BY-SA 3.0
+  https://commons.wikimedia.org/wiki/File:Keel-billed_toucan.ogg
+
+zebra-sound.mp3
+  "Grévys zebra (Sound Effects).ogg" by DiegoC472. CC BY-SA 4.0
+  https://commons.wikimedia.org/wiki/File:Gr%C3%A9vys_zebra_(Sound_Effects).ogg
+
+peacock-sound.mp3
+  "Pavo cristatus (call).ogg" by Ke4roh. Public domain
+  https://commons.wikimedia.org/wiki/File:Pavo_cristatus_(call).ogg
+
+Licenses: https://creativecommons.org/licenses/by/4.0/ · https://creativecommons.org/licenses/by-sa/4.0/ · https://creativecommons.org/licenses/by-sa/3.0/
+The snake hiss, gorilla chest-drumming and crocodile jaw snaps are generated in the browser.
