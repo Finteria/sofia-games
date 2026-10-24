@@ -75,9 +75,10 @@ body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:
 #spot{position:absolute;left:calc(var(--x0) + var(--sw) + var(--gap));bottom:12%;width:var(--bw);aspect-ratio:1/1;max-width:100%;z-index:2;
   border:0;background:none;padding:0;cursor:pointer}
 #spot:focus-visible{outline:5px dashed var(--sun);outline-offset:6px;border-radius:30px}
-#animal{position:absolute;left:12%;right:12%;bottom:22%;transform:translateY(60%) scale(.4);opacity:0;
+/* the animal is as wide as the bush and sits low in it, so it is big but its head stays clear of the name card */
+#animal{position:absolute;left:0;right:0;bottom:22%;transform:translateY(60%) scale(.4);opacity:0;
   transition:transform .6s cubic-bezier(.3,1.6,.5,1),opacity .3s}
-#spot.open #animal{transform:translateY(-8%) scale(1);opacity:1}
+#spot.open #animal{transform:translateY(0) scale(1);opacity:1}
 #spot.open.talk #animal{animation:wiggle .5s ease-in-out infinite}
 @keyframes wiggle{25%{rotate:-6deg}75%{rotate:6deg}}
 #bush{position:absolute;inset:auto 0 0 0;transition:transform .4s}
@@ -120,7 +121,7 @@ body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:
 #overlay .big{position:static;width:min(40vw,180px);aspect-ratio:1;max-width:100%}
 #overlay .big svg{width:46%;height:46%}
 #overlay .row{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
-#overlay .mini{width:84px;height:84px;border:0;background:var(--card);border-radius:24px;padding:6px;cursor:pointer}
+#overlay .mini{width:100px;height:100px;border:0;background:var(--card);border-radius:24px;padding:6px;cursor:pointer}
 #overlay .note{font-size:16px;font-weight:700;color:#d8f5dc;max-width:36ch;opacity:.9}
 .corner{position:absolute;top:max(16px,env(safe-area-inset-top,0px));width:60px;height:60px;border-radius:50%;
   background:#ffffff33;border:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s,background .2s}
@@ -141,7 +142,8 @@ body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:
 #parent .group h3{margin:0;font-size:20px;font-weight:900;display:flex;align-items:center;gap:10px}
 #parent .group h3 svg{width:44px;height:44px}
 .clip{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.clip .lbl{flex:1 1 180px;min-width:0;font-size:17px;font-weight:700}
+.clip .acts{display:flex;gap:8px;flex-wrap:wrap}
+.clip .lbl{flex:1 1 150px;min-width:0;font-size:17px;font-weight:700}
 .clip .lbl small{display:block;font-size:14px;color:#6b7d72}
 .clip .state{font-size:14px;font-weight:700;color:var(--leaf);min-width:74px}
 .clip .state.none{color:#9aa79f}
@@ -153,11 +155,14 @@ body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:
 .btn:focus-visible{outline:3px solid var(--leaf)}
 .btn.close{background:var(--leaf-dark);color:#fff;font-size:18px;padding:12px 20px}
 #perr{color:var(--red);font-weight:700;font-size:15px}
+#code{flex:1 1 200px;font:inherit;font-size:20px;font-weight:700;padding:10px 14px;border:3px solid #d5e8db;border-radius:12px;color:var(--ink)}
 
 .star{position:absolute;width:40px;height:40px;z-index:9;pointer-events:none;animation:fly 1.6s ease-out forwards}
 @keyframes fly{from{transform:translate(0,0) scale(.3) rotate(0);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(1.2) rotate(240deg);opacity:0}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important}}
-@media (max-height:520px){#card{top:44px;padding:6px 18px}:root{--sh:60vh;--mw:72px}#mic .ic{width:38px;height:38px}}
+@media (orientation:portrait){:root{--bw:min(50vw,440px,60vh)}}
+/* phones on their side: no room above the animal, so the name card goes to the top-right corner */
+@media (max-height:520px){#card{top:44px;padding:6px 18px;left:auto;right:12px;transform:translate(0,-30px)}#card.show{transform:none}:root{--sh:60vh;--mw:72px}#mic .ic{width:38px;height:38px}}
 </style>
 </head>
 <body>
@@ -470,24 +475,43 @@ function playBuffer(buf){return new Promise(res=>{const c=ac(),s=c.createBufferS
   if(current) try{current.stop()}catch(e){}; current=s; s.onended=()=>res(); s.start(); setTimeout(res,buf.duration*1000+300)})}
 const decode=ab=>new Promise((res,rej)=>ac().decodeAudioData(ab,res,rej));
 
-/* family recordings live on this iPad (IndexedDB); files in audio/ are the backup */
-let dbp=null;
-function db(){ if(!dbp) dbp=new Promise((res,rej)=>{const r=indexedDB.open("sofia-audio",1);
-  r.onupgradeneeded=()=>r.result.createObjectStore("clips"); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error)}); return dbp }
-async function dbDo(mode,fn){const d=await db();return new Promise((res,rej)=>{const t=d.transaction("clips",mode),q=fn(t.objectStore("clips"));q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}
-const getRec=k=>dbDo("readonly",s=>s.get(k)).catch(()=>null);
-const putRec=(k,b)=>dbDo("readwrite",s=>s.put(b,k));
-const delRec=k=>dbDo("readwrite",s=>s.delete(k));
+/* family recordings live on the server (server/voices.py), so Safari clearing site data can't lose them.
+   A new take replaces the old one, which the server keeps: "Вернуть" brings it back. Files in audio/ are the fallback. */
+const API="/api/voices";
+let voices={};   // {key:{v:version or null, old:number of older takes}}
+async function loadVoices(){try{const r=await fetch(API,{cache:"no-store"}); if(r.ok) voices=await r.json()}catch(e){} return voices}
+const hasRec=k=>!!(voices[k]&&voices[k].v);
+let familyKey=""; try{familyKey=localStorage.getItem("sofia-family-key")||""}catch(e){}
+async function voiceApi(method,path,body,type){
+  const r=await fetch(API+path,{method,body,headers:{"X-Family-Key":familyKey,...(type?{"Content-Type":type}:{})}});
+  if(r.status===403) throw Object.assign(new Error("code"),{code:true});
+  if(!r.ok) throw new Error(r.status);
+  voices=await r.json(); return voices;
+}
+const putRec=(k,blob)=>voiceApi("PUT","/"+k,blob,blob.type||"audio/mp4");
+const delRec=k=>voiceApi("DELETE","/"+k);
+const restoreRec=k=>voiceApi("POST","/"+k+"/restore");
+/* recordings made before the server existed sat in this iPad's IndexedDB: move any that are left */
+async function migrateLocal(){
+  if(!window.indexedDB||!indexedDB.databases) return 0;
+  if(!(await indexedDB.databases()).some(d=>d.name==="sofia-audio")) return 0;
+  const d=await new Promise((res,rej)=>{const r=indexedDB.open("sofia-audio",1);r.onupgradeneeded=()=>r.result.createObjectStore("clips");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+  const all=s=>new Promise((res,rej)=>{const t=d.transaction("clips",s),q=t.objectStore("clips").getAllKeys();q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)});
+  const get=k=>new Promise(res=>{const q=d.transaction("clips").objectStore("clips").get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>res(null)});
+  let n=0;
+  for(const k of await all("readonly")){const b=await get(k); if(b&&!hasRec(k)){await putRec(k,b);n++}}
+  d.close(); indexedDB.deleteDatabase("sofia-audio"); return n;
+}
 const cache={};
 async function loadClip(key){
-  if(cache[key]!==undefined) return cache[key];
+  const ck=key+"@"+(hasRec(key)?voices[key].v:"");   // a new take gets a new version, so never a stale sound
+  if(cache[ck]!==undefined) return cache[ck];
   let buf=null;
-  const blob=await getRec(key);
-  if(blob){ try{buf=await decode(await blob.arrayBuffer())}catch(e){} }
+  if(hasRec(key)) try{const r=await fetch(`${API}/${key}?v=${voices[key].v}`); if(r.ok) buf=await decode(await r.arrayBuffer())}catch(e){}
   if(!buf) for(const ext of ["mp3","m4a","wav"]){
     try{const r=await fetch(`audio/${key}.${ext}`); if(r.ok){buf=await decode(await r.arrayBuffer()); break}}catch(e){}
   }
-  return cache[key]=buf;
+  return cache[ck]=buf;
 }
 async function playClip(key,talker){
   const buf=await loadClip(key); if(!buf) return false;
@@ -580,7 +604,7 @@ async function walkIn(){
   await sofia.animate([{translate:"-45vw 0"},{translate:"0 0"}],{duration:1800,easing:"ease-out"}).finished.catch(()=>{});
   sofia.classList.remove("walk");
 }
-async function countRecorded(){let n=0;for(const c of clips) if(await getRec(c.key)) n++;return n}
+async function countRecorded(){await loadVoices();return clips.filter(c=>hasRec(c.key)).length}
 async function startScreen(){
   overlay.hidden=false;
   overlay.innerHTML=`${homeBtn}${gearBtn}<h1><span>София в джунглях</span><span lang="lv">Sofija džungļos</span></h1>
@@ -614,37 +638,65 @@ let recorder=null, recKey=null;
 function clipRow(c){return `<div class="clip" data-key="${c.key}">
   <div class="lbl">${c.label}<small>${c.sub}</small></div>
   <span class="state none">нет записи</span>
-  <button class="btn rec" data-act="rec">Записать</button>
+  <div class="acts"><button class="btn rec" data-act="rec">Записать</button>
   <button class="btn" data-act="play" disabled>Слушать</button>
+  <button class="btn" data-act="restore" disabled title="Вернуть прежнюю запись">Вернуть</button>
   <label class="btn" style="display:inline-block">Файл<input type="file" accept="audio/*" data-act="file" hidden></label>
-  <button class="btn" data-act="del" disabled>Удалить</button></div>`}
+  <button class="btn" data-act="del" disabled>Удалить</button></div></div>`}
+const pHead=`<header><h2>Голоса для Софии</h2><button class="btn close" id="pclose">Готово</button></header>`;
+function closeParent(){if(recorder&&recorder.state==="recording")recorder.stop();parent.hidden=true;startScreen()}
+/* 204 = right code, false = wrong or none, null = no connection */
+async function codeOK(){if(!familyKey) return false;
+  try{const r=await fetch("/api/check",{headers:{"X-Family-Key":familyKey}});return r.status===204}catch(e){return null}}
+function askCode(msg){
+  parent.innerHTML=`<div class="wrap">${pHead}
+   <p class="lead">Записи хранятся на сервере игры, поэтому не пропадут. Чтобы записывать, введите код семьи (один раз на этом устройстве).</p>
+   <form id="codeform" class="clip"><input id="code" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="код семьи" aria-label="Код семьи"><button class="btn rec">OK</button></form>
+   <div id="perr" ${msg?"":"hidden"}>${msg||""}</div></div>`;
+  parent.hidden=false; $("pclose").onclick=closeParent;
+  $("codeform").onsubmit=async e=>{e.preventDefault(); familyKey=$("code").value.trim().toLowerCase(); const ok=await codeOK();
+    if(ok){try{localStorage.setItem("sofia-family-key",familyKey)}catch(e){}; openParent()}
+    else askCode(ok===null?"Нет связи с сервером. Проверьте интернет.":"Код не подходит.")};
+}
 async function openParent(){
   ac();
+  const ok=await codeOK(); if(ok===false) return askCode();
+  await loadVoices();
   const intro=clips.filter(c=>!c.group&&c.key.startsWith("greet")), outro=clips.filter(c=>c.key.startsWith("end"));
-  parent.innerHTML=`<div class="wrap">
-   <header><h2>Голоса для Софии</h2><button class="btn close" id="pclose">Готово</button></header>
-   <p class="lead">Нажмите «Записать», скажите слово и нажмите «Стоп». Записи хранятся на этом iPad. Звуки животных тоже можно изобразить голосом, детям это нравится больше всего.</p>
+  parent.innerHTML=`<div class="wrap">${pHead}
+   <p class="lead">Нажмите «Записать», скажите слово и нажмите «Стоп». Записи хранятся на сервере игры и не пропадут. Новая запись заменяет старую, но старая остаётся в архиве: «Вернуть» возвращает прежнюю. Звуки животных тоже можно изобразить голосом, детям это нравится больше всего.</p>
    <div id="perr" hidden></div>
    <div class="group"><h3>Начало</h3>${intro.map(clipRow).join("")}</div>
    ${animals.map(a=>`<div class="group"><h3>${a.svg}${a.ru} · ${a.lv}</h3>${clips.filter(c=>c.group===a).map(clipRow).join("")}</div>`).join("")}
    <div class="group"><h3>Конец</h3>${outro.map(clipRow).join("")}</div>
    <p class="lead" style="font-size:14px">Звуки животных взяты с Wikimedia Commons: <a href="audio/CREDITS.txt">авторы и лицензии</a>. Ваша запись звука заменяет их.</p></div>`;
   parent.hidden=false; parent.scrollTop=0;
-  $("pclose").onclick=()=>{if(recorder&&recorder.state==="recording")recorder.stop();parent.hidden=true;startScreen()};
-  for(const row of parent.querySelectorAll(".clip")) refreshRow(row);
+  $("pclose").onclick=closeParent;
+  if(ok===null) showErr("Нет связи с сервером: записи сейчас не сохранятся. Проверьте интернет.");
+  refreshAll();
   parent.onclick=e=>{const b=e.target.closest("[data-act]");if(!b||b.dataset.act==="file")return;const row=b.closest(".clip");act(b.dataset.act,row,b)};
-  parent.onchange=async e=>{const inp=e.target;if(inp.dataset.act!=="file"||!inp.files[0])return;const row=inp.closest(".clip");
-    try{await decode(await inp.files[0].arrayBuffer())}catch(err){showErr("Этот файл не получается прочитать. Попробуйте MP3 или M4A.");return}
-    await putRec(row.dataset.key,inp.files[0]);delete cache[row.dataset.key];refreshRow(row);inp.value=""};
+  parent.onchange=async e=>{const inp=e.target;if(inp.dataset.act!=="file"||!inp.files[0])return;const row=inp.closest(".clip"),f=inp.files[0];inp.value="";
+    try{await decode(await f.arrayBuffer())}catch(err){showErr("Этот файл не получается прочитать. Попробуйте MP3 или M4A.");return}
+    save(()=>putRec(row.dataset.key,f),row.dataset.key)};
+  if(ok) migrateLocal().then(n=>n&&refreshAll()).catch(()=>{});
 }
-async function refreshRow(row){const has=!!await getRec(row.dataset.key),st=row.querySelector(".state");
+function refreshRow(row){const k=row.dataset.key,has=hasRec(k),st=row.querySelector(".state");
   st.textContent=has?"записано":"нет записи";st.classList.toggle("none",!has);
-  row.querySelector('[data-act="play"]').disabled=!has;row.querySelector('[data-act="del"]').disabled=!has}
+  row.querySelector('[data-act="play"]').disabled=!has;row.querySelector('[data-act="del"]').disabled=!has;
+  row.querySelector('[data-act="restore"]').disabled=!(voices[k]&&voices[k].old)}
+const refreshAll=()=>parent.querySelectorAll(".clip").forEach(refreshRow);
 function showErr(m){const e=$("perr");e.textContent=m;e.hidden=!m}
+/* every change goes to the server; the take plays back once it is safely stored */
+async function save(call,key){
+  try{await call()}
+  catch(e){showErr(e.code?"Код семьи не подходит. Закройте и откройте запись снова.":"Не получилось сохранить: нет связи с сервером. Попробуйте ещё раз.");return}
+  refreshAll(); if(hasRec(key)) playClip(key);
+}
 async function act(kind,row,btn){
   const key=row.dataset.key; showErr("");
-  if(kind==="play"){delete cache[key];playClip(key);return}
-  if(kind==="del"){await delRec(key);delete cache[key];refreshRow(row);return}
+  if(kind==="play"){playClip(key);return}
+  if(kind==="del"){save(()=>delRec(key),key);return}
+  if(kind==="restore"){save(()=>restoreRec(key),key);return}
   if(kind==="rec"){
     if(recorder&&recorder.state==="recording"){recorder.stop();return}
     if(!navigator.mediaDevices||!window.MediaRecorder){showErr("Запись не поддерживается в этом браузере. Откройте игру в Safari по адресу сайта, а не из файла.");return}
@@ -656,7 +708,7 @@ async function act(kind,row,btn){
     recorder.onstop=async()=>{stream.getTracks().forEach(t=>t.stop());btn.textContent="Записать";btn.classList.remove("on");
       const blob=new Blob(chunks,{type:recorder.mimeType||"audio/mp4"});
       if(blob.size<500){showErr("Запись получилась пустой. Попробуйте ещё раз.");return}
-      await putRec(recKey,blob);delete cache[recKey];refreshRow(row);playClip(recKey)};
+      save(()=>putRec(key,blob),key)};
     recorder.start(); btn.textContent="Стоп"; btn.classList.add("on");
     setTimeout(()=>{if(recorder&&recorder.state==="recording"&&recKey===key)recorder.stop()},8000);
   }
