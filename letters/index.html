@@ -78,6 +78,9 @@ body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:
   display:flex;align-items:center;justify-content:space-evenly}
 .slot{transition:translate 1s cubic-bezier(.2,.8,.3,1);translate:0 var(--y,0)}
 .slot.low{translate:0 120vh;transition:none}
+/* the hint: now and then the right balloon gives a small shake */
+.slot.hint{transform-origin:50% 80%;animation:hint 3.2s ease-in-out infinite}
+@keyframes hint{0%,24%,100%{rotate:0deg}4%{rotate:-7deg}9%{rotate:7deg}14%{rotate:-5deg}19%{rotate:4deg}}
 .balloon{position:relative;display:block;width:var(--bl);aspect-ratio:100/150;border:0;padding:0;background:none;cursor:pointer;
   animation:float 3.2s ease-in-out infinite var(--d,0s);transform-origin:50% 75%}
 .balloon svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
@@ -106,6 +109,10 @@ body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:
 #card .let{font-size:min(13vh,92px);font-weight:900;line-height:1;color:var(--lc)}
 #card .word{font-size:min(6vh,40px);font-weight:900;margin-top:6px}
 #card .word b{color:var(--lc)}
+/* Sofia's own face instead of an emoji, for С / S */
+.me{display:inline-block;height:1em;width:1em;vertical-align:-.12em}
+.me svg{display:block;width:100%;height:100%;overflow:visible}
+.me .ink{stroke:#1b1717;stroke-linecap:round;stroke-linejoin:round}.me .skin{fill:#ffe3cf}.me .hair{fill:#3b2a20}.me .mouth.open{opacity:0}
 body.ru{--lc:var(--ru)} body.lv{--lc:var(--lv)}
 
 .big{position:absolute;z-index:7;border:0;cursor:pointer;font-family:var(--display);font-weight:900;color:#fff;
@@ -270,12 +277,14 @@ body.ru{--lc:var(--ru)} body.lv{--lc:var(--lv)}
   <div id="parent" hidden></div>
 </div>
 <script>
-/* each alphabet: [letter, its name as spoken, a word with it, a picture] */
-const RU=[["А", "а", "арбуз", "🍉"], ["Б", "бэ", "банан", "🍌"], ["В", "вэ", "волк", "🐺"], ["Г", "гэ", "гриб", "🍄"], ["Д", "дэ", "дом", "🏠"], ["Е", "йе", "енот", "🦝"], ["Ё", "йо", "ёжик", "🦔"], ["Ж", "жэ", "жираф", "🦒"], ["З", "зэ", "зонтик", "☂️"], ["И", "и", "индюк", "🦃"], ["Й", "и краткое", "йо-йо", "🪀"], ["К", "ка", "кот", "🐱"], ["Л", "эль", "лимон", "🍋"], ["М", "эм", "мышка", "🐭"], ["Н", "эн", "носок", "🧦"], ["О", "о", "огурец", "🥒"], ["П", "пэ", "пингвин", "🐧"], ["Р", "эр", "рыба", "🐟"], ["С", "эс", "солнце", "☀️"], ["Т", "тэ", "торт", "🎂"], ["У", "у", "утка", "🦆"], ["Ф", "эф", "фламинго", "🦩"], ["Х", "ха", "хлеб", "🍞"], ["Ц", "цэ", "цветок", "🌸"], ["Ч", "чэ", "часы", "⏰"], ["Ш", "ша", "шарик", "🎈"], ["Щ", "ща", "щенок", "🐶"], ["Ъ", "твёрдый знак", "подъезд", "🏢"], ["Ы", "ы", "сыр", "🧀"], ["Ь", "мягкий знак", "конь", "🐴"], ["Э", "э", "эскимо", "🍦"], ["Ю", "ю", "юбка", "👗"], ["Я", "я", "яблоко", "🍎"]];
-const LV=[["A", "a", "apelsīns", "🍊"], ["Ā", "garais ā", "ābols", "🍎"], ["B", "bē", "banāns", "🍌"], ["C", "cē", "cālis", "🐥"], ["Č", "čē", "čūska", "🐍"], ["D", "dē", "dāvana", "🎁"], ["E", "e", "egle", "🌲"], ["Ē", "garais ē", "ērglis", "🦅"], ["F", "ef", "flamingo", "🦩"], ["G", "gē", "gurķis", "🥒"], ["Ģ", "ģē", "ģitāra", "🎸"], ["H", "hā", "helikopters", "🚁"], ["I", "i", "izpletnis", "🪂"], ["Ī", "garais ī", "īkšķis", "👍"], ["J", "jē", "jēriņš", "🐑"], ["K", "kā", "kaķis", "🐱"], ["Ķ", "ķē", "ķirbis", "🎃"], ["L", "el", "lācis", "🐻"], ["Ļ", "eļ", "bļoda", "🥣"], ["M", "em", "māja", "🏠"], ["N", "en", "nīlzirgs", "🦛"], ["Ņ", "eņ", "bruņurupucis", "🐢"], ["O", "o", "ola", "🥚"], ["P", "pē", "pīle", "🦆"], ["R", "er", "raķete", "🚀"], ["S", "es", "saule", "☀️"], ["Š", "eš", "šokolāde", "🍫"], ["T", "tē", "tomāts", "🍅"], ["U", "u", "uguns", "🔥"], ["Ū", "garais ū", "ūpis", "🦉"], ["V", "vē", "varde", "🐸"], ["Z", "zē", "zaķis", "🐇"], ["Ž", "žē", "žirafe", "🦒"]];
+/* each alphabet: [letter, its name as spoken, [[a name (or word) with it, a picture], ...]]; with several, one is picked at random */
+const RU=[["А", "а", [["Амелия", "👧"]]], ["Б", "бэ", [["Богдан", "👦"]]], ["В", "вэ", [["Вероника", "👩"], ["Ваграм", "👨"]]], ["Г", "гэ", [["Глеб", "👦🏼"]]], ["Д", "дэ", [["Даша", "👱‍♀️"]]], ["Е", "йе", [["Ева", "👧🏼"]]], ["Ё", "йо", [["Артём", "👦"]]], ["Ж", "жэ", [["Женя", "🧒"]]], ["З", "зэ", [["Зоя", "👩‍🦰"]]], ["И", "и", [["Иван", "👦🏻"]]], ["Й", "и краткое", [["Майя", "👧🏽"]]], ["К", "ка", [["Катя", "👩‍🦱"]]], ["Л", "эль", [["Лиза", "👧"]]], ["М", "эм", [["Миша", "👦"]]], ["Н", "эн", [["Никита", "🧒🏼"]]], ["О", "о", [["Оля", "👱‍♀️"]]], ["П", "пэ", [["Петя", "👦🏼"]]], ["Р", "эр", [["Рома", "👨‍🦱"]]], ["С", "эс", [["София", "SOFIA"]]], ["Т", "тэ", [["Тата", "👩"]]], ["У", "у", [["Ульяна", "👧🏼"]]], ["Ф", "эф", [["Федя", "👦"]]], ["Х", "ха", [["Хрюша", "🐷"]]], ["Ц", "цэ", [["цветок", "🌸"]]], ["Ч", "чэ", [["часы", "⏰"]]], ["Ш", "ша", [["Шарик", "🐶"]]], ["Щ", "ща", [["щётка", "🪥"]]], ["Ъ", "твёрдый знак", [["подъезд", "🏢"]]], ["Ы", "ы", [["Рыжик", "🐱"]]], ["Ь", "мягкий знак", [["Игорь", "👨"]]], ["Э", "э", [["Эмма", "👩‍🦰"]]], ["Ю", "ю", [["Юля", "👧"]]], ["Я", "я", [["Яна", "👱‍♀️"]]]];
+const LV=[["A", "a", [["Amēlija", "👧"]]], ["Ā", "garais ā", [["Ādams", "👦"]]], ["B", "bē", [["Baiba", "👩‍🦰"]]], ["C", "cē", [["cālis", "🐥"]]], ["Č", "čē", [["čūska", "🐍"]]], ["D", "dē", [["Dāvis", "👦🏼"]]], ["E", "e", [["Elza", "👱‍♀️"]]], ["Ē", "garais ē", [["Ēriks", "👦🏻"]]], ["F", "ef", [["Filips", "🧒"]]], ["G", "gē", [["Gustavs", "👦"]]], ["Ģ", "ģē", [["Ģirts", "👨‍🦱"]]], ["H", "hā", [["Hanna", "👧🏼"]]], ["I", "i", [["Ieva", "👩‍🦱"]]], ["Ī", "garais ī", [["īkšķis", "👍"]]], ["J", "jē", [["Jānis", "👨"]]], ["K", "kā", [["Kārlis", "👦🏼"]]], ["Ķ", "ķē", [["ķirbis", "🎃"]]], ["L", "el", [["Līga", "👧"]]], ["Ļ", "eļ", [["bļoda", "🥣"]]], ["M", "em", [["Marta", "👧🏽"]]], ["N", "en", [["Nora", "👱‍♀️"]]], ["Ņ", "eņ", [["bruņurupucis", "🐢"]]], ["O", "o", [["Oskars", "🧒🏼"]]], ["P", "pē", [["Paula", "👩‍🦰"]]], ["R", "er", [["Roberts", "👦"]]], ["S", "es", [["Sofija", "SOFIA"]]], ["Š", "eš", [["šokolāde", "🍫"]]], ["T", "tē", [["Tata", "👩"]]], ["U", "u", [["Una", "👧🏼"]]], ["Ū", "garais ū", [["ūpis", "🦉"]]], ["V", "vē", [["Veronika", "👩"], ["Vagrams", "👨"]]], ["Z", "zē", [["Zane", "👩‍🦱"]]], ["Ž", "žē", [["žirafe", "🦒"]]]];
 const L={ru:{rows:RU,title:"Русские буквы",q:"Где буква",yes:"Умница!",no:"Попробуй ещё!",end:"Ура! Ты нашла все буквы!",book:"Азбука"},
          lv:{rows:LV,title:"Latviešu burti",q:"Kur ir burts",yes:"Malacīte!",no:"Pamēģini vēlreiz!",end:"Urā! Tu atradi visus burtus!",book:"Ābece"}};
 const num=i=>String(i+1).padStart(2,"0");
+const cap=s=>s[0].toUpperCase()+s.slice(1);
+const nameKeyOf=(lang,i,j)=>`${lang}-${num(i)}-name${j?j+1:""}`;
 /* every voice clip; key = file name in audio/ (generated voice) and, with "abc-" in front, the family recording on the server */
 const clips={};
 for(const lang of ["ru","lv"]){const t=L[lang];
@@ -283,9 +292,9 @@ for(const lang of ["ru","lv"]){const t=L[lang];
     {key:"yes-"+lang,label:t.yes,sub:"Похвала"},
     {key:"no-"+lang,label:t.no,sub:"Если ошиблась"},
     {key:"end-"+lang,label:t.end,sub:"Конец игры"},
-    ...t.rows.flatMap(([ch,name,word,e],i)=>[
+    ...t.rows.flatMap(([ch,name,words],i)=>[
       {key:`${lang}-${num(i)}-ask`,label:`${t.q} ${name}?`,sub:"Вопрос",group:i},
-      {key:`${lang}-${num(i)}-word`,label:`${name[0].toUpperCase()+name.slice(1)} — ${word}!`,sub:"На карточке с картинкой",group:i}])];
+      ...words.map(([w],j)=>({key:nameKeyOf(lang,i,j),label:`${cap(name)} — ${cap(w)}!`,sub:"На карточке с картинкой",group:i}))])];
 }
 
 const $=id=>document.getElementById(id);
@@ -333,8 +342,9 @@ async function playClip(key,talker){
 }
 /* say several clips in a row; a newer say() cancels an older one */
 let sayId=0;
-async function say(keys,talker=sofia){const id=++sayId;
-  for(const k of keys){ if(id!==sayId) return; await playClip(k,talker); if(id!==sayId) return; await wait(180) } }
+async function say(keys,talker=sofia,gap=180){const id=++sayId;
+  for(const k of keys){ if(id!==sayId) return; await playClip(k,talker); if(id!==sayId) return; await wait(gap) }
+  return id===sayId }
 function preload(keys){keys.forEach(k=>loadClip(k))}
 
 function tone(type,f0,f1,t0,dur,vol=.3){
@@ -363,13 +373,16 @@ function stars(x="50%",y="45%"){for(let i=0;i<20;i++){const s=document.createEle
 /* ---------- the game ---------- */
 const ROUND=10, CHOICES=3;
 const COLORS=["#ef5350","#fb8c00","#43a047","#1e88e5","#8e24aa","#e91e63","#00897b","#6d4c41"];
-let lang="ru", queue=[], target=-1, found=[], wrong=0, busy=false, idleT=null;
+let lang="ru", queue=[], target=-1, pickJ=0, found=[], wrong=0, busy=false, idleT=null, hintT=null;
 const rows=()=>L[lang].rows;
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 /* look-alikes (Е/Ё, И/Й, A/Ā, S/Š…) never share a round: one dot or hook is too fine a difference for now */
 const base=ch=>ch.normalize("NFD").replace(/[̀-ͯ]/g,"").replace("Щ","Ш").replace("Ъ","Ь");
 const similar=(a,b)=>base(rows()[a][0])===base(rows()[b][0]);
-const askKey=i=>`${lang}-${num(i)}-ask`, wordKey=i=>`${lang}-${num(i)}-word`;
+const askKey=i=>`${lang}-${num(i)}-ask`, nameKey=(i,j)=>nameKeyOf(lang,i,j);
+const anyWord=i=>Math.floor(Math.random()*rows()[i][2].length);
+/* pauses, so she has time to look and answer */
+const IDLE=14000, HINT=2500, AFTER_NO=900, AFTER_CARD=1600, BEFORE_ASK=1200;
 
 function setLang(l){lang=l;document.body.className=l;document.documentElement.lang=l}
 function newGame(){
@@ -382,45 +395,57 @@ function balloonHTML(i,color,d,y){return `<div class="slot low" style="--y:${y}%
   <ellipse cx="30" cy="34" rx="8" ry="15" fill="#fff" opacity=".45" transform="rotate(30 30 34)"/></svg>
   <span class="ch">${rows()[i][0]}</span></button></div>`}
 async function nextRound(){
-  clearTimeout(idleT); wrong=0;
+  clearTimeout(idleT); clearTimeout(hintT); wrong=0;
   target=queue.shift(); if(target===undefined){queue=shuffle([...rows().keys()]);target=queue.shift()}
   const others=shuffle([...rows().keys()].filter(i=>i!==target&&!similar(i,target)));
   const pick=[target]; for(const i of others){ if(pick.length===CHOICES) break; if(!pick.some(p=>similar(p,i))) pick.push(i) }
   const cols=shuffle([...COLORS]), ys=shuffle([-14,0,12]);
   sky.innerHTML=shuffle(pick).map((i,n)=>balloonHTML(i,cols[n],(n*.7).toFixed(1),ys[n])).join("")+cardHTML();
-  preload([askKey(target),wordKey(target)]);
+  pickJ=anyWord(target); preload([askKey(target),nameKey(target,pickJ)]);
   await wait(50); sfx.whoosh();
   sky.querySelectorAll(".slot").forEach((s,n)=>setTimeout(()=>s.classList.remove("low"),n*160));
-  await wait(900); busy=false; ask();
+  await wait(900+BEFORE_ASK); busy=false; ask();
 }
 async function ask(){
   clearTimeout(idleT); repeatBtn.hidden=false;
-  await say([askKey(target)]);
-  clearTimeout(idleT); idleT=setTimeout(()=>{help();ask()},9000);   // nothing tapped for a while: show which one, and ask again
+  const t=target; if(!await say([askKey(t)])||t!==target||busy) return;
+  waitForTap();
 }
+/* after the question: a quiet moment, then the right balloon starts to shake a little; much later, show it clearly and ask again */
+function waitForTap(){
+  clearTimeout(idleT); clearTimeout(hintT);
+  hintT=setTimeout(hint,HINT);
+  idleT=setTimeout(()=>{help();ask()},IDLE);
+}
+const targetSlot=()=>{const b=sky.querySelector(`.balloon[data-i="${target}"]`);return b&&b.parentElement};
+function hint(){const s=targetSlot(); s&&s.classList.add("hint")}
 function help(){const b=sky.querySelector(`.balloon[data-i="${target}"]`); b&&b.classList.add("help")}
 function cardHTML(i){return `<div id="card"></div>`}
-function fillCard(i){
-  const [ch,name,word,e]=rows()[i], at=word.toLowerCase().indexOf(ch.toLowerCase());
+/* Sofia's head from her cartoon, for her own letter */
+function sofiaFace(){const h=sofia.querySelector(".head");
+  return `<span class="me"><svg viewBox="130 150 540 600" aria-hidden="true">${h?h.outerHTML:""}</svg></span>`}
+const pic=e=>e==="SOFIA"?sofiaFace():e;
+function fillCard(i,j=0){
+  const [ch,,words]=rows()[i], [word,e]=words[j], at=word.toLowerCase().indexOf(ch.toLowerCase());
   const w=at<0?word:`${word.slice(0,at)}<b>${word.slice(at,at+1)}</b>${word.slice(at+1)}`;
-  $("card").innerHTML=`<div class="pic">${e}</div><div class="let">${ch}${ch.toLowerCase()}</div><div class="word">${w}</div>`;
+  $("card").innerHTML=`<div class="pic">${pic(e)}</div><div class="let">${ch}${ch.toLowerCase()}</div><div class="word">${w}</div>`;
 }
 sky.addEventListener("click",async e=>{
   const b=e.target.closest(".balloon"); if(!b||busy) return; ac();
   const i=+b.dataset.i;
   if(i!==target){
-    clearTimeout(idleT); sfx.boing(); b.classList.remove("no"); void b.offsetWidth; b.classList.add("no");
-    if(++wrong>=2) help();
+    clearTimeout(idleT); clearTimeout(hintT); sfx.boing(); b.classList.remove("no"); void b.offsetWidth; b.classList.add("no");
+    if(++wrong>=2) help(); else hint();
     if(wrong===1&&queue.indexOf(target)<0) queue.splice(2,0,target);   // a letter she mixed up comes back later
-    await say(["no-"+lang,askKey(target)]);
-    idleT=setTimeout(()=>{help();ask()},9000); return;
+    const t=target; if(await say(["no-"+lang,askKey(t)],sofia,AFTER_NO)&&t===target&&!busy) waitForTap();
+    return;
   }
-  busy=true; clearTimeout(idleT); sayId++; stopVoice(); repeatBtn.hidden=true;
+  busy=true; clearTimeout(idleT); clearTimeout(hintT); sayId++; stopVoice(); repeatBtn.hidden=true;
   const r=b.getBoundingClientRect(); b.classList.remove("help"); b.classList.add("pop"); sfx.pop(); stars(r.left+r.width/2+"px",r.top+r.height*.4+"px");
   sky.querySelectorAll(".balloon:not(.pop)").forEach(o=>o.classList.add("gone"));
-  found.push(i); const dot=$("progress").children[found.length-1]; dot.style.setProperty("--c",b.style.getPropertyValue("--c")); dot.classList.add("done");
-  fillCard(i); await wait(250); $("card").classList.add("show");
-  await say(["yes-"+lang,wordKey(i)]); await wait(700);
+  found.push([i,pickJ]); const dot=$("progress").children[found.length-1]; dot.style.setProperty("--c",b.style.getPropertyValue("--c")); dot.classList.add("done");
+  fillCard(i,pickJ); await wait(250); $("card").classList.add("show");
+  await say(["yes-"+lang,nameKey(i,pickJ)],sofia,500); await wait(AFTER_CARD);
   $("card").classList.remove("show"); await wait(350);
   if(found.length>=ROUND) return finale();
   nextRound();
@@ -450,7 +475,7 @@ function langCard(l,abc){return `<div class="lang ${l}">
   <button class="go" data-play="${l}"><span class="abc" lang="${l}">${abc}</span><span class="name" lang="${l}">${L[l].title}</span>${playIcon}</button>
   <button class="book" data-book="${l}">${bookIcon}<span lang="${l}">${L[l].book}</span></button></div>`}
 function startScreen(){
-  clearTimeout(idleT); sayId++; stopVoice(); repeatBtn.hidden=true; target=-1; sky.innerHTML=""; $("progress").innerHTML="";
+  clearTimeout(idleT); clearTimeout(hintT); sayId++; stopVoice(); repeatBtn.hidden=true; target=-1; sky.innerHTML=""; $("progress").innerHTML="";
   overlay.hidden=false; book.hidden=true;
   overlay.innerHTML=`${homeBtn}${gearBtn}<h1><span>Буквы</span><span lang="lv">Burti</span></h1>
     <div class="row">${langCard("ru","А Б В")}${langCard("lv","A Ā B")}</div>`;
@@ -462,11 +487,11 @@ function finale(){
   sfx.yay(); stars(); overlay.hidden=false; repeatBtn.hidden=true; target=-1;
   const t=L[lang];
   overlay.innerHTML=`${homeBtn}<h1><span lang="${lang}">${t.end}</span></h1>
-   <div class="stickers">${found.map(i=>`<button class="sticker" data-i="${i}"><span class="e">${rows()[i][3]}</span>${rows()[i][0]}</button>`).join("")}</div>
+   <div class="stickers">${found.map(([i,j])=>`<button class="sticker" data-i="${i}" data-j="${j}"><span class="e">${pic(rows()[i][2][j][1])}</span>${rows()[i][0]}</button>`).join("")}</div>
    <div class="row"><button class="btnround" id="again" aria-label="Ещё раз"><svg viewBox="0 0 40 40"><path d="M30 14a12 12 0 1 0 2 10" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M32 5v10H22" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>`;
   overlay.querySelector(".home").outerHTML=backBtn; $("back").onclick=startScreen;
   say(["end-"+lang]);
-  overlay.querySelectorAll(".sticker").forEach(b=>b.onclick=()=>say([wordKey(+b.dataset.i)],null));
+  overlay.querySelectorAll(".sticker").forEach(b=>b.onclick=()=>say([nameKey(+b.dataset.i,+b.dataset.j)],null));
   $("again").onclick=()=>{overlay.hidden=true;newGame();busy=true;nextRound()};
 }
 function openBook(l){
@@ -474,9 +499,9 @@ function openBook(l){
   book.innerHTML=`${backBtn}<div class="tiles">${rows().map(([ch],i)=>`<button class="tile" data-i="${i}" lang="${l}">${ch}${ch.toLowerCase()}</button>`).join("")}</div>`;
   $("back").onclick=()=>{sayId++;stopVoice();book.hidden=true};
   book.querySelector(".tiles").onclick=e=>{const t=e.target.closest(".tile"); if(!t) return; const i=+t.dataset.i;
-    const wrap=document.createElement("div"); wrap.id="bookcard"; wrap.innerHTML=cardHTML(); book.appendChild(wrap); fillCard(i);
+    const j=anyWord(i), wrap=document.createElement("div"); wrap.id="bookcard"; wrap.innerHTML=cardHTML(); book.appendChild(wrap); fillCard(i,j);
     requestAnimationFrame(()=>requestAnimationFrame(()=>$("card").classList.add("show")));
-    say([wordKey(i)],null);
+    say([nameKey(i,j)],null);
     wrap.onclick=()=>{sayId++;stopVoice();wrap.remove()}};
 }
 
@@ -517,11 +542,11 @@ async function openParent(){
   await loadVoices();
   const list=clips[ptab], rs=L[ptab].rows;
   parent.innerHTML=`<div class="wrap">${pHead}
-   <p class="lead">Сейчас буквы и слова говорит компьютерный голос. Ваша запись заменяет его: нажмите «Записать», скажите и нажмите «Стоп». Новая запись заменяет старую, но старая остаётся в архиве: «Вернуть» возвращает прежнюю.</p>
+   <p class="lead">Сейчас буквы и имена говорит компьютерный голос. Ваша запись заменяет его: нажмите «Записать», скажите и нажмите «Стоп». Новая запись заменяет старую, но старая остаётся в архиве: «Вернуть» возвращает прежнюю.</p>
    <div class="tabs"><button class="btn ${ptab==="ru"?"on":""}" data-tab="ru">Русские буквы</button><button class="btn ${ptab==="lv"?"on":""}" data-tab="lv" lang="lv">Latviešu burti</button></div>
    <div id="perr" hidden></div>
    <div class="group"><h3>Фразы</h3>${list.filter(c=>c.group===undefined).map(clipRow).join("")}</div>
-   ${rs.map(([ch,,,e],i)=>`<div class="group"><h3><span class="e">${e}</span>${ch}${ch.toLowerCase()}</h3>${list.filter(c=>c.group===i).map(clipRow).join("")}</div>`).join("")}
+   ${rs.map(([ch,,words],i)=>`<div class="group"><h3><span class="e">${words.map(w=>pic(w[1])).join(" ")}</span>${ch}${ch.toLowerCase()}</h3>${list.filter(c=>c.group===i).map(clipRow).join("")}</div>`).join("")}
    <p class="lead" style="font-size:14px">Компьютерные голоса: Piper (denis, aivars), лицензия CC0.</p></div>`;
   parent.hidden=false;
   $("pclose").onclick=closeParent;
