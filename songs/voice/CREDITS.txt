@@ -1,0 +1,10 @@
+Singing voice for the songs game
+
+Sung by SoulX-Singer (Soul-AILab, Apache License 2.0), https://github.com/Soul-AILab/SoulX-Singer
+from the notes and words in songs/index.html.
+
+Voice reference: VocalSet, singer "female1", "Row, Row, Row Your Boat" (straight),
+J. Wilkins, P. Seetharaman, A. Wahl, B. Pardo, "VocalSet: A Singing Voice Dataset", ISMIR 2018.
+https://zenodo.org/records/1442513, Creative Commons Attribution 4.0.
+
+The songs (Bingo, Old MacDonald, Finger Family, Baby Shark, Twinkle Twinkle Little Star) are traditional.
