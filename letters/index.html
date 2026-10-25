@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Буквы · Burti</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap">
+<style>
+/* layout: a meadow; Sofia on the left asks for a letter, balloons with letters float on the right, a picture card pops out of the right one */
+:root{
+  --sky:#cdeaff; --leaf:#2f8f5b; --leaf-dark:#1f6b43; --leaf-light:#5fbf7f;
+  --ground:#8ccf6e; --ink:#24352b; --card:#fffdf6; --sun:#ffd25a; --pink:#f06292; --red:#d6453d;
+  /* one colour per alphabet, equally strong, so she always knows which letters she is playing with */
+  --ru:#e0563f; --lv:#3a6fd8;
+  --display:"Nunito","Trebuchet MS",system-ui,sans-serif;
+  color-scheme:light;
+  --sh:min(58vh,500px,90vw); --sw:calc(var(--sh)*.4624); --sx:max(12px,5vw);
+  --bl:min(21vw,30vh,230px); --mw:84px;
+}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:hidden;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+#stage{position:relative;height:100%;overflow:hidden}
+.layer{position:absolute;inset:0;pointer-events:none}
+#far{background:
+  radial-gradient(circle at 88% 12%,var(--sun) 0 46px,transparent 48px),
+  radial-gradient(ellipse 9% 5% at 18% 18%,#fff 98%,transparent),radial-gradient(ellipse 7% 4% at 23% 15%,#fff 98%,transparent),
+  radial-gradient(ellipse 10% 5% at 62% 10%,#fff 98%,transparent),radial-gradient(ellipse 7% 4% at 67% 7%,#fff 98%,transparent),
+  radial-gradient(ellipse 32% 22% at 12% 76%,#a6dc8a 98%,transparent),
+  radial-gradient(ellipse 36% 24% at 55% 80%,#9bd47f 98%,transparent),
+  radial-gradient(ellipse 30% 22% at 92% 76%,#a6dc8a 98%,transparent)}
+#ground{top:auto;height:22%;background:var(--ground);border-top:6px solid #76b95b}
+.flower{position:absolute;width:18px;height:18px;border-radius:50%;background:var(--sun);box-shadow:0 0 0 7px #fff}
+#progress{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));left:0;right:0;display:flex;justify-content:center;gap:10px;z-index:5;pointer-events:none}
+.dot{width:20px;height:24px;border-radius:50% 50% 50% 50%/45% 45% 55% 55%;background:#ffffff99;border:3px solid #8aa7c4;transition:background .3s,transform .3s}
+.dot.done{background:var(--c,#ef5350);border-color:#0003;transform:scale(1.15)}
+
+/* Sofia: the same cartoon as in the jungle game */
+#sofia{position:absolute;left:var(--sx);bottom:6%;height:var(--sh);aspect-ratio:800/1730;z-index:3;cursor:pointer;
+  transform-origin:50% 100%;animation:bob 2.4s ease-in-out infinite}
+#sofia svg{display:block;width:100%;height:100%;overflow:visible}
+#sofia svg *{transform-box:view-box}
+#sofia .ink{stroke:#1b1717;stroke-linecap:round;stroke-linejoin:round}
+#sofia .skin{fill:#ffe3cf}
+#sofia .hair{fill:#3b2a20}
+#sofia .eye{transform-box:fill-box;transform-origin:center;animation:blink 4.2s infinite}
+#sofia .mouth.open{opacity:0}
+#sofia.talk .mouth.open{animation:flap .3s steps(1,end) infinite}
+#sofia.talk .mouth.shut{animation:flap .3s steps(1,end) infinite -.15s}
+#sofia .head{transform-origin:400px 870px}
+#sofia .arm.l{transform-origin:262px 955px;animation:sway 2.4s ease-in-out infinite}
+#sofia .arm.r{transform-origin:538px 955px;animation:sway 2.4s ease-in-out infinite reverse}
+#sofia .leg.l{transform-origin:335px 1390px}
+#sofia .leg.r{transform-origin:465px 1390px}
+#sofia.walk{animation:stride .6s ease-in-out infinite}
+#sofia.walk .leg.l{animation:stepL .6s ease-in-out infinite}
+#sofia.walk .leg.r{animation:stepR .6s ease-in-out infinite}
+#sofia.walk .arm.l{animation:swingL .6s ease-in-out infinite}
+#sofia.walk .arm.r{animation:swingR .6s ease-in-out infinite}
+#sofia.walk .head{animation:nod .6s ease-in-out infinite}
+#sofia.talk .head{animation:chat .32s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+@keyframes flap{0%{opacity:1}50%{opacity:0}}
+@keyframes sway{50%{transform:rotate(4deg)}}
+@keyframes stride{0%,50%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-3%) rotate(-2deg)}75%{transform:translateY(-3%) rotate(2deg)}}
+@keyframes stepL{0%,50%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-60px) rotate(7deg)}}
+@keyframes stepR{0%,50%,100%{transform:translateY(0) rotate(0)}75%{transform:translateY(-60px) rotate(-7deg)}}
+@keyframes swingL{0%,100%{transform:rotate(-16deg)}50%{transform:rotate(10deg)}}
+@keyframes swingR{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(16deg)}}
+@keyframes nod{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(3deg)}75%{transform:rotate(-3deg)}}
+@keyframes chat{0%,100%{transform:rotate(-3deg) scale(1)}50%{transform:rotate(3deg) scale(1.03)}}
+
+/* balloons: three letters, she taps the one Sofia asks for */
+#sky{position:absolute;left:calc(var(--sx) + var(--sw) + 2vw);right:3vw;top:12%;bottom:13%;z-index:4;
+  display:flex;align-items:center;justify-content:space-evenly}
+.slot{transition:translate 1s cubic-bezier(.2,.8,.3,1);translate:0 var(--y,0)}
+.slot.low{translate:0 120vh;transition:none}
+.balloon{position:relative;display:block;width:var(--bl);aspect-ratio:100/150;border:0;padding:0;background:none;cursor:pointer;
+  animation:float 3.2s ease-in-out infinite var(--d,0s);transform-origin:50% 75%}
+.balloon svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.balloon .body{fill:var(--c)}
+.balloon .ch{position:absolute;left:0;right:0;top:0;height:74%;display:flex;align-items:center;justify-content:center;
+  font-size:calc(var(--bl)*.56);font-weight:900;color:#fff;line-height:1;
+  text-shadow:0 3px 0 #0004,2px 0 0 #0003,-2px 0 0 #0003,0 -2px 0 #0003}
+.balloon:focus-visible{outline:5px dashed #fff;outline-offset:4px;border-radius:40%}
+.balloon.no{animation:no .5s ease-in-out}
+.balloon.help{animation:helpme .9s ease-in-out infinite}
+.balloon.help svg{filter:drop-shadow(0 0 14px #fff) drop-shadow(0 0 6px #fff)}
+.balloon.pop{animation:pop .28s ease-out forwards}
+.balloon.gone{animation:away .7s ease-in forwards}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-14px) rotate(2deg)}}
+@keyframes no{20%{transform:rotate(-10deg)}40%{transform:rotate(9deg)}60%{transform:rotate(-6deg)}80%{transform:rotate(4deg)}}
+@keyframes helpme{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-22px) scale(1.08)}}
+@keyframes pop{to{transform:scale(1.5);opacity:0}}
+@keyframes away{to{transform:translateY(-120vh) rotate(8deg)}}
+
+/* the picture card: the letter, a picture and a word that starts with it (or has it) */
+#card{position:absolute;left:50%;top:50%;z-index:6;translate:-50% -50%;scale:.2;opacity:0;pointer-events:none;
+  width:min(86%,400px);padding:14px 18px 18px;border-radius:32px;background:var(--card);border:6px solid var(--lc);
+  box-shadow:0 10px 0 #0002;text-align:center;transition:scale .5s cubic-bezier(.3,1.6,.5,1),opacity .2s}
+#card.show{scale:1;opacity:1;pointer-events:auto}
+#card .pic{font-size:min(17vh,130px);line-height:1.15}
+#card .let{font-size:min(13vh,92px);font-weight:900;line-height:1;color:var(--lc)}
+#card .word{font-size:min(6vh,40px);font-weight:900;margin-top:6px}
+#card .word b{color:var(--lc)}
+body.ru{--lc:var(--ru)} body.lv{--lc:var(--lv)}
+
+.big{position:absolute;z-index:7;border:0;cursor:pointer;font-family:var(--display);font-weight:900;color:#fff;
+  background:var(--pink);box-shadow:0 8px 0 #b83b68;border-radius:999px;display:flex;align-items:center;gap:12px;justify-content:center;transition:transform .1s}
+.big:active{transform:translateY(6px);box-shadow:0 2px 0 #b83b68}
+.big:focus-visible{outline:5px solid var(--sun);outline-offset:4px}
+/* ask again: a big ear-ish speaker button by Sofia's feet */
+#repeat{left:max(8px,calc(var(--sx) + var(--sw)*.15 - var(--mw) - 4px));bottom:calc(6% + 10px);width:var(--mw);height:var(--mw);padding:0;
+  background:var(--lc);box-shadow:0 8px 0 #0003}
+#repeat:active{box-shadow:0 2px 0 #0003}
+#repeat svg{width:46px;height:46px}
+.corner{position:absolute;top:max(16px,env(safe-area-inset-top,0px));width:60px;height:60px;border-radius:50%;z-index:8;
+  background:#ffffff55;border:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .2s,background .2s}
+.corner svg{width:34px;height:34px}
+.corner:focus-visible{outline:4px solid var(--sun)}
+.home{left:max(16px,env(safe-area-inset-left,0px))}
+#gear{right:max(16px,env(safe-area-inset-right,0px))}
+#gear.hold{transform:scale(1.3) rotate(90deg);background:#ffffff88;transition:transform 1.2s linear,background 1.2s}
+#stage>.home{background:#1f4f8a55}
+
+#overlay{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+  background:#2c5d9bf0;color:#fff;text-align:center;padding:24px;overflow-y:auto}
+/* centred, but scrolls from the top when it doesn't fit (phones on their side) */
+#overlay>h1{margin-top:auto!important}
+#overlay>:last-child{margin-bottom:auto}
+#overlay h1{margin:0;font-size:clamp(34px,6.5vw,64px);font-weight:900;line-height:1.1;text-wrap:balance;display:flex;flex-direction:column;gap:.15em}
+#overlay .row{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+/* the two alphabets: same size, same weight, side by side */
+.lang{display:flex;flex-direction:column;align-items:center;gap:12px}
+.lang .go{width:min(40vw,250px);padding:18px 12px 16px;border:0;border-radius:32px;background:var(--card);cursor:pointer;font-family:var(--display);
+  box-shadow:0 8px 0 #0003;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--ink);transition:transform .1s}
+.lang .go:active{transform:translateY(6px);box-shadow:0 2px 0 #0003}
+.lang .abc{font-size:clamp(40px,8vw,70px);font-weight:900;line-height:1;letter-spacing:.06em}
+.lang .name{font-size:clamp(18px,3vw,24px);font-weight:900}
+.lang.ru .abc{color:var(--ru)} .lang.lv .abc{color:var(--lv)}
+.lang .go svg{width:52px;height:52px}
+.lang .book{border:0;border-radius:999px;padding:10px 20px;font-family:var(--display);font-weight:900;font-size:18px;cursor:pointer;
+  background:#ffffff33;color:#fff;display:flex;align-items:center;gap:8px}
+.lang .book svg{width:26px;height:26px}
+.btnround{width:min(30vw,130px);aspect-ratio:1;border:0;border-radius:50%;cursor:pointer;background:var(--pink);box-shadow:0 8px 0 #b83b68;display:flex;align-items:center;justify-content:center}
+.btnround:active{transform:translateY(6px);box-shadow:0 2px 0 #b83b68}
+.btnround svg{width:46%;height:46%}
+.stickers{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:760px}
+.sticker{width:96px;height:110px;border:0;border-radius:22px;background:var(--card);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  font-family:var(--display);font-weight:900;color:var(--lc);font-size:30px;line-height:1.05;padding:4px}
+.sticker .e{font-size:44px}
+
+/* the alphabet book: every letter as a tile; tap one to see and hear it */
+#book{position:absolute;inset:0;z-index:12;background:#2c5d9bf0;overflow-y:auto;
+  padding-block:calc(90px + env(safe-area-inset-top,0px)) calc(30px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#book .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:12px;max-width:900px;margin:0 auto}
+.tile{aspect-ratio:1;border:0;border-radius:22px;background:var(--card);cursor:pointer;font-family:var(--display);font-weight:900;
+  font-size:46px;color:var(--lc);box-shadow:0 5px 0 #0003;display:flex;align-items:center;justify-content:center;line-height:1}
+.tile:active{transform:translateY(4px);box-shadow:0 1px 0 #0003}
+#bookcard{position:absolute;inset:0;z-index:11;display:flex;align-items:center;justify-content:center;background:#0005}
+#bookcard #card{position:relative;left:auto;top:auto;translate:none}
+
+#parent{position:absolute;inset:0;z-index:20;background:var(--card);color:var(--ink);overflow-y:auto;-webkit-user-select:text;user-select:text;
+  padding-block:calc(20px + env(safe-area-inset-top,0px)) calc(40px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#parent .wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+#parent header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#parent h2{margin:0;font-size:28px;font-weight:900}
+#parent .lead{margin:0;font-size:17px;line-height:1.5;font-weight:700;color:#4c5e53}
+#parent .tabs{display:flex;gap:10px}
+#parent .tabs .btn{font-size:18px;padding:12px 22px}
+#parent .tabs .btn.on{background:var(--leaf-dark);color:#fff}
+#parent .group{border:3px solid #d5e8db;border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:10px}
+#parent .group h3{margin:0;font-size:22px;font-weight:900;display:flex;align-items:center;gap:10px}
+#parent .group h3 .e{font-size:34px}
+.clip{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.clip .acts{display:flex;gap:8px;flex-wrap:wrap}
+.clip .lbl{flex:1 1 150px;min-width:0;font-size:17px;font-weight:700}
+.clip .lbl small{display:block;font-size:14px;color:#6b7d72}
+.clip .state{font-size:14px;font-weight:700;color:var(--leaf);min-width:74px}
+.clip .state.none{color:#9aa79f}
+.btn{font-family:var(--display);font-weight:900;font-size:15px;border:0;border-radius:12px;padding:10px 14px;cursor:pointer;background:#e4f2e8;color:var(--leaf-dark)}
+.btn.rec{background:var(--red);color:#fff}
+.btn.rec.on{animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.6}}
+.btn:disabled{opacity:.4}
+.btn:focus-visible{outline:3px solid var(--leaf)}
+.btn.close{background:var(--leaf-dark);color:#fff;font-size:18px;padding:12px 20px}
+#perr{color:var(--red);font-weight:700;font-size:15px}
+#code{flex:1 1 200px;font:inherit;font-size:20px;font-weight:700;padding:10px 14px;border:3px solid #d5e8db;border-radius:12px;color:var(--ink)}
+
+.star{position:absolute;width:40px;height:40px;z-index:9;pointer-events:none;animation:fly 1.6s ease-out forwards}
+@keyframes fly{from{transform:translate(0,0) scale(.3) rotate(0);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(1.2) rotate(240deg);opacity:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important}}
+/* tall screens: balloons above, Sofia below on the left */
+@media (orientation:portrait){
+  :root{--sh:min(40vh,480px);--bl:min(28vw,24vh,230px)}
+  #sky{left:3vw;right:3vw;top:9%;bottom:calc(6% + var(--sh)*.72)}
+}
+@media (max-height:520px){:root{--sh:62vh;--bl:min(19vw,40vh);--mw:68px}#repeat svg{width:36px;height:36px}#card .pic{font-size:20vh}}
+</style>
+</head>
+<body class="ru">
+<div id="stage">
+  <div class="layer" id="far"></div>
+  <div class="layer" id="ground"></div>
+  <div id="progress" aria-label="Шарики"></div>
+  <div id="sofia" role="img" aria-label="София: нажми, чтобы услышать вопрос ещё раз">
+    <svg viewBox="0 0 800 1730" aria-hidden="true">
+      <defs>
+        <g id="leg">
+          <path class="ink" d="M335 1380 L331 1640" fill="none" stroke-width="68"/>
+          <path d="M335 1380 L331 1640" stroke="#ffe3cf" stroke-width="50" stroke-linecap="round"/>
+          <path d="M331 1590 L331 1640" stroke="#fff" stroke-width="50"/>
+          <path d="M305 1592 H357" stroke="#f06292" stroke-width="10" stroke-linecap="round"/>
+          <ellipse class="ink" cx="318" cy="1672" rx="60" ry="34" fill="#d6453d" stroke-width="9"/>
+          <ellipse cx="300" cy="1660" rx="16" ry="8" fill="#fff" opacity=".5"/>
+        </g>
+        <g id="arm">
+          <path class="ink" d="M262 965 Q232 1085 218 1200" fill="none" stroke-width="64"/>
+          <circle cx="216" cy="1222" r="34" fill="#1b1717"/>
+          <path d="M262 965 Q232 1085 218 1200" fill="none" stroke="#ffe3cf" stroke-width="46" stroke-linecap="round"/>
+          <circle class="skin" cx="216" cy="1222" r="25"/>
+          <ellipse class="ink" cx="266" cy="955" rx="58" ry="48" fill="#f7a8c4" stroke-width="9"/>
+        </g>
+      </defs>
+      <g class="leg l"><use href="#leg"/></g>
+      <g class="leg r"><use href="#leg" transform="translate(800 0) scale(-1 1)"/></g>
+      <path class="skin ink" d="M352 820 L350 925 Q400 950 450 925 L448 820Z" stroke-width="8"/>
+      <path class="ink" d="M305 900 Q400 945 495 900 L535 918 Q565 990 562 1080 L640 1420 Q400 1478 160 1420 L238 1080 Q235 990 265 918 Z" fill="#f7a8c4" stroke-width="9"/>
+      <path d="M190 1385 Q400 1440 610 1385" fill="none" stroke="#f06292" stroke-width="12" stroke-linecap="round" stroke-dasharray="2 34"/>
+      <g fill="#fff" opacity=".8"><circle cx="330" cy="1060" r="13"/><circle cx="450" cy="1110" r="13"/><circle cx="390" cy="1210" r="13"/><circle cx="280" cy="1270" r="13"/><circle cx="510" cy="1260" r="13"/><circle cx="400" cy="1340" r="13"/><circle cx="240" cy="1370" r="12"/><circle cx="560" cy="1370" r="12"/></g>
+      <path class="ink" d="M308 902 Q322 980 400 950 L400 930 Q352 936 308 902Z M492 902 Q478 980 400 950 L400 930 Q448 936 492 902Z" fill="#fff" stroke-width="7"/>
+      <g class="arm l"><use href="#arm"/></g>
+      <g class="arm r"><use href="#arm" transform="translate(800 0) scale(-1 1)"/></g>
+      <g class="head"><g transform="rotate(-4 400 560)">
+        <!-- cartoon Sofia after her portrait: round cheeks, top-knot curling right; Amélie-style bob with short blunt bangs -->
+        <path class="hair ink" d="M118 600 C92 360 212 168 400 166 C588 168 708 360 682 600 L694 770 C698 812 650 822 616 800 L184 800 C150 822 102 812 106 770Z" stroke-width="9"/>
+        <g class="tuft">
+          <path class="hair ink" d="M448 230 C400 175 345 150 290 158 C345 118 425 140 472 212Z" stroke-width="9"/>
+          <path class="hair ink" d="M450 225 C428 140 455 70 515 25 C512 95 512 160 490 228Z" stroke-width="9"/>
+          <path class="hair ink" d="M462 228 C495 120 600 62 688 102 C712 150 680 196 648 170 C668 140 632 118 600 128 C555 145 525 185 500 240Z" stroke-width="9"/>
+          <path d="M468 200 C470 140 485 95 508 60 M495 210 C530 145 590 112 650 115" fill="none" stroke="#6b4a36" stroke-width="6" stroke-linecap="round"/>
+        </g>
+        <path class="skin ink" d="M158 540 C158 360 270 280 400 280 C530 280 642 360 642 540 C642 700 610 795 530 842 C475 872 325 872 270 842 C190 795 158 700 158 540Z" stroke-width="9"/>
+        <path d="M262 505 Q300 485 340 500 M462 508 Q502 490 542 506" fill="none" stroke="#3b2a20" stroke-width="10" stroke-linecap="round"/>
+        <g class="eye"><ellipse cx="300" cy="575" rx="27" ry="33" fill="#1b1717"/><circle cx="290" cy="563" r="10" fill="#fff"/><circle cx="310" cy="590" r="4.5" fill="#fff"/></g>
+        <g class="eye"><ellipse cx="500" cy="580" rx="27" ry="33" fill="#1b1717"/><circle cx="490" cy="568" r="10" fill="#fff"/><circle cx="510" cy="595" r="4.5" fill="#fff"/></g>
+        <ellipse cx="252" cy="668" rx="46" ry="30" fill="#ff8fab" opacity=".45"/>
+        <ellipse cx="548" cy="672" rx="46" ry="30" fill="#ff8fab" opacity=".45"/>
+        <path d="M388 640 Q400 656 414 640" fill="none" stroke="#c98f7a" stroke-width="8" stroke-linecap="round"/>
+        <path class="mouth shut" d="M345 705 Q400 752 455 705" fill="none" stroke="#1b1717" stroke-width="10" stroke-linecap="round"/>
+        <g class="mouth open"><path d="M350 700 Q400 706 450 700 Q444 768 400 772 Q356 768 350 700Z" fill="#8e2a3a" stroke="#1b1717" stroke-width="8" stroke-linejoin="round"/><ellipse cx="400" cy="752" rx="26" ry="12" fill="#f28b9b"/></g>
+        <path class="hair ink" d="M168 430 C142 560 146 700 172 795 C196 812 232 800 228 776 C210 690 206 560 222 440Z M632 430 C658 560 654 700 628 795 C604 812 568 800 572 776 C590 690 594 560 578 440Z" stroke-width="9"/>
+        <path class="hair ink" d="M170 480 C150 320 265 208 400 208 C535 208 650 320 630 480 C560 458 480 452 400 454 C320 452 240 458 170 480Z" stroke-width="9"/>
+        <path d="M250 300 C320 255 470 250 550 290 M300 452 L304 418 M400 450 L400 414 M500 452 L496 418 M196 560 L192 700 M604 560 L608 700" fill="none" stroke="#6b4a36" stroke-width="7" stroke-linecap="round"/>
+        <path d="M470 215 L408 172 L414 262 Z M470 215 L536 178 L526 266 Z" fill="#f06292" stroke="#c2185b" stroke-width="6" stroke-linejoin="round"/>
+        <circle cx="470" cy="217" r="21" fill="#e04a7f" stroke="#c2185b" stroke-width="6"/>
+      </g></g>
+    </svg>
+  </div>
+  <div id="sky" aria-live="polite"></div>
+  <button id="repeat" class="big" hidden aria-label="Повторить вопрос"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M6 15h7l9-8v26l-9-8H6z" fill="#fff"/><path d="M27 13a9 9 0 0 1 0 14M31 8a15 15 0 0 1 0 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg></button>
+  <div id="overlay"></div>
+  <div id="book" hidden></div>
+  <div id="parent" hidden></div>
+</div>
+<script>
+/* each alphabet: [letter, its name as spoken, a word with it, a picture] */
+const RU=[["А", "а", "арбуз", "🍉"], ["Б", "бэ", "банан", "🍌"], ["В", "вэ", "волк", "🐺"], ["Г", "гэ", "гриб", "🍄"], ["Д", "дэ", "дом", "🏠"], ["Е", "йе", "енот", "🦝"], ["Ё", "йо", "ёжик", "🦔"], ["Ж", "жэ", "жираф", "🦒"], ["З", "зэ", "зонтик", "☂️"], ["И", "и", "индюк", "🦃"], ["Й", "и краткое", "йо-йо", "🪀"], ["К", "ка", "кот", "🐱"], ["Л", "эль", "лимон", "🍋"], ["М", "эм", "мышка", "🐭"], ["Н", "эн", "носок", "🧦"], ["О", "о", "огурец", "🥒"], ["П", "пэ", "пингвин", "🐧"], ["Р", "эр", "рыба", "🐟"], ["С", "эс", "солнце", "☀️"], ["Т", "тэ", "торт", "🎂"], ["У", "у", "утка", "🦆"], ["Ф", "эф", "фламинго", "🦩"], ["Х", "ха", "хлеб", "🍞"], ["Ц", "цэ", "цветок", "🌸"], ["Ч", "чэ", "часы", "⏰"], ["Ш", "ша", "шарик", "🎈"], ["Щ", "ща", "щенок", "🐶"], ["Ъ", "твёрдый знак", "подъезд", "🏢"], ["Ы", "ы", "сыр", "🧀"], ["Ь", "мягкий знак", "конь", "🐴"], ["Э", "э", "эскимо", "🍦"], ["Ю", "ю", "юбка", "👗"], ["Я", "я", "яблоко", "🍎"]];
+const LV=[["A", "a", "apelsīns", "🍊"], ["Ā", "garais ā", "ābols", "🍎"], ["B", "bē", "banāns", "🍌"], ["C", "cē", "cālis", "🐥"], ["Č", "čē", "čūska", "🐍"], ["D", "dē", "dāvana", "🎁"], ["E", "e", "egle", "🌲"], ["Ē", "garais ē", "ērglis", "🦅"], ["F", "ef", "flamingo", "🦩"], ["G", "gē", "gurķis", "🥒"], ["Ģ", "ģē", "ģitāra", "🎸"], ["H", "hā", "helikopters", "🚁"], ["I", "i", "izpletnis", "🪂"], ["Ī", "garais ī", "īkšķis", "👍"], ["J", "jē", "jēriņš", "🐑"], ["K", "kā", "kaķis", "🐱"], ["Ķ", "ķē", "ķirbis", "🎃"], ["L", "el", "lācis", "🐻"], ["Ļ", "eļ", "bļoda", "🥣"], ["M", "em", "māja", "🏠"], ["N", "en", "nīlzirgs", "🦛"], ["Ņ", "eņ", "bruņurupucis", "🐢"], ["O", "o", "ola", "🥚"], ["P", "pē", "pīle", "🦆"], ["R", "er", "raķete", "🚀"], ["S", "es", "saule", "☀️"], ["Š", "eš", "šokolāde", "🍫"], ["T", "tē", "tomāts", "🍅"], ["U", "u", "uguns", "🔥"], ["Ū", "garais ū", "ūpis", "🦉"], ["V", "vē", "varde", "🐸"], ["Z", "zē", "zaķis", "🐇"], ["Ž", "žē", "žirafe", "🦒"]];
+const L={ru:{rows:RU,title:"Русские буквы",q:"Где буква",yes:"Умница!",no:"Попробуй ещё!",end:"Ура! Ты нашла все буквы!",book:"Азбука"},
+         lv:{rows:LV,title:"Latviešu burti",q:"Kur ir burts",yes:"Malacīte!",no:"Pamēģini vēlreiz!",end:"Urā! Tu atradi visus burtus!",book:"Ābece"}};
+const num=i=>String(i+1).padStart(2,"0");
+/* every voice clip; key = file name in audio/ (generated voice) and, with "abc-" in front, the family recording on the server */
+const clips={};
+for(const lang of ["ru","lv"]){const t=L[lang];
+  clips[lang]=[
+    {key:"yes-"+lang,label:t.yes,sub:"Похвала"},
+    {key:"no-"+lang,label:t.no,sub:"Если ошиблась"},
+    {key:"end-"+lang,label:t.end,sub:"Конец игры"},
+    ...t.rows.flatMap(([ch,name,word,e],i)=>[
+      {key:`${lang}-${num(i)}-ask`,label:`${t.q} ${name}?`,sub:"Вопрос",group:i},
+      {key:`${lang}-${num(i)}-word`,label:`${name[0].toUpperCase()+name.slice(1)} — ${word}!`,sub:"На карточке с картинкой",group:i}])];
+}
+
+const $=id=>document.getElementById(id);
+const sky=$("sky"), overlay=$("overlay"), sofia=$("sofia"), parent=$("parent"), book=$("book"), repeatBtn=$("repeat");
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+for(let i=0;i<14;i++){const f=document.createElement("div");f.className="flower";f.style.left=(i*7.3+Math.random()*4)+"%";f.style.bottom=(3+Math.random()*15)+"%";
+  f.style.transform=`scale(${.6+Math.random()*.5})`;f.style.setProperty("--x",0);$("ground").appendChild(f)}
+
+/* ---------- audio ---------- */
+let ctx=null, current=null;
+function ac(){ if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)(); if(ctx.state!=="running") ctx.resume(); return ctx }
+function playBuffer(buf){return new Promise(res=>{const c=ac(),s=c.createBufferSource();s.buffer=buf;s.connect(c.destination);
+  if(current) try{current.stop()}catch(e){}; current=s; s.onended=()=>res(); s.start(); setTimeout(res,buf.duration*1000+300)})}
+const decode=ab=>new Promise((res,rej)=>ac().decodeAudioData(ab,res,rej));
+function stopVoice(){if(current) try{current.stop()}catch(e){}; current=null}
+
+/* family recordings live on the server (server/voices.py), shared with the jungle game; keys start with "abc-".
+   A new take replaces the old one, which the server keeps: "Вернуть" brings it back. The generated voice in audio/ is the fallback. */
+const API="/api/voices";
+let voices={};
+async function loadVoices(){try{const r=await fetch(API,{cache:"no-store"}); if(r.ok) voices=await r.json()}catch(e){} return voices}
+const hasRec=k=>!!(voices["abc-"+k]&&voices["abc-"+k].v);
+let familyKey=""; try{familyKey=localStorage.getItem("sofia-family-key")||""}catch(e){}
+async function voiceApi(method,path,body,type){
+  const r=await fetch(API+path,{method,body,headers:{"X-Family-Key":familyKey,...(type?{"Content-Type":type}:{})}});
+  if(r.status===403) throw Object.assign(new Error("code"),{code:true});
+  if(!r.ok) throw new Error(r.status);
+  voices=await r.json(); return voices;
+}
+const putRec=(k,blob)=>voiceApi("PUT","/abc-"+k,blob,blob.type||"audio/mp4");
+const delRec=k=>voiceApi("DELETE","/abc-"+k);
+const restoreRec=k=>voiceApi("POST","/abc-"+k+"/restore");
+const cache={};
+async function loadClip(key){
+  const ck=key+"@"+(hasRec(key)?voices["abc-"+key].v:"");
+  if(cache[ck]!==undefined) return cache[ck];
+  let buf=null;
+  if(hasRec(key)) try{const r=await fetch(`${API}/abc-${key}?v=${voices["abc-"+key].v}`); if(r.ok) buf=await decode(await r.arrayBuffer())}catch(e){}
+  if(!buf) try{const r=await fetch(`audio/${key}.mp3`); if(r.ok) buf=await decode(await r.arrayBuffer())}catch(e){}
+  return cache[ck]=buf;
+}
+async function playClip(key,talker){
+  const buf=await loadClip(key); if(!buf) return false;
+  talker&&talker.classList.add("talk"); await playBuffer(buf); talker&&talker.classList.remove("talk"); return true;
+}
+/* say several clips in a row; a newer say() cancels an older one */
+let sayId=0;
+async function say(keys,talker=sofia){const id=++sayId;
+  for(const k of keys){ if(id!==sayId) return; await playClip(k,talker); if(id!==sayId) return; await wait(180) } }
+function preload(keys){keys.forEach(k=>loadClip(k))}
+
+function tone(type,f0,f1,t0,dur,vol=.3){
+  const c=ac(),o=c.createOscillator(),g=c.createGain(); o.type=type;
+  o.frequency.setValueAtTime(f0,t0); o.frequency.exponentialRampToValueAtTime(f1,t0+dur);
+  g.gain.setValueAtTime(.0001,t0); g.gain.exponentialRampToValueAtTime(vol,t0+.02); g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
+  o.connect(g).connect(c.destination); o.start(t0); o.stop(t0+dur+.05);
+}
+function noise(t0,dur,vol,f){
+  const c=ac(),b=c.createBuffer(1,c.sampleRate*dur,c.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3);
+  const s=c.createBufferSource(),fl=c.createBiquadFilter(),g=c.createGain(); s.buffer=b; fl.type="highpass"; fl.frequency.value=f; g.gain.value=vol;
+  s.connect(fl).connect(g).connect(c.destination); s.start(t0);
+}
+const sfx={
+  pop(){const t=ac().currentTime;noise(t,.18,.9,700);tone("sine",900,200,t,.12,.25)},
+  boing(){const t=ac().currentTime;tone("triangle",260,180,t,.25,.25)},
+  yay(){const t=ac().currentTime;[523,659,784,1047].forEach((f,i)=>tone("triangle",f,f,t+i*.12,.3,.25))},
+  whoosh(){const t=ac().currentTime;noise(t,.5,.25,1500)}
+};
+function stars(x="50%",y="45%"){for(let i=0;i<20;i++){const s=document.createElementNS("http://www.w3.org/2000/svg","svg");s.setAttribute("viewBox","0 0 24 24");s.classList.add("star");
+  s.innerHTML='<path d="M12 2l3 7 7 .6-5.4 4.7 1.7 7.2L12 17.8 5.7 21.5l1.7-7.2L2 9.6 9 9z" fill="'+["#ffd25a","#f06292","#fff","#5fbf7f"][i%4]+'"/>';
+  s.style.left=x;s.style.top=y;s.style.setProperty("--dx",(Math.random()*70-35)+"vw");s.style.setProperty("--dy",(Math.random()*70-35)+"vh");
+  $("stage").appendChild(s);setTimeout(()=>s.remove(),1700)}}
+
+/* ---------- the game ---------- */
+const ROUND=10, CHOICES=3;
+const COLORS=["#ef5350","#fb8c00","#43a047","#1e88e5","#8e24aa","#e91e63","#00897b","#6d4c41"];
+let lang="ru", queue=[], target=-1, found=[], wrong=0, busy=false, idleT=null;
+const rows=()=>L[lang].rows;
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+/* look-alikes (Е/Ё, И/Й, A/Ā, S/Š…) never share a round: one dot or hook is too fine a difference for now */
+const base=ch=>ch.normalize("NFD").replace(/[̀-ͯ]/g,"").replace("Щ","Ш").replace("Ъ","Ь");
+const similar=(a,b)=>base(rows()[a][0])===base(rows()[b][0]);
+const askKey=i=>`${lang}-${num(i)}-ask`, wordKey=i=>`${lang}-${num(i)}-word`;
+
+function setLang(l){lang=l;document.body.className=l;document.documentElement.lang=l}
+function newGame(){
+  queue=shuffle([...rows().keys()]); found=[];
+  $("progress").innerHTML=Array.from({length:ROUND},()=>'<div class="dot"></div>').join("");
+}
+function balloonHTML(i,color,d,y){return `<div class="slot low" style="--y:${y}%"><button class="balloon" data-i="${i}" style="--c:${color};--d:${d}s" aria-label="${rows()[i][0]}">
+  <svg viewBox="0 0 100 150" aria-hidden="true"><path d="M50 116 Q40 128 52 138 T48 152" fill="none" stroke="#5a6b7b" stroke-width="2"/>
+  <path class="body" d="M50 4C24 4 6 26 6 52C6 80 30 104 50 108C70 104 94 80 94 52C94 26 76 4 50 4Z"/><path class="body" d="M43 112L57 112L50 104Z"/>
+  <ellipse cx="30" cy="34" rx="8" ry="15" fill="#fff" opacity=".45" transform="rotate(30 30 34)"/></svg>
+  <span class="ch">${rows()[i][0]}</span></button></div>`}
+async function nextRound(){
+  clearTimeout(idleT); wrong=0;
+  target=queue.shift(); if(target===undefined){queue=shuffle([...rows().keys()]);target=queue.shift()}
+  const others=shuffle([...rows().keys()].filter(i=>i!==target&&!similar(i,target)));
+  const pick=[target]; for(const i of others){ if(pick.length===CHOICES) break; if(!pick.some(p=>similar(p,i))) pick.push(i) }
+  const cols=shuffle([...COLORS]), ys=shuffle([-14,0,12]);
+  sky.innerHTML=shuffle(pick).map((i,n)=>balloonHTML(i,cols[n],(n*.7).toFixed(1),ys[n])).join("")+cardHTML();
+  preload([askKey(target),wordKey(target)]);
+  await wait(50); sfx.whoosh();
+  sky.querySelectorAll(".slot").forEach((s,n)=>setTimeout(()=>s.classList.remove("low"),n*160));
+  await wait(900); busy=false; ask();
+}
+async function ask(){
+  clearTimeout(idleT); repeatBtn.hidden=false;
+  await say([askKey(target)]);
+  clearTimeout(idleT); idleT=setTimeout(()=>{help();ask()},9000);   // nothing tapped for a while: show which one, and ask again
+}
+function help(){const b=sky.querySelector(`.balloon[data-i="${target}"]`); b&&b.classList.add("help")}
+function cardHTML(i){return `<div id="card"></div>`}
+function fillCard(i){
+  const [ch,name,word,e]=rows()[i], at=word.toLowerCase().indexOf(ch.toLowerCase());
+  const w=at<0?word:`${word.slice(0,at)}<b>${word.slice(at,at+1)}</b>${word.slice(at+1)}`;
+  $("card").innerHTML=`<div class="pic">${e}</div><div class="let">${ch}${ch.toLowerCase()}</div><div class="word">${w}</div>`;
+}
+sky.addEventListener("click",async e=>{
+  const b=e.target.closest(".balloon"); if(!b||busy) return; ac();
+  const i=+b.dataset.i;
+  if(i!==target){
+    clearTimeout(idleT); sfx.boing(); b.classList.remove("no"); void b.offsetWidth; b.classList.add("no");
+    if(++wrong>=2) help();
+    if(wrong===1&&queue.indexOf(target)<0) queue.splice(2,0,target);   // a letter she mixed up comes back later
+    await say(["no-"+lang,askKey(target)]);
+    idleT=setTimeout(()=>{help();ask()},9000); return;
+  }
+  busy=true; clearTimeout(idleT); sayId++; stopVoice(); repeatBtn.hidden=true;
+  const r=b.getBoundingClientRect(); b.classList.remove("help"); b.classList.add("pop"); sfx.pop(); stars(r.left+r.width/2+"px",r.top+r.height*.4+"px");
+  sky.querySelectorAll(".balloon:not(.pop)").forEach(o=>o.classList.add("gone"));
+  found.push(i); const dot=$("progress").children[found.length-1]; dot.style.setProperty("--c",b.style.getPropertyValue("--c")); dot.classList.add("done");
+  fillCard(i); await wait(250); $("card").classList.add("show");
+  await say(["yes-"+lang,wordKey(i)]); await wait(700);
+  $("card").classList.remove("show"); await wait(350);
+  if(found.length>=ROUND) return finale();
+  nextRound();
+});
+$("sky").addEventListener("pointerdown",ac);
+repeatBtn.addEventListener("click",()=>{ac();if(!busy) ask()});
+sofia.addEventListener("click",()=>{ac();if(!busy&&overlay.hidden&&target>=0) ask()});
+
+async function walkIn(){
+  sofia.classList.add("walk");
+  await sofia.animate([{translate:"-40vw 0"},{translate:"0 0"}],{duration:1600,easing:"ease-out"}).finished.catch(()=>{});
+  sofia.classList.remove("walk");
+}
+async function play(l){
+  ac(); setLang(l); overlay.hidden=true; book.hidden=true; newGame(); busy=true;
+  sky.innerHTML=""; preload(["yes-"+l,"no-"+l]);
+  await walkIn(); nextRound();
+}
+
+/* ---------- screens ---------- */
+const homeBtn=`<a class="corner home" href="../index.html" aria-label="Меню"><svg viewBox="0 0 40 40"><path d="M6 19L20 7l14 12M11 16v16h18V16" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`;
+const gearBtn=`<button class="corner" id="gear" aria-label="Голоса для родителей: удерживайте"><svg viewBox="0 0 40 40"><rect x="15" y="5" width="10" height="18" rx="5" fill="none" stroke="#fff" stroke-width="3.5"/><path d="M9 19a11 11 0 0 0 22 0M20 30v5" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg></button>`;
+const backBtn=`<button class="corner home" id="back" aria-label="Назад"><svg viewBox="0 0 40 40"><path d="M24 8L12 20l12 12" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
+const playIcon=`<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="var(--pink)"/><path d="M15 11l14 9-14 9z" fill="#fff"/></svg>`;
+const bookIcon=`<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M20 10C15 6 9 6 4 8v24c5-2 11-2 16 2 5-4 11-4 16-2V8c-5-2-11-2-16 2zM20 10v24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linejoin="round"/></svg>`;
+function langCard(l,abc){return `<div class="lang ${l}">
+  <button class="go" data-play="${l}"><span class="abc" lang="${l}">${abc}</span><span class="name" lang="${l}">${L[l].title}</span>${playIcon}</button>
+  <button class="book" data-book="${l}">${bookIcon}<span lang="${l}">${L[l].book}</span></button></div>`}
+function startScreen(){
+  clearTimeout(idleT); sayId++; stopVoice(); repeatBtn.hidden=true; target=-1; sky.innerHTML=""; $("progress").innerHTML="";
+  overlay.hidden=false; book.hidden=true;
+  overlay.innerHTML=`${homeBtn}${gearBtn}<h1><span>Буквы</span><span lang="lv">Burti</span></h1>
+    <div class="row">${langCard("ru","А Б В")}${langCard("lv","A Ā B")}</div>`;
+  bindGear();
+  overlay.querySelectorAll("[data-play]").forEach(b=>b.onclick=()=>play(b.dataset.play));
+  overlay.querySelectorAll("[data-book]").forEach(b=>b.onclick=()=>openBook(b.dataset.book));
+}
+function finale(){
+  sfx.yay(); stars(); overlay.hidden=false; repeatBtn.hidden=true; target=-1;
+  const t=L[lang];
+  overlay.innerHTML=`${homeBtn}<h1><span lang="${lang}">${t.end}</span></h1>
+   <div class="stickers">${found.map(i=>`<button class="sticker" data-i="${i}"><span class="e">${rows()[i][3]}</span>${rows()[i][0]}</button>`).join("")}</div>
+   <div class="row"><button class="btnround" id="again" aria-label="Ещё раз"><svg viewBox="0 0 40 40"><path d="M30 14a12 12 0 1 0 2 10" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M32 5v10H22" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>`;
+  overlay.querySelector(".home").outerHTML=backBtn; $("back").onclick=startScreen;
+  say(["end-"+lang]);
+  overlay.querySelectorAll(".sticker").forEach(b=>b.onclick=()=>say([wordKey(+b.dataset.i)],null));
+  $("again").onclick=()=>{overlay.hidden=true;newGame();busy=true;nextRound()};
+}
+function openBook(l){
+  ac(); setLang(l); book.hidden=false;
+  book.innerHTML=`${backBtn}<div class="tiles">${rows().map(([ch],i)=>`<button class="tile" data-i="${i}" lang="${l}">${ch}${ch.toLowerCase()}</button>`).join("")}</div>`;
+  $("back").onclick=()=>{sayId++;stopVoice();book.hidden=true};
+  book.querySelector(".tiles").onclick=e=>{const t=e.target.closest(".tile"); if(!t) return; const i=+t.dataset.i;
+    const wrap=document.createElement("div"); wrap.id="bookcard"; wrap.innerHTML=cardHTML(); book.appendChild(wrap); fillCard(i);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>$("card").classList.add("show")));
+    say([wordKey(i)],null);
+    wrap.onclick=()=>{sayId++;stopVoice();wrap.remove()}};
+}
+
+/* ---------- parent corner: record family voices ---------- */
+function bindGear(){
+  const g=$("gear"); let t=null;
+  const start=e=>{e.preventDefault();g.classList.add("hold");t=setTimeout(()=>{g.classList.remove("hold");openParent()},1200)};
+  const stop=()=>{clearTimeout(t);g.classList.remove("hold")};
+  g.addEventListener("pointerdown",start); ["pointerup","pointerleave","pointercancel"].forEach(ev=>g.addEventListener(ev,stop));
+  g.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" ")openParent()});
+}
+let recorder=null, recKey=null, ptab="ru";
+function clipRow(c){return `<div class="clip" data-key="${c.key}">
+  <div class="lbl">${c.label}<small>${c.sub}</small></div>
+  <span class="state none">нет записи</span>
+  <div class="acts"><button class="btn rec" data-act="rec">Записать</button>
+  <button class="btn" data-act="play">Слушать</button>
+  <button class="btn" data-act="restore" disabled title="Вернуть прежнюю запись">Вернуть</button>
+  <label class="btn" style="display:inline-block">Файл<input type="file" accept="audio/*" data-act="file" hidden></label>
+  <button class="btn" data-act="del" disabled>Удалить</button></div></div>`}
+const pHead=`<header><h2>Голоса для букв</h2><button class="btn close" id="pclose">Готово</button></header>`;
+function closeParent(){if(recorder&&recorder.state==="recording")recorder.stop();parent.hidden=true;startScreen()}
+async function codeOK(){if(!familyKey) return false;
+  try{const r=await fetch("/api/check",{headers:{"X-Family-Key":familyKey}});return r.status===204}catch(e){return null}}
+function askCode(msg){
+  parent.innerHTML=`<div class="wrap">${pHead}
+   <p class="lead">Записи хранятся на сервере игры, поэтому не пропадут. Чтобы записывать, введите код семьи (один раз на этом устройстве).</p>
+   <form id="codeform" class="clip"><input id="code" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="код семьи" aria-label="Код семьи"><button class="btn rec">OK</button></form>
+   <div id="perr" ${msg?"":"hidden"}>${msg||""}</div></div>`;
+  parent.hidden=false; $("pclose").onclick=closeParent;
+  $("codeform").onsubmit=async e=>{e.preventDefault(); familyKey=$("code").value.trim().toLowerCase(); const ok=await codeOK();
+    if(ok){try{localStorage.setItem("sofia-family-key",familyKey)}catch(e){}; openParent()}
+    else askCode(ok===null?"Нет связи с сервером. Проверьте интернет.":"Код не подходит.")};
+}
+async function openParent(){
+  ac();
+  const ok=await codeOK(); if(ok===false) return askCode();
+  await loadVoices();
+  const list=clips[ptab], rs=L[ptab].rows;
+  parent.innerHTML=`<div class="wrap">${pHead}
+   <p class="lead">Сейчас буквы и слова говорит компьютерный голос. Ваша запись заменяет его: нажмите «Записать», скажите и нажмите «Стоп». Новая запись заменяет старую, но старая остаётся в архиве: «Вернуть» возвращает прежнюю.</p>
+   <div class="tabs"><button class="btn ${ptab==="ru"?"on":""}" data-tab="ru">Русские буквы</button><button class="btn ${ptab==="lv"?"on":""}" data-tab="lv" lang="lv">Latviešu burti</button></div>
+   <div id="perr" hidden></div>
+   <div class="group"><h3>Фразы</h3>${list.filter(c=>c.group===undefined).map(clipRow).join("")}</div>
+   ${rs.map(([ch,,,e],i)=>`<div class="group"><h3><span class="e">${e}</span>${ch}${ch.toLowerCase()}</h3>${list.filter(c=>c.group===i).map(clipRow).join("")}</div>`).join("")}
+   <p class="lead" style="font-size:14px">Компьютерные голоса: Piper (denis, aivars), лицензия CC0.</p></div>`;
+  parent.hidden=false;
+  $("pclose").onclick=closeParent;
+  parent.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{ptab=b.dataset.tab;parent.scrollTop=0;openParent()});
+  if(ok===null) showErr("Нет связи с сервером: записи сейчас не сохранятся. Проверьте интернет.");
+  refreshAll();
+  parent.onclick=e=>{const b=e.target.closest("[data-act]");if(!b||b.dataset.act==="file")return;const row=b.closest(".clip");act(b.dataset.act,row,b)};
+  parent.onchange=async e=>{const inp=e.target;if(inp.dataset.act!=="file"||!inp.files[0])return;const row=inp.closest(".clip"),f=inp.files[0];inp.value="";
+    try{await decode(await f.arrayBuffer())}catch(err){showErr("Этот файл не получается прочитать. Попробуйте MP3 или M4A.");return}
+    save(()=>putRec(row.dataset.key,f),row.dataset.key)};
+}
+function refreshRow(row){const k=row.dataset.key,has=hasRec(k),st=row.querySelector(".state"),v=voices["abc-"+k];
+  st.textContent=has?"своя запись":"компьютер";st.classList.toggle("none",!has);
+  row.querySelector('[data-act="del"]').disabled=!has;
+  row.querySelector('[data-act="restore"]').disabled=!(v&&v.old)}
+const refreshAll=()=>parent.querySelectorAll(".clip").forEach(refreshRow);
+function showErr(m){const e=$("perr");e.textContent=m;e.hidden=!m}
+async function save(call,key){
+  try{await call()}
+  catch(e){showErr(e.code?"Код семьи не подходит. Закройте и откройте запись снова.":"Не получилось сохранить: нет связи с сервером. Попробуйте ещё раз.");return}
+  refreshAll(); playClip(key);
+}
+async function act(kind,row,btn){
+  const key=row.dataset.key; showErr("");
+  if(kind==="play"){playClip(key);return}
+  if(kind==="del"){save(()=>delRec(key),key);return}
+  if(kind==="restore"){save(()=>restoreRec(key),key);return}
+  if(kind==="rec"){
+    if(recorder&&recorder.state==="recording"){recorder.stop();return}
+    if(!navigator.mediaDevices||!window.MediaRecorder){showErr("Запись не поддерживается в этом браузере. Откройте игру в Safari по адресу сайта, а не из файла.");return}
+    let stream;
+    try{stream=await navigator.mediaDevices.getUserMedia({audio:true})}
+    catch(e){showErr("Нет доступа к микрофону. Разрешите микрофон для Safari: Настройки → Safari → Микрофон.");return}
+    const chunks=[]; recorder=new MediaRecorder(stream); recKey=key;
+    recorder.ondataavailable=e=>e.data.size&&chunks.push(e.data);
+    recorder.onstop=async()=>{stream.getTracks().forEach(t=>t.stop());btn.textContent="Записать";btn.classList.remove("on");
+      const blob=new Blob(chunks,{type:recorder.mimeType||"audio/mp4"});
+      if(blob.size<500){showErr("Запись получилась пустой. Попробуйте ещё раз.");return}
+      save(()=>putRec(key,blob),key)};
+    recorder.start(); btn.textContent="Стоп"; btn.classList.add("on");
+    setTimeout(()=>{if(recorder&&recorder.state==="recording"&&recKey===key)recorder.stop()},8000);
+  }
+}
+
+loadVoices();
+startScreen();
+</script>
+</body>
+</html>

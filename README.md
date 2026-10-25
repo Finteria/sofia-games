@@ -5,6 +5,8 @@ Small learning games for Sofia (3½), in Russian and Latvian, made to run in Saf
 - `index.html` – game menu
 - `jungle/` – София в джунглях: tap the bush, meet an animal, hear its sound and its name. There are 20 animals (jungle and farm); each game picks 6 at random. After each animal a red mic button appears next to Sofia: one tap records her for 3 seconds and plays it straight back (nothing is saved).
 
+- `letters/` – Буквы · Burti: Russian or Latvian letters (one alphabet per game, each with its own colour). Sofia asks «Где буква М?» / «Kur ir burts M?» and three balloons float up; tapping the right one pops it and shows a picture card («М — мышка!»). A wrong tap wobbles the balloon and Sofia asks again; after two wrong tries, or 9 seconds without a tap, the right balloon glows. A letter she mixed up comes back later in the same game. Look-alike letters (Е/Ё, И/Й, A/Ā, S/Š…) never appear in the same round. 10 letters per game, then a sticker page. «Азбука» / «Ābece» opens every letter with its picture and word. Pictures are emoji. Letter data is the `RU`/`LV` arrays at the top of the script.
+
 Sofia walks through the jungle as a cartoon girl (inline SVG in `jungle/index.html`) drawn after her portrait `jungle/sofia.png`: round cheeks, side-swept bangs, a top-knot curling right. Her hair color is the `.hair` fill in the CSS.
 
 ## Family voices
@@ -16,6 +18,8 @@ The game speaks only with recorded family voices, no robot voice.
 - Record each word and each animal sound. Recordings are saved on the server, so clearing Safari data or switching devices doesn't lose them. A new take replaces the old one, but the old one is archived: «Вернуть» brings it back. «Удалить» archives too.
 - Real animal sounds from Wikimedia Commons are in `jungle/audio/` (`<animal>-sound.mp3`, credits in `jungle/audio/CREDITS.txt`). The snake, gorilla and crocodile sounds are generated. A family recording of a sound replaces the real one.
 - Backup option: put audio files in `jungle/audio/`, named after the clip, e.g. `monkey-ru.m4a`, `monkey-lv.m4a`, `monkey-sound.m4a`, `greet-ru.m4a`, `end-lv.m4a`. A family recording takes priority over a file.
+
+The letters game talks with a computer voice (Piper, CC0 voices; see `letters/audio/CREDITS.txt`). Holding the mic button on its start screen opens «Голоса для букв», where each phrase can be replaced by a family recording, stored on the same voice server (keys start with `abc-`).
 
 ## Voice server
 
