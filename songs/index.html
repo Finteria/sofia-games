@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Песенки · Dziesmiņas</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap">
+<style>
+/* layout: a little stage; Sofia sings on the left, the song plays as pictures on a big screen on the right, a ball hops along the words */
+:root{
+  --ink:#2b2140; --card:#fffdf6; --sun:#ffd25a; --pink:#f06292; --acc:#f06292;
+  --display:"Nunito","Trebuchet MS",system-ui,sans-serif;
+  color-scheme:light;
+  --sh:min(60vh,520px,90vw); --sw:calc(var(--sh)*.4624); --sx:max(12px,4vw);
+  --pic:min(14vh,9.5vw,130px); --wd:min(3.4vh,2.5vw,27px);
+}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:linear-gradient(#2a1d57,#5b3c9e 75%);color:var(--ink);font-family:var(--display);overflow:hidden;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+#stage{position:fixed;inset:0;overflow:hidden;overflow:clip}
+/* stage: twinkly back wall, two sweeping spotlights, red curtain on top, wooden floor */
+#wall{position:absolute;inset:0;pointer-events:none;background:
+  radial-gradient(circle at 12% 18%,#fff 0 2px,transparent 3px),radial-gradient(circle at 30% 8%,#fff 0 2px,transparent 3px),
+  radial-gradient(circle at 48% 22%,#fff 0 1.5px,transparent 2.5px),radial-gradient(circle at 70% 12%,#fff 0 2px,transparent 3px),
+  radial-gradient(circle at 88% 26%,#fff 0 1.5px,transparent 2.5px),radial-gradient(circle at 60% 40%,#fff 0 1.5px,transparent 2.5px),
+  radial-gradient(circle at 20% 45%,#fff 0 1.5px,transparent 2.5px)}
+.beam{position:absolute;top:-6%;left:8%;width:34vw;height:110%;pointer-events:none;transform-origin:50% 0;opacity:.28;
+  background:linear-gradient(#fff,transparent 85%);clip-path:polygon(46% 0,54% 0,100% 100%,0 100%);animation:sweep 7s ease-in-out infinite alternate}
+.beam.b2{left:58%;background:linear-gradient(var(--sun),transparent 85%);animation-delay:-3.5s}
+@keyframes sweep{from{rotate:-16deg}to{rotate:16deg}}
+#curtain{position:absolute;left:0;right:0;top:0;height:46px;z-index:2;pointer-events:none;
+  background:radial-gradient(circle at 50% 0,#d0343a 0 62%,transparent 64%) 0 0/90px 100%,linear-gradient(#b3262c 0 40%,transparent 40%)}
+#floor{position:absolute;left:0;right:0;bottom:0;height:19%;border-top:10px solid #d39a62;
+  background:repeating-linear-gradient(90deg,#a7734b 0 88px,#8f5f3c 88px 91px)}
+
+/* Sofia: the same cartoon as in the other games */
+#sofia{position:absolute;left:var(--sx);bottom:7%;height:var(--sh);aspect-ratio:800/1730;z-index:3;cursor:pointer;
+  transform-origin:50% 100%;animation:bob 2.4s ease-in-out infinite}
+#sofia svg{display:block;width:100%;height:100%;overflow:visible}
+#sofia svg *{transform-box:view-box}
+#sofia .ink{stroke:#1b1717;stroke-linecap:round;stroke-linejoin:round}
+#sofia .skin{fill:#ffe3cf}
+#sofia .hair{fill:#3b2a20}
+#sofia .eye{transform-box:fill-box;transform-origin:center;animation:blink 4.2s infinite}
+#sofia .mouth.open{opacity:0}
+#sofia.talk .mouth.open{animation:flap .3s steps(1,end) infinite}
+#sofia.talk .mouth.shut{animation:flap .3s steps(1,end) infinite -.15s}
+#sofia .head{transform-origin:400px 870px}
+#sofia .arm.l{transform-origin:262px 955px;animation:sway 2.4s ease-in-out infinite}
+#sofia .arm.r{transform-origin:538px 955px;animation:sway 2.4s ease-in-out infinite reverse}
+#sofia .leg.l{transform-origin:335px 1390px}
+#sofia .leg.r{transform-origin:465px 1390px}
+#sofia.walk{animation:stride .6s ease-in-out infinite}
+#sofia.walk .leg.l{animation:stepL .6s ease-in-out infinite}
+#sofia.walk .leg.r{animation:stepR .6s ease-in-out infinite}
+#sofia.walk .arm.l{animation:swingL .6s ease-in-out infinite}
+#sofia.walk .arm.r{animation:swingR .6s ease-in-out infinite}
+#sofia.walk .head{animation:nod .6s ease-in-out infinite}
+#sofia.talk .head{animation:chat .32s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+@keyframes flap{0%{opacity:1}50%{opacity:0}}
+@keyframes sway{50%{transform:rotate(4deg)}}
+@keyframes stride{0%,50%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-3%) rotate(-2deg)}75%{transform:translateY(-3%) rotate(2deg)}}
+@keyframes stepL{0%,50%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-60px) rotate(7deg)}}
+@keyframes stepR{0%,50%,100%{transform:translateY(0) rotate(0)}75%{transform:translateY(-60px) rotate(-7deg)}}
+@keyframes swingL{0%,100%{transform:rotate(-16deg)}50%{transform:rotate(10deg)}}
+@keyframes swingR{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(16deg)}}
+@keyframes nod{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(3deg)}75%{transform:rotate(-3deg)}}
+@keyframes chat{0%,100%{transform:rotate(-3deg) scale(1)}50%{transform:rotate(3deg) scale(1.03)}}
+#sofia.dance{animation:dance var(--beat,1.2s) ease-in-out infinite}
+@keyframes dance{0%,100%{transform:rotate(-3deg)}25%{transform:translateY(-1.5%)}50%{transform:rotate(3deg)}75%{transform:translateY(-1.5%)}}
+/* singing: mouth open while a note sounds */
+#sofia.sing .mouth.open{opacity:1} #sofia.sing .mouth.shut{opacity:0}
+.note{position:absolute;z-index:4;font-size:34px;font-weight:900;pointer-events:none;animation:note 1.6s ease-out forwards;text-shadow:0 2px 0 #0003}
+@keyframes note{from{transform:translate(0,0) scale(.6);opacity:1}to{transform:translate(var(--dx),-28vh) scale(1.2) rotate(var(--r));opacity:0}}
+
+/* the karaoke screen: the current line big, the next one small below */
+#screen{position:absolute;z-index:4;left:calc(var(--sx) + var(--sw) + 3vw);right:3vw;top:calc(46px + 3vh);bottom:22%;
+  background:var(--card);border-radius:36px;border:7px solid var(--acc);box-shadow:0 10px 0 #0004;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3vh;padding:4vh 2vw 3vh;overflow:hidden;box-sizing:border-box}
+.line{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-end;gap:1.4vh 1.3vw;max-width:100%}
+.line.next{opacity:.4;zoom:.6}
+.tok{display:flex;flex-direction:column;align-items:center;gap:2px;transition:transform .12s;cursor:pointer}
+.tok .p{font-size:var(--pic);line-height:1.1}
+.tok .w{font-size:var(--wd);font-weight:900;color:#7a6a96;white-space:nowrap;line-height:1.1}
+.tok.plain .w{font-size:calc(var(--wd)*1.3);color:#4b3d66}
+.tok.letter .p{width:1.05em;height:1.05em;border-radius:24%;display:flex;align-items:center;justify-content:center;font-weight:900;
+  color:#fff;background:var(--acc);font-size:calc(var(--pic)*.85);box-shadow:0 5px 0 #0003}
+.tok.sound .p{font-size:calc(var(--pic)*.55)}
+.tok.clap .p{font-size:calc(var(--pic)*.85)}
+.tok.on{transform:translateY(-8px) scale(1.18)}
+.tok.on .w{color:var(--acc)}
+.tok.clap.on .p{animation:clapme .25s ease-out 2}
+@keyframes clapme{50%{transform:scale(1.35) rotate(-10deg)}}
+#ball{position:absolute;z-index:5;width:26px;height:26px;border-radius:50%;background:var(--acc);border:4px solid #fff;box-shadow:0 3px 0 #0003;
+  pointer-events:none;transition:left .16s ease-out,top .16s ease-out;box-sizing:border-box}
+.me{display:inline-block;height:1em;width:1em;vertical-align:-.12em}
+.me svg{display:block;width:100%;height:100%;overflow:visible}
+.me .ink{stroke:#1b1717;stroke-linecap:round;stroke-linejoin:round}.me .skin{fill:#ffe3cf}.me .hair{fill:#3b2a20}.me .mouth.open{opacity:0}
+
+.corner{position:absolute;top:max(54px,calc(env(safe-area-inset-top,0px) + 46px));width:60px;height:60px;border-radius:50%;z-index:11;
+  background:#ffffff40;border:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.corner svg{width:34px;height:34px}
+.corner:focus-visible{outline:4px solid var(--sun)}
+.home{left:max(16px,env(safe-area-inset-left,0px))}
+
+#overlay{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+  background:#2a1d57ee;color:#fff;text-align:center;padding:70px 16px 24px;overflow-y:auto;box-sizing:border-box}
+#overlay>:first-child+*{margin-top:auto}
+#overlay>:last-child{margin-bottom:auto}
+#overlay h1,#overlay h2{margin:0;font-weight:900;line-height:1.1;display:flex;flex-direction:column;gap:.15em}
+#overlay h1{font-size:clamp(34px,6.5vw,64px)}
+#overlay h2{font-size:clamp(26px,4.5vw,44px)}
+.songs{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;max-width:980px}
+.song{width:min(42vw,170px);padding:14px 8px 12px;border:0;border-radius:30px;background:var(--card);cursor:pointer;font-family:var(--display);
+  box-shadow:0 8px 0 var(--acc);display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--ink);transition:transform .1s}
+.song:active{transform:translateY(6px);box-shadow:0 2px 0 var(--acc)}
+.song .pic{font-size:clamp(56px,10vw,84px);line-height:1.1}
+.song .t{font-size:18px;font-weight:900;color:var(--acc)}
+.opts{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.pill{display:flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:8px 18px;font-family:var(--display);font-weight:900;font-size:18px;
+  background:#ffffff26;color:#fff;cursor:pointer;min-height:56px}
+.pill.on{background:#fff;color:var(--ink)}
+.pill .e{font-size:32px}
+.picks{display:flex;flex-wrap:wrap;gap:18px;justify-content:center}
+.pick{width:min(40vw,190px);aspect-ratio:1;border:0;border-radius:36px;background:var(--card);cursor:pointer;font-size:min(22vw,110px);
+  box-shadow:0 8px 0 #0004;display:flex;align-items:center;justify-content:center;animation:popin .4s cubic-bezier(.3,1.6,.5,1) both}
+.pick:active{transform:translateY(6px);box-shadow:0 2px 0 #0004}
+@keyframes popin{from{transform:scale(.2);opacity:0}}
+.row{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;align-items:center}
+.btnround{width:min(30vw,120px);aspect-ratio:1;border:0;border-radius:50%;cursor:pointer;background:var(--pink);box-shadow:0 8px 0 #b83b68;display:flex;align-items:center;justify-content:center}
+.btnround:active{transform:translateY(6px);box-shadow:0 2px 0 #b83b68}
+.btnround svg{width:46%;height:46%}
+.btnround.listen{background:#43a047;box-shadow:0 8px 0 #2e7031;width:min(40vw,160px)}
+.btnround.listen.playing{animation:pulse 1s infinite}
+@keyframes pulse{50%{transform:scale(1.08)}}
+.stickers{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.sticker{font-size:56px;width:84px;height:84px;border-radius:24px;background:var(--card);display:flex;align-items:center;justify-content:center}
+.star{position:absolute;width:40px;height:40px;z-index:9;pointer-events:none;animation:fly 1.6s ease-out forwards}
+@keyframes fly{from{transform:translate(0,0) scale(.3) rotate(0);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(1.2) rotate(240deg);opacity:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important}}
+/* tall screens: the screen on top, Sofia below on the left */
+@media (orientation:portrait){
+  :root{--sh:min(36vh,460px);--pic:min(9.5vh,14vw,120px);--wd:min(2.6vh,3.6vw,27px)}
+  #screen{left:3vw;right:3vw;top:calc(46px + 84px);bottom:calc(7% + var(--sh) + 6px)}
+}
+@media (max-height:520px){
+  :root{--sh:66vh;--pic:min(13vh,7vw);--wd:min(4.2vh,2.2vw)}
+  #curtain{height:30px} .corner{top:36px;width:52px;height:52px}
+  #screen{top:36px;bottom:15%;border-width:5px;padding:2vh 1.5vw;gap:2vh}
+}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="wall"></div><div class="beam"></div><div class="beam b2"></div>
+  <div id="floor"></div>
+  <div id="curtain"></div>
+  <div id="sofia" role="img" aria-label="София поёт">
+    <svg viewBox="0 0 800 1730" aria-hidden="true">
+      <defs>
+        <g id="leg">
+          <path class="ink" d="M335 1380 L331 1640" fill="none" stroke-width="68"/>
+          <path d="M335 1380 L331 1640" stroke="#ffe3cf" stroke-width="50" stroke-linecap="round"/>
+          <path d="M331 1590 L331 1640" stroke="#fff" stroke-width="50"/>
+          <path d="M305 1592 H357" stroke="#f06292" stroke-width="10" stroke-linecap="round"/>
+          <ellipse class="ink" cx="318" cy="1672" rx="60" ry="34" fill="#d6453d" stroke-width="9"/>
+          <ellipse cx="300" cy="1660" rx="16" ry="8" fill="#fff" opacity=".5"/>
+        </g>
+        <g id="arm">
+          <path class="ink" d="M262 965 Q232 1085 218 1200" fill="none" stroke-width="64"/>
+          <circle cx="216" cy="1222" r="34" fill="#1b1717"/>
+          <path d="M262 965 Q232 1085 218 1200" fill="none" stroke="#ffe3cf" stroke-width="46" stroke-linecap="round"/>
+          <circle class="skin" cx="216" cy="1222" r="25"/>
+          <ellipse class="ink" cx="266" cy="955" rx="58" ry="48" fill="#f7a8c4" stroke-width="9"/>
+        </g>
+      </defs>
+      <g class="leg l"><use href="#leg"/></g>
+      <g class="leg r"><use href="#leg" transform="translate(800 0) scale(-1 1)"/></g>
+      <path class="skin ink" d="M352 820 L350 925 Q400 950 450 925 L448 820Z" stroke-width="8"/>
+      <path class="ink" d="M305 900 Q400 945 495 900 L535 918 Q565 990 562 1080 L640 1420 Q400 1478 160 1420 L238 1080 Q235 990 265 918 Z" fill="#f7a8c4" stroke-width="9"/>
+      <path d="M190 1385 Q400 1440 610 1385" fill="none" stroke="#f06292" stroke-width="12" stroke-linecap="round" stroke-dasharray="2 34"/>
+      <g fill="#fff" opacity=".8"><circle cx="330" cy="1060" r="13"/><circle cx="450" cy="1110" r="13"/><circle cx="390" cy="1210" r="13"/><circle cx="280" cy="1270" r="13"/><circle cx="510" cy="1260" r="13"/><circle cx="400" cy="1340" r="13"/><circle cx="240" cy="1370" r="12"/><circle cx="560" cy="1370" r="12"/></g>
+      <path class="ink" d="M308 902 Q322 980 400 950 L400 930 Q352 936 308 902Z M492 902 Q478 980 400 950 L400 930 Q448 936 492 902Z" fill="#fff" stroke-width="7"/>
+      <g class="arm l"><use href="#arm"/></g>
+      <g class="arm r"><use href="#arm" transform="translate(800 0) scale(-1 1)"/></g>
+      <g class="head"><g transform="rotate(-4 400 560)">
+        <!-- cartoon Sofia after her portrait: round cheeks, top-knot curling right; Amélie-style bob with short blunt bangs -->
+        <path class="hair ink" d="M118 600 C92 360 212 168 400 166 C588 168 708 360 682 600 L694 770 C698 812 650 822 616 800 L184 800 C150 822 102 812 106 770Z" stroke-width="9"/>
+        <g class="tuft">
+          <path class="hair ink" d="M448 230 C400 175 345 150 290 158 C345 118 425 140 472 212Z" stroke-width="9"/>
+          <path class="hair ink" d="M450 225 C428 140 455 70 515 25 C512 95 512 160 490 228Z" stroke-width="9"/>
+          <path class="hair ink" d="M462 228 C495 120 600 62 688 102 C712 150 680 196 648 170 C668 140 632 118 600 128 C555 145 525 185 500 240Z" stroke-width="9"/>
+          <path d="M468 200 C470 140 485 95 508 60 M495 210 C530 145 590 112 650 115" fill="none" stroke="#6b4a36" stroke-width="6" stroke-linecap="round"/>
+        </g>
+        <path class="skin ink" d="M158 540 C158 360 270 280 400 280 C530 280 642 360 642 540 C642 700 610 795 530 842 C475 872 325 872 270 842 C190 795 158 700 158 540Z" stroke-width="9"/>
+        <path d="M262 505 Q300 485 340 500 M462 508 Q502 490 542 506" fill="none" stroke="#3b2a20" stroke-width="10" stroke-linecap="round"/>
+        <g class="eye"><ellipse cx="300" cy="575" rx="27" ry="33" fill="#1b1717"/><circle cx="290" cy="563" r="10" fill="#fff"/><circle cx="310" cy="590" r="4.5" fill="#fff"/></g>
+        <g class="eye"><ellipse cx="500" cy="580" rx="27" ry="33" fill="#1b1717"/><circle cx="490" cy="568" r="10" fill="#fff"/><circle cx="510" cy="595" r="4.5" fill="#fff"/></g>
+        <ellipse cx="252" cy="668" rx="46" ry="30" fill="#ff8fab" opacity=".45"/>
+        <ellipse cx="548" cy="672" rx="46" ry="30" fill="#ff8fab" opacity=".45"/>
+        <path d="M388 640 Q400 656 414 640" fill="none" stroke="#c98f7a" stroke-width="8" stroke-linecap="round"/>
+        <path class="mouth shut" d="M345 705 Q400 752 455 705" fill="none" stroke="#1b1717" stroke-width="10" stroke-linecap="round"/>
+        <g class="mouth open"><path d="M350 700 Q400 706 450 700 Q444 768 400 772 Q356 768 350 700Z" fill="#8e2a3a" stroke="#1b1717" stroke-width="8" stroke-linejoin="round"/><ellipse cx="400" cy="752" rx="26" ry="12" fill="#f28b9b"/></g>
+        <path class="hair ink" d="M168 430 C142 560 146 700 172 795 C196 812 232 800 228 776 C210 690 206 560 222 440Z M632 430 C658 560 654 700 628 795 C604 812 568 800 572 776 C590 690 594 560 578 440Z" stroke-width="9"/>
+        <path class="hair ink" d="M170 480 C150 320 265 208 400 208 C535 208 650 320 630 480 C560 458 480 452 400 454 C320 452 240 458 170 480Z" stroke-width="9"/>
+        <path d="M250 300 C320 255 470 250 550 290 M300 452 L304 418 M400 450 L400 414 M500 452 L496 418 M196 560 L192 700 M604 560 L608 700" fill="none" stroke="#6b4a36" stroke-width="7" stroke-linecap="round"/>
+        <path d="M470 215 L408 172 L414 262 Z M470 215 L536 178 L526 266 Z" fill="#f06292" stroke="#c2185b" stroke-width="6" stroke-linejoin="round"/>
+        <circle cx="470" cy="217" r="21" fill="#e04a7f" stroke="#c2185b" stroke-width="6"/>
+      </g></g>
+    </svg>
+  </div>
+  <div id="screen" hidden><div class="line" id="cur"></div><div class="line next" id="nxt"></div><div id="ball"></div></div>
+  <div id="overlay"></div>
+</div>
+<script>
+/* ---------- the songs ----------
+   Each verse is a list of lines: [words, notes, beats]. In the words, "-" splits syllables (one note each), "_" too but shows as a dash,
+   word{🐶} shows a big picture, word{~🐮} a small one (sounds, "doo"), a single capital letter is a letter tile, * is a clap.
+   "r" in the notes is a rest. Chords: one per bar, "F,C" = half a bar each. All tunes are traditional. */
+const SONGS={
+  bingo:{t:"Bingo",pic:"🐶",acc:"#f39c12",bpm:104,bar:2,pick:.5,verses:6,
+    chords:"F Bb F F F Bb C F Bb C C F",
+    verse(k){const L=[..."BINGO"].map((c,i)=>i<k?"*":c).join(" ");   // each verse one more letter turns into a clap
+      return [["There was a far-mer{👨‍🌾} had a dog{🐶}","C4 F4 F4 F4 C4 D4 D4 C4",".5 .5 .5 .5 .5 .5 .5 .5"],
+        ["and Bin-go{🐕} was his name_o","C4 F4 F4 G4 G4 A4 F4",".5 .5 .5 .5 .5 1 1"],
+        [L,"A4 A4 Bb4 Bb4 Bb4","1 1 .5 .5 1"],[L,"G4 G4 A4 A4 A4","1 1 .5 .5 1"],[L,"F4 F4 G4 G4 G4","1 1 .5 .5 .5"],
+        ["and Bin-go{🐕} was his name_o!","E4 E4 C4 D4 E4 F4 F4 r",".5 .5 .5 .5 .5 1 .5 .5"]]}},
+  mac:{t:"Old MacDonald",pic:"🐮",acc:"#43a047",bpm:112,bar:4,pick:0,verses:4,
+    choices:[["cow","moo","🐮"],["pig","oink","🐷"],["duck","quack","🦆"],["sheep","baa","🐑"],["horse","neigh","🐴"],["dog","woof","🐶"],["cat","meow","🐱"]],
+    chords:"C F,C C,G C C F,C C,G C C C C C C F,C C,G C",
+    verse(k,[a,s,e]){const S=`${s}{~${e}}`;
+      return [["Old Mac-Don-ald{👴} had a farm{🏡}","C4 C4 C4 G3 A3 A3 G3","1 1 1 1 1 1 2"],
+        ["E I E I O","E4 E4 D4 D4 C4","1 1 1 1 3"],
+        [`and on that farm he had a ${a}{${e}}`,"G3 C4 C4 C4 G3 A3 A3 G3","1 1 1 1 1 1 1 2"],
+        ["E I E I O","E4 E4 D4 D4 C4","1 1 1 1 3"],
+        [`With a ${S} ${S} here, and a ${S} ${S} there,`,"G3 G3 C4 C4 C4 G3 G3 C4 C4 C4",".5 .5 1 1 1 .5 .5 1 1 2"],
+        [`here a ${S}, there a ${S}, ev-ery-where a ${S} ${S}`,"C4 C4 C4 C4 C4 C4 C4 C4 C4 C4 C4 C4",".5 .5 1 .5 .5 1 .5 .5 .5 .5 1 1"],
+        ["Old Mac-Don-ald{👴} had a farm{🏡}","C4 C4 C4 G3 A3 A3 G3","1 1 1 1 1 1 2"],
+        ["E I E I O","E4 E4 D4 D4 C4","1 1 1 1 4"]]}},
+  finger:{t:"Finger Family",pic:"🖐️",acc:"#e91e63",bpm:100,bar:4,pick:0,verses:5,
+    choices:[["Dad-dy","👨"],["Mom-my","👩"],["Bro-ther","👦"],["Sis-ter","👧"],["Ba-by","👶"],["So-fi-a","SOFIA"]],
+    chords:"C F,C C G,C",
+    verse(k,[m,e]){const three=m.split("-").length===3, n=three?"C4 E4 E4":"C4 E4", d=three?".5 .25 .25":".5 .5";
+      return [[`${m}{${e}} fin-ger{☝️}, ${m} fin-ger,`,`${n} G4 G4 ${n} G4 G4`,`${d} .5 .5 ${d} .5 .5`],
+        ["where are you{🔍}?","A4 C5 G4","1 1 2"],
+        ["Here I am{🙋}, here I am,","C5 G4 G4 C5 G4 G4",".5 .5 1 .5 .5 1"],
+        ["how do you do{👋}?","D4 E4 E4 C4","1 .5 .5 2"]]}},
+  shark:{t:"Baby Shark",pic:"🦈",acc:"#1e88e5",bpm:112,bar:4,pick:1,verses:5,
+    choices:[["Ba-by","👶"],["Mom-my","👩"],["Dad-dy","👨"],["Grand-ma","👵"],["Grand-pa","👴"]],
+    chords:"G C Em D",
+    verse(k,[m,e]){const doo=Array(6).fill("doo{~🎵}").join(" "), L=[`${m}{${e}} shark{🦈}, ${doo}`,"D4 E4 G4 G4 G4 G4 G4 G4 G4",".5 .5 1 .5 .5 .25 .25 .25 .25"];
+      return [L,L,L,[`${m}{${e}} shark{🦈}!`,"G4 G4 F#4 r",".5 .5 2 1"]]}},
+  star:{t:"Twinkle, Twinkle",pic:"⭐",acc:"#3a6fd8",bpm:92,bar:4,pick:0,verses:1,
+    chords:"C F,C F,C G,C C,F C,G C,F C,G C F,C F,C G,C",
+    verse(){const A=["Twin-kle{✨} twin-kle lit-tle star{⭐},","C4 C4 G4 G4 A4 A4 G4"],B=["how I won-der{🤔} what you are!","F4 F4 E4 E4 D4 D4 C4"],
+        C=["Up a-bove the world{🌍} so high,","G4 G4 F4 F4 E4 E4 D4"],D=["like a dia-mond{💎} in the sky{🌌}.","G4 G4 F4 F4 E4 E4 D4"];
+      return [A,B,C,D,A,B].map(([t,n])=>[t,n,"1 1 1 1 1 1 2"])}},
+};
+const ORDER=["bingo","mac","finger","shark","star"];
+
+/* ---------- words → tokens and notes ---------- */
+const PC={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+const midi=n=>{const m=/^([A-G])(#|b)?(\d)$/.exec(n);return 12*(+m[3]+1)+PC[m[1]]+(m[2]==="#"?1:m[2]==="b"?-1:0)};
+const hz=m=>440*Math.pow(2,(m-69)/12);
+function parseLine([text,notes,durs]){
+  const toks=[], syl=[];
+  for(const word of text.trim().split(/\s+/)){
+    const pm=/\{(~?)([^}]*)\}/.exec(word), bare=word.replace(/\{[^}]*\}/,""), core=bare.replace(/[,.!?]/g,"");
+    const kind=core==="*"?"clap":pm?(pm[1]?"sound":"pic"):/^[A-ZĀ-Ž]$/.test(core)?"letter":"plain";
+    const t={kind,pic:kind==="clap"?"👏":kind==="letter"?core:pm?pm[2]:"",cap:kind==="clap"||kind==="letter"?"":bare.replace(/-/g,"").replace(/_/g,"-")};
+    toks.push(t); core.split(/[-_]/).filter(Boolean).forEach(()=>syl.push(toks.length-1));
+  }
+  const ns=notes.split(" "), ds=durs.split(" ").map(Number), out=[]; let s=0;
+  ns.forEach((n,i)=>out.push(n==="r"?{m:null,d:ds[i],tok:-1}:{m:midi(n),d:ds[i],tok:syl[s++]}));
+  if(s!==syl.length||ns.length!==ds.length) console.error("song line doesn't match its notes:",text);
+  return {toks,notes:out};
+}
+
+/* ---------- sound: a small band made with Web Audio (melody, bass, chords, drums) ---------- */
+let ctx=null, master=null, bus=null, live=[], noiseB=null;
+function ac(){
+  if(!ctx){ctx=new (window.AudioContext||window.webkitAudioContext)();
+    master=ctx.createDynamicsCompressor(); master.threshold.value=-14; master.ratio.value=4; master.connect(ctx.destination);
+    noiseB=ctx.createBuffer(1,ctx.sampleRate*.5,ctx.sampleRate); const d=noiseB.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1}
+  if(ctx.state!=="running") ctx.resume(); return ctx;
+}
+function newBus(){stopBus(); bus=ctx.createGain(); bus.connect(master); return bus}
+function stopBus(){if(!bus) return; const b=bus; bus=null; try{b.gain.setTargetAtTime(0,ctx.currentTime,.03)}catch(e){}
+  live.forEach(n=>{try{n.stop(ctx.currentTime+.15)}catch(e){}}); live=[]; setTimeout(()=>b.disconnect(),300)}
+/* one oscillator voice: attack, then hold (sustain) or fade away (pluck) */
+function voice(type,f,t,dur,peak,pluck,dest=bus){
+  const o=ctx.createOscillator(), g=ctx.createGain(); o.type=type; o.frequency.value=f;
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(peak,t+.012);
+  if(pluck) g.gain.setTargetAtTime(0,t+.012,dur/4); else {g.gain.setTargetAtTime(peak*.7,t+.02,.1); g.gain.setTargetAtTime(0,t+dur,.05)}
+  o.connect(g).connect(dest); o.start(t); o.stop(t+dur+.4); live.push(o);
+}
+function hit(t,dur,vol,type,freq,q=1,dest=bus){
+  const s=ctx.createBufferSource(), f=ctx.createBiquadFilter(), g=ctx.createGain(); s.buffer=noiseB; f.type=type; f.frequency.value=freq; f.Q.value=q;
+  g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.001,t+dur);
+  s.connect(f).connect(g).connect(dest); s.start(t); s.stop(t+dur+.05); live.push(s);
+}
+const band={
+  lead(m,t,d){voice("triangle",hz(m),t,d*.9,.2); voice("sine",hz(m)*2,t,d*.9,.05); voice("sine",hz(m)*4,t,.5,.06,true)},
+  bass(m,t){voice("triangle",hz(m),t,1.6,.3,true)},
+  chord(ms,t){ms.forEach(m=>{voice("sine",hz(m),t,1,.06,true);voice("triangle",hz(m),t,.6,.025,true)})},
+  kick(t){const o=ctx.createOscillator(),g=ctx.createGain(); o.frequency.setValueAtTime(150,t); o.frequency.exponentialRampToValueAtTime(45,t+.12);
+    g.gain.setValueAtTime(.45,t); g.gain.exponentialRampToValueAtTime(.001,t+.25); o.connect(g).connect(bus); o.start(t); o.stop(t+.3); live.push(o)},
+  shaker(t,v){hit(t,.05,v,"highpass",7000)},
+  clap(t){[0,.012,.026].forEach((x,i)=>hit(t+x,i<2?.03:.14,.55,"bandpass",1300,.8))},
+};
+function chordOf(sym){const m=/^([A-G])(#|b)?(m)?(7)?$/.exec(sym), r=PC[m[1]]+(m[2]==="#"?1:m[2]==="b"?-1:0);
+  const up=pc=>55+(((pc-55)%12)+12)%12;
+  return {bass:36+(((r-36)%12)+12)%12, five:36+(((r+7-36)%12)+12)%12, tones:[0,m[3]?3:4,7,...(m[4]?[10]:[])].map(x=>up(r+x)).sort((a,b)=>a-b)}}
+let tempo=1;
+/* lay out one verse in beats: a bar or two of intro, then the song; the band follows the chords */
+function buildVerse(song,k,choice){
+  const lines=song.verse(k,choice).map(parseLine), intro=4, ev=[];
+  let b=intro-song.pick;
+  lines.forEach((l,li)=>{l.start=b; l.notes.forEach(n=>{if(n.m!==null) ev.push({b,d:n.d,m:n.m,tok:n.tok,li,clap:l.toks[n.tok].kind==="clap"}); b+=n.d}); l.end=b});
+  const bars=song.chords.split(" "), end=intro+bars.length*song.bar;
+  return {song,lines,ev,intro,bars,end:Math.max(end,b),spb:60/(song.bpm*tempo)};
+}
+function schedule(v,t0){
+  const {song,spb}=v, T=b=>t0+b*spb, B=song.bar;
+  for(let bb=0;bb<v.end-.01;bb+=B){
+    const i=Math.floor((bb-v.intro)/B), sym=i<0?v.bars[0].split(",")[0]:v.bars[Math.min(i,v.bars.length-1)], parts=sym.split(",");
+    parts.forEach((p,pi)=>{const c=chordOf(p), st=bb+pi*B/parts.length, len=B/parts.length;
+      band.bass(c.bass,T(st)); if(len>=4) band.bass(c.five,T(st+2));
+      const step=B===2?1:2; for(let x=st+(B===2?.5:1);x<st+len-.01;x+=step) band.chord(c.tones,T(x));
+    });
+    band.kick(T(bb)); if(B===4) band.kick(T(bb+2));
+    for(let x=0;x<B;x+=.5) band.shaker(T(bb+x),x%1?.03:.06);
+  }
+  v.ev.forEach(e=>e.clap?band.clap(T(e.b)):band.lead(e.m,T(e.b),e.d*spb));
+}
+
+/* ---------- screen ---------- */
+const $=id=>document.getElementById(id);
+const sofia=$("sofia"), overlay=$("overlay"), screen=$("screen"), cur=$("cur"), nxt=$("nxt"), ball=$("ball");
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+function sofiaFace(){const h=sofia.querySelector(".head");
+  return `<span class="me"><svg viewBox="130 150 540 600" aria-hidden="true">${h?h.outerHTML:""}</svg></span>`}
+const pic=e=>e==="SOFIA"?sofiaFace():e;
+const tokHTML=t=>`<div class="tok ${t.kind}">${t.pic?`<span class="p">${pic(t.pic)}</span>`:""}${t.cap?`<span class="w">${t.cap}</span>`:""}</div>`;
+function showLine(v,li){
+  cur.innerHTML=v.lines[li].toks.map(tokHTML).join("");
+  nxt.innerHTML=v.lines[li+1]?v.lines[li+1].toks.map(tokHTML).join(""):"";
+  placeBall(cur.children[0],false);
+}
+function placeBall(el,hop,ms=300){
+  if(!el) return; const r=el.getBoundingClientRect(), s=screen.getBoundingClientRect();
+  ball.style.left=(r.left-s.left+r.width/2-13)+"px"; ball.style.top=Math.max(4,r.top-s.top-34)+"px";
+  if(hop) ball.animate([{translate:"0 0"},{translate:"0 -22px"},{translate:"0 0"}],{duration:Math.min(ms,420),easing:"ease-out"});
+}
+function flyNote(){
+  const r=sofia.getBoundingClientRect(), n=document.createElement("span"); n.className="note"; n.textContent=Math.random()<.5?"♪":"♫";
+  n.style.color=["#ffd25a","#f06292","#fff","#7fd3ff"][Math.floor(Math.random()*4)];
+  n.style.left=(r.left+r.width*.7)+"px"; n.style.top=(r.top+r.height*.2)+"px";
+  n.style.setProperty("--dx",(Math.random()*16-4)+"vw"); n.style.setProperty("--r",(Math.random()*60-30)+"deg");
+  $("stage").appendChild(n); setTimeout(()=>n.remove(),1700);
+}
+/* follow the music: the line on screen, the word under the ball, Sofia's mouth */
+let runId=0;
+function follow(v,t0,id){return new Promise(res=>{
+  let li=-1, ni=-1, notes=0;
+  const tick=()=>{
+    if(id!==runId) return res(false);
+    const beat=(ctx.currentTime-t0)/v.spb;
+    let L=0; v.lines.forEach((l,i)=>{if(l.start<=beat+.3) L=i});
+    if(L!==li){li=L; showLine(v,L)}
+    let n=ni; while(n+1<v.ev.length&&v.ev[n+1].b<=beat) n++;
+    if(n!==ni&&n>=0){ni=n; const e=v.ev[n];
+      if(e.li===li){[...cur.children].forEach((c,i)=>c.classList.toggle("on",i===e.tok)); placeBall(cur.children[e.tok],true,e.d*v.spb*1000)}
+      if(!e.clap&&notes++%2===0) flyNote();
+    }
+    const e=v.ev[ni]; sofia.classList.toggle("sing",!!e&&!e.clap&&beat<e.b+e.d*.85);
+    if(beat>=v.end) return res(true);
+    requestAnimationFrame(tick);
+  };
+  tick();
+})}
+
+const sfx={
+  yay(){const t=ac().currentTime;[523,659,784,1047].forEach((f,i)=>voice("triangle",f,t+i*.12,.35,.2,true,master))},
+  chime(){const t=ac().currentTime;[784,1047,1319].forEach((f,i)=>voice("sine",f,t+i*.07,.5,.15,true,master))},
+};
+function stars(x="50%",y="45%"){for(let i=0;i<20;i++){const s=document.createElementNS("http://www.w3.org/2000/svg","svg");s.setAttribute("viewBox","0 0 24 24");s.classList.add("star");
+  s.innerHTML='<path d="M12 2l3 7 7 .6-5.4 4.7 1.7 7.2L12 17.8 5.7 21.5l1.7-7.2L2 9.6 9 9z" fill="'+["#ffd25a","#f06292","#fff","#5fbf7f"][i%4]+'"/>';
+  s.style.left=x;s.style.top=y;s.style.setProperty("--dx",(Math.random()*70-35)+"vw");s.style.setProperty("--dy",(Math.random()*70-35)+"vh");
+  $("stage").appendChild(s);setTimeout(()=>s.remove(),1700)}}
+async function loadBuf(url){const r=await fetch(url); if(!r.ok) throw 0; const ab=await r.arrayBuffer(); return await new Promise((ok,no)=>ac().decodeAudioData(ab,ok,no))}
+function playBuf(buf,max=99){return new Promise(res=>{const s=ctx.createBufferSource(), g=ctx.createGain(); s.buffer=buf; s.connect(g).connect(master);
+  const len=Math.min(buf.duration,max); g.gain.setValueAtTime(1,ctx.currentTime+len-.25); g.gain.linearRampToValueAtTime(0,ctx.currentTime+len);
+  s.start(); s.stop(ctx.currentTime+len+.05); s.onended=()=>res(); setTimeout(res,len*1000+200)})}
+
+/* ---------- Sofia's voice: optional, records her singing to play back at the end ---------- */
+let recOn=false, rec=null, recStream=null, recChunks=[], recBuf=null;
+try{recOn=localStorage.getItem("sofia-sing-rec")==="1"; tempo=localStorage.getItem("sofia-sing-slow")==="1"?.8:1}catch(e){}
+const canRec=!!(navigator.mediaDevices&&window.MediaRecorder);
+async function recStart(){
+  recBuf=null; if(!recOn||!canRec) return;
+  try{recStream=await navigator.mediaDevices.getUserMedia({audio:true})}catch(e){recStream=null;return}
+  recChunks=[]; rec=new MediaRecorder(recStream); rec.ondataavailable=e=>e.data.size&&recChunks.push(e.data);
+  rec.start(); ac();
+}
+const recPause=()=>{if(rec&&rec.state==="recording"&&rec.pause) rec.pause()};
+const recResume=()=>{if(rec&&rec.state==="paused") rec.resume()};
+async function recStop(keep){
+  if(!rec) return; const r=rec; rec=null;
+  const done=new Promise(ok=>{r.onstop=ok; setTimeout(ok,1500)}); try{r.stop()}catch(e){} await done;
+  recStream&&recStream.getTracks().forEach(t=>t.stop()); recStream=null;
+  if(keep){const blob=new Blob(recChunks,{type:r.mimeType||"audio/mp4"}); if(blob.size>1000) try{const ab=await blob.arrayBuffer(); recBuf=await new Promise((ok,no)=>ac().decodeAudioData(ab,ok,no))}catch(e){}}
+}
+
+/* ---------- playing a song ---------- */
+let song=null, used=[];
+const homeBtn=`<a class="corner home" href="../index.html" aria-label="Меню"><svg viewBox="0 0 40 40"><path d="M6 19L20 7l14 12M11 16v16h18V16" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`;
+const backBtn=`<button class="corner home" id="back" aria-label="Назад"><svg viewBox="0 0 40 40"><path d="M24 8L12 20l12 12" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
+function setAcc(c){document.documentElement.style.setProperty("--acc",c)}
+async function playSong(id){
+  ac(); const my=++runId; song=SONGS[id]; used=[]; setAcc(song.acc);
+  overlay.hidden=true; screen.hidden=true; $("stopper").hidden=false;
+  await recStart(); if(my!==runId) return recStop(false);
+  for(let k=0;k<song.verses;k++){
+    let choice=null;
+    if(song.choices){const left=song.choices.filter(c=>!used.includes(c)); if(!left.length) break;
+      recPause(); choice=await pickNext(left,my); if(my!==runId) return; used.push(choice)}
+    recResume(); screen.hidden=false; overlay.hidden=true;
+    const v=buildVerse(song,k,choice), t0=ctx.currentTime+.15; newBus(); schedule(v,t0);
+    sofia.style.setProperty("--beat",(v.spb*2)+"s"); sofia.classList.add("dance");
+    if(!await follow(v,t0,my)) return;
+    sofia.classList.remove("sing");
+  }
+  finale(my);
+}
+/* she chooses who comes next: big pictures, no reading needed */
+function pickNext(left,my){return new Promise(res=>{
+  sofia.classList.remove("dance","sing"); screen.hidden=true;
+  const show=left.slice().sort(()=>Math.random()-.5).slice(0,3);
+  overlay.hidden=false;
+  overlay.innerHTML=`${backBtn}<h2><span>Кто дальше?</span><span lang="lv">Kas nākamais?</span></h2>
+    <div class="picks">${show.map((c,i)=>`<button class="pick" data-i="${i}" style="animation-delay:${i*.12}s" aria-label="${c[0].replace(/-/g,"")}">${pic(c[c.length-1])}</button>`).join("")}</div>`;
+  $("back").onclick=stopSong;
+  overlay.querySelectorAll(".pick").forEach(b=>b.onclick=async()=>{
+    if(my!==runId) return; const c=show[+b.dataset.i]; overlay.querySelectorAll(".pick").forEach(x=>x.disabled=true);
+    const r=b.getBoundingClientRect(); stars(r.left+r.width/2+"px",r.top+r.height/2+"px");
+    if(song===SONGS.mac){try{   // the farm animals' real voices, from the jungle game
+      await playBuf(await loadBuf(`../jungle/audio/${c[0]}-sound.mp3`),2.2)}catch(e){}} else {sfx.chime(); await wait(700)}
+    res(c);
+  });
+})}
+function stopSong(){runId++; stopBus(); recStop(false); sofia.classList.remove("dance","sing"); startScreen()}
+async function finale(my){
+  sofia.classList.remove("dance","sing"); await wait(300); if(my!==runId) return;
+  await recStop(true); if(my!==runId) return;
+  $("stopper").hidden=true; sfx.yay(); stars();
+  const done=song.choices?used.map(c=>c[c.length-1]):[song.pic];
+  overlay.hidden=false; screen.hidden=true;
+  overlay.innerHTML=`${backBtn}<h1><span>Браво!</span><span lang="lv">Bravo!</span></h1>
+    <div class="stickers">${done.map(e=>`<span class="sticker">${pic(e)}</span>`).join("")}</div>
+    <div class="row">${recBuf?`<button class="btnround listen" id="listen" aria-label="Послушай, как ты пела"><svg viewBox="0 0 40 40"><path d="M6 15h7l9-8v26l-9-8H6z" fill="#fff"/><path d="M27 13a9 9 0 0 1 0 14M31 8a15 15 0 0 1 0 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg></button>`:""}
+    <button class="btnround" id="again" aria-label="Ещё раз"><svg viewBox="0 0 40 40"><path d="M30 14a12 12 0 1 0 2 10" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M32 5v10H22" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>`;
+  $("back").onclick=stopSong;
+  $("again").onclick=()=>playSong(ORDER.find(k=>SONGS[k]===song));
+  if(recBuf) $("listen").onclick=async()=>{const b=$("listen"); if(b.classList.contains("playing")) return; b.classList.add("playing"); sofia.classList.add("dance");
+    await playBuf(recBuf); b.classList.remove("playing"); sofia.classList.remove("dance")};
+}
+
+/* ---------- start screen ---------- */
+function startScreen(){
+  runId++; stopBus(); screen.hidden=true; $("stopper").hidden=true; setAcc("#f06292");
+  overlay.hidden=false;
+  overlay.innerHTML=`${homeBtn}<h1><span>Песенки</span><span lang="lv">Dziesmiņas</span></h1>
+    <div class="songs">${ORDER.map(k=>`<button class="song" data-s="${k}" style="--acc:${SONGS[k].acc}" lang="en"><span class="pic">${SONGS[k].pic}</span><span class="t">${SONGS[k].t}</span></button>`).join("")}</div>
+    <div class="opts">
+      <button class="pill ${tempo<1?"on":""}" id="slow" aria-pressed="${tempo<1}"><span class="e">🐢</span><span>Медленно</span><span lang="lv">Lēni</span></button>
+      ${canRec?`<button class="pill ${recOn?"on":""}" id="recon" aria-pressed="${recOn}"><span class="e">🎤</span><span>Запись</span><span lang="lv">Ieraksts</span></button>`:""}
+    </div>`;
+  overlay.querySelectorAll(".song").forEach(b=>b.onclick=()=>playSong(b.dataset.s));
+  $("slow").onclick=()=>{tempo=tempo<1?1:.8; try{localStorage.setItem("sofia-sing-slow",tempo<1?"1":"0")}catch(e){} startScreen()};
+  if(canRec) $("recon").onclick=()=>{recOn=!recOn; try{localStorage.setItem("sofia-sing-rec",recOn?"1":"0")}catch(e){} startScreen()};
+}
+/* during a song: back to the list */
+document.getElementById("stage").insertAdjacentHTML("beforeend",`<button class="corner home" id="stopper" hidden aria-label="Назад"><svg viewBox="0 0 40 40"><path d="M24 8L12 20l12 12" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`);
+$("stopper").onclick=stopSong;
+/* tap a picture: it jumps and sparkles */
+screen.addEventListener("click",e=>{const t=e.target.closest(".tok"); if(!t) return; const r=t.getBoundingClientRect();
+  t.animate([{transform:"scale(1)"},{transform:"scale(1.4) rotate(-8deg)"},{transform:"scale(1)"}],{duration:400}); stars(r.left+r.width/2+"px",r.top+r.height/2+"px")});
+startScreen();
+</script>
+</body>
+</html>
