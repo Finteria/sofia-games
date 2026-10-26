@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Музыка · Mūzika</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap">
+<style>
+/* a small music player: the song playing now (cover with a dancing cat, its words, the bar and buttons), then all four songs as tiles */
+:root{
+  --ink:#2b2140; --card:#fffdf6; --sun:#ffd25a; --acc:#f06292; --accd:#b83b68;
+  --display:"Nunito","Trebuchet MS",system-ui,sans-serif;
+  color-scheme:light;
+  --cov:min(40vh,36vw,400px);
+}
+[hidden]{display:none!important}
+html{height:100%}
+body{min-height:100%;margin:0;box-sizing:border-box;color:var(--ink);font-family:var(--display);
+  background-color:var(--accd);background-image:radial-gradient(circle at 30% 0,#ffffff38 0,transparent 55%),
+    linear-gradient(160deg,color-mix(in srgb,var(--acc) 40%,var(--accd)),color-mix(in srgb,var(--accd) 70%,#1a1030));
+  background-attachment:fixed;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(18px,4vh,40px);
+  padding:max(100px,calc(env(safe-area-inset-top,0px) + 100px)) max(16px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+button{font-family:inherit;color:inherit}
+
+.corner{position:absolute;top:max(24px,calc(env(safe-area-inset-top,0px) + 16px));width:60px;height:60px;border-radius:50%;z-index:11;
+  background:#ffffff59;border:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.corner svg{width:34px;height:34px}
+.corner:focus-visible{outline:4px solid var(--sun)}
+.home{left:max(16px,env(safe-area-inset-left,0px))}
+
+/* now playing */
+#now{display:flex;align-items:center;gap:clamp(20px,4vw,48px);width:min(100%,980px);justify-content:center}
+#cover{position:relative;flex:none;width:var(--cov);aspect-ratio:1;border-radius:36px;box-shadow:0 14px 0 #0002,0 20px 40px #0003;cursor:pointer}
+#cover svg{display:block;width:100%;height:100%;border-radius:36px}
+.info{flex:1;min-width:0;max-width:520px;display:flex;flex-direction:column;gap:14px}
+#title{margin:0;font-size:clamp(28px,4.2vw,46px);font-weight:900;line-height:1.1;color:#fff;text-shadow:0 3px 0 #0003}
+#lyrics{height:calc(4 * 1.3em);font-size:clamp(16px,2.3vh,21px);font-weight:700;line-height:1.3;color:#fff;overflow:hidden;opacity:.95}
+#lyrics .cue{transition:opacity .25s}
+#lyrics .next{opacity:.55}
+#lyrics.fade .cue{opacity:0}
+
+.bar{display:flex;flex-direction:column;gap:4px}
+#seek{-webkit-appearance:none;appearance:none;width:100%;height:28px;margin:0;background:transparent;cursor:pointer;--p:0%}
+#seek::-webkit-slider-runnable-track{height:12px;border-radius:6px;background:linear-gradient(90deg,#fff var(--p),#ffffff59 var(--p))}
+#seek::-moz-range-track{height:12px;border-radius:6px;background:linear-gradient(90deg,#fff var(--p),#ffffff59 var(--p))}
+#seek::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;margin-top:-8px;border-radius:50%;background:#fff;border:6px solid var(--accd);box-shadow:0 2px 6px #0004}
+#seek::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:6px solid var(--accd)}
+.times{display:flex;justify-content:space-between;font-size:16px;font-weight:700;color:#fff;opacity:.9;font-variant-numeric:tabular-nums}
+
+.ctrls{display:flex;align-items:center;justify-content:center;gap:clamp(18px,4vw,36px)}
+.ctrls button{border:0;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.ctrls button:active{transform:scale(.93)}
+.ctrls button:focus-visible{outline:4px solid var(--sun);outline-offset:3px}
+.skip{width:68px;height:68px;background:#ffffff59}
+.skip svg{width:36px;height:36px}
+#play{width:104px;height:104px;background:#fff;box-shadow:0 7px 0 #0002}
+#play svg{width:50px;height:50px}
+
+/* all songs */
+#list{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(12px,2vw,20px);width:min(100%,980px)}
+@media (max-width:560px){#list{grid-template-columns:repeat(2,1fr)}}
+.tile{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 10px 14px;border:5px solid transparent;border-radius:30px;
+  background:var(--card);cursor:pointer;box-shadow:0 6px 0 #0002;font-size:clamp(16px,1.9vw,20px);font-weight:900;line-height:1.15;text-align:center}
+.tile:active{transform:scale(.96)}
+.tile:focus-visible{outline:4px solid var(--sun)}
+.tile .mini{position:relative;width:min(100%,120px);aspect-ratio:1}
+.tile .mini svg{display:block;width:100%;height:100%;border-radius:22px}
+.tile .len{font-size:15px;font-weight:700;opacity:.6;font-variant-numeric:tabular-nums}
+.tile.on{border-color:var(--accd)}
+/* little dancing bars on the song that plays */
+.eq{position:absolute;right:8px;bottom:8px;display:none;gap:3px;align-items:flex-end;height:26px;padding:5px 6px;border-radius:10px;background:#fffc}
+.tile.on .eq{display:flex}
+.eq i{width:5px;height:30%;border-radius:3px;background:var(--accd)}
+body.playing .tile.on .eq i{animation:eq .5s ease-in-out infinite alternate}
+.eq i:nth-child(2){animation-delay:-.2s!important}.eq i:nth-child(3){animation-delay:-.35s!important}
+@keyframes eq{to{height:100%}}
+
+/* the cat on the cover dances while the song plays */
+.cat{transform-origin:100px 200px;transform-box:view-box}
+body.playing #cover .cat{animation:bob .94s ease-in-out infinite}
+body.playing #cover .ear-l{animation:ear 1.88s ease-in-out infinite;transform-origin:62px 70px;transform-box:view-box}
+body.playing #cover .ear-r{animation:ear 1.88s ease-in-out infinite -.94s;transform-origin:138px 70px;transform-box:view-box}
+body.playing #cover .eyes{animation:blink 4s infinite;transform-origin:100px 108px;transform-box:view-box}
+@keyframes bob{0%,100%{transform:rotate(-5deg) translateY(0)}25%{transform:rotate(0) translateY(-7px)}50%{transform:rotate(5deg) translateY(0)}75%{transform:rotate(0) translateY(-7px)}}
+@keyframes ear{0%,80%,100%{transform:rotate(0)}88%{transform:rotate(-12deg)}}
+@keyframes blink{0%,46%,50%,100%{transform:scaleY(1)}48%{transform:scaleY(.1)}}
+.note{position:absolute;z-index:2;pointer-events:none;font-size:clamp(26px,4vh,40px);color:#fff;text-shadow:0 2px 0 #0003;animation:float 2.4s ease-out forwards}
+@keyframes float{from{transform:translate(0,0) scale(.6);opacity:0}15%{opacity:1}to{transform:translate(var(--dx),-140px) scale(1.1) rotate(var(--r));opacity:0}}
+
+/* iPad portrait and phones: everything in one column */
+@media (max-aspect-ratio:1/1){
+  :root{--cov:min(34vh,64vw,400px)}
+  #now{flex-direction:column;gap:20px}
+  .info{width:100%;text-align:center}
+  body{padding-top:max(92px,calc(env(safe-area-inset-top,0px) + 92px))}
+}
+@media (prefers-reduced-motion:reduce){body.playing #cover .cat,body.playing #cover .ear-l,body.playing #cover .ear-r,.note{animation:none!important}.note{display:none}}
+</style>
+</head>
+<body>
+<a class="corner home" href="../index.html" aria-label="Меню"><svg viewBox="0 0 40 40"><path d="M6 19L20 7l14 12M11 16v16h18V16" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+<section id="now">
+  <div id="cover" role="button" aria-label="Играть"></div>
+  <div class="info">
+    <h1 id="title"></h1>
+    <div id="lyrics" aria-live="off"></div>
+    <div class="bar">
+      <input id="seek" type="range" min="0" max="100" step="0.1" value="0" aria-label="Перемотка">
+      <div class="times"><span id="cur">0:00</span><span id="tot">0:00</span></div>
+    </div>
+    <div class="ctrls">
+      <button class="skip" id="prev" aria-label="Предыдущая"><svg viewBox="0 0 40 40"><path d="M10 8v24" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M32 9L14 20l18 11z" fill="#fff" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg></button>
+      <button id="play" aria-label="Играть"></button>
+      <button class="skip" id="next" aria-label="Следующая"><svg viewBox="0 0 40 40"><path d="M30 8v24" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M8 9l18 11L8 31z" fill="#fff" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg></button>
+    </div>
+  </div>
+</section>
+<section id="list"></section>
+<script>
+const SONGS=[{"key": "sofa-1", "title": "Софа и котики", "dur": 154.5, "lyrics": [[0.4, ["🎵 Софа-Софийка и котики! 🐱"]], [12.61, ["Мяу-мяу, прыг да скок!", "Повернулись на бочок!", "Топ-топ-топ и хлоп-хлоп-хлоп,", "Танец котиков — нон-стоп!"]], [23.38, ["У Софийки много кошек,", "Много лапок, много ножек!", "Рыжий котик, белый кот,", "Все собрались в хоровод!"]], [30.72, ["Софа прыгает с утра,", "Начинается игра!", "Котик справа, котик слева,", "Софа — кошечек королева!"]], [40.53, ["Софа, Софа, Софийка!", "Наша девочка-малинка!", "Софа, Софа, Софушка,", "Котиков подружка!"]], [47.79, ["Мяу-мяу, прыг да скок!", "Повернулись на бочок!", "Топ-топ-топ и хлоп-хлоп-хлоп,", "Танец котиков — нон-стоп!"]], [61.91, ["Три с половиной — почти четыре!", "Лучше Софы нету в мире!", "Софа любит танцевать,", "Всех котяток обнимать!"]], [73.16, ["Один котёнок под кровать,", "Другой запрыгнул на диван!", "Третий просит: «Поиграй!»", "Софа скажет: «Догоняй!»"]], [80.9, ["Софа, Софа, Софийка!", "Наша девочка-малинка!", "Софа, Софа, Софушка,", "Котиков подружка!"]], [88.09, ["Мяу-мяу, прыг да скок!", "Повернулись на бочок!", "Топ-топ-топ и хлоп-хлоп-хлоп,", "Танец котиков — нон-стоп!"]], [95.9, ["МЯУ-МЯУ-МЯУ!", "СОФИЙКА! 🐱"]], [98.62, ["МЯУ-МЯУ-МЯУ!", "СОФИЙКА! 🐱"]], [109.79, ["Мяу-мяу!", "Кто тут главный?", "Софа! Софа!", "Самый славный!"]], [113.46, ["Лапки вверх!", "Лапки вниз!", "Ну-ка, котик, покружись!"]], [116.97, ["Раз, два, три, четыре!", "Софа — лучшая в мире!"]], [120.48, ["Мяу! Мяу! Мяу! Мяу!", "Все котята зажигают!"]], [125.98, ["Софа, Софа, Софийка!", "Наша девочка-малинка!", "Софа, Софа, Софушка,", "Котиков подружка!"]], [133.0, ["Мяу-мяу, прыг да скок!", "Софа крутится — волчок!", "Топ-топ-топ и хлоп-хлоп-хлоп,", "Софа — супер!", "Софа — топ!"]], [140.11, ["МЯУ-МЯУ-МЯУ!", "СОФИЙКА! 🐱"]]]}, {"key": "sofa-2", "title": "Софа и котики 2", "dur": 126.0, "lyrics": [[0.4, ["🎵 Софа-Софийка и котики! 🐱"]], [11.09, ["У Софийки много кошек,", "Много лапок, много ножек!", "Рыжий котик, белый кот,", "Все собрались в хоровод!"]], [18.43, ["Софа прыгает с утра,", "Начинается игра!", "Котик справа, котик слева,", "Софа — кошечек королева!"]], [26.17, ["Софа, Софа, Софийка!", "Наша девочка-малинка!", "Софа, Софа, Софушка,", "Котиков подружка!"]], [33.43, ["Мяу-мяу, прыг да скок!", "Повернулись на бочок!", "Топ-топ-топ и хлоп-хлоп-хлоп,", "Танец котиков — нон-стоп!"]], [43.72, ["Три с половиной — почти четыре!", "Лучше Софы нету в мире!", "Софа любит танцевать,", "Всех котяток обнимать!"]], [54.81, ["Один котёнок под кровать,", "Другой запрыгнул на диван!", "Третий просит: «Поиграй!»", "Софа скажет: «Догоняй!»"]], [62.39, ["Софа, Софа, Софийка!", "Наша девочка-малинка!", "Софа, Софа, Софушка,", "Котиков подружка!"]], [69.57, ["Мяу-мяу, прыг да скок!", "Повернулись на бочок!", "Топ-топ-топ и хлоп-хлоп-хлоп,", "Танец котиков — нон-стоп!"]], [80.35, ["Мяу-мяу!", "Кто тут главный?", "Софа! Софа!", "Самый славный!"]], [87.45, ["Лапки вверх!", "Лапки вниз!", "Ну-ка, котик, покружись!"]], [91.04, ["Раз, два, три, четыре!", "Софа — лучшая в мире!"]], [94.47, ["Мяу! Мяу! Мяу! Мяу!", "Все котята зажигают!"]], [101.65, ["Софа, Софа, Софийка!", "Наша девочка-малинка!", "Софа, Софа, Софушка,", "Котиков подружка!"]], [108.67, ["Мяу-мяу, прыг да скок!", "Софа крутится — волчок!", "Топ-топ-топ и хлоп-хлоп-хлоп,", "Софа — супер!", "Софа — топ!"]], [115.69, ["МЯУ-МЯУ-МЯУ!", "СОФИЙКА! 🐱"]]]}, {"key": "sofika-1", "title": "Софика и котики", "dur": 166.1, "lyrics": [[0.4, ["🎵 Софика и котики! 🐱💖"]], [9.02, ["Софика, Софика, Софика, Софика!"]], [15.88, ["Софика, Софика, Софика, Софика!"]], [19.31, ["Любит пушистых и милых котиков!"]], [22.74, ["Котик мяукает: мяу-мяу-мяу!"]], [25.93, ["Софика смеётся: вау-вау-вау!"]], [29.52, ["Котик подпрыгнул, хвостиком махнул,"]], [32.87, ["Софику лапкой за ручку тянул!"]], [36.3, ["Софика! Софика! Софика! Эй!"]], [39.65, ["Софика! Софика!", "Танцуй веселей!"]], [43.01, ["Софика! Софика!", "Мяу-мяу-мяу!"]], [46.44, ["Софика! Софика!", "Вау-вау-вау!"]], [49.79, ["Котики, котики, топ-топ-топ!"]], [51.46, ["Софика, Софика, хлоп-хлоп-хлоп!"]], [53.14, ["Котики прыгают — прыг да скок!"]], [54.81, ["Софика кружится — ещё разок!"]], [56.41, ["У Софики котиков целый вагон!"]], [59.84, ["Один на подушке, другой под столом!"]], [63.19, ["Один полосатый, другой озорной,"]], [66.3, ["А третий танцует с Софой одной!"]], [69.89, ["Софика котика нежно погладит,"]], [73.25, ["Софика котика спать укладывает."]], [76.44, ["Но котик не спит, он хочет играть,"]], [79.71, ["И Софика снова пускается в пляс!"]], [84.89, ["Софика! Софика! Софика! Эй!"]], [88.16, ["Софика! Софика!", "Танцуй веселей!"]], [91.44, ["Софика! Софика!", "Мяу-мяу-мяу!"]], [94.71, ["Софика! Софика!", "Вау-вау-вау!"]], [101.17, ["Софика — прыг!"]], [102.69, ["Котики — скок!"]], [104.28, ["Софика — хлоп!"]], [105.88, ["Котики — топ!"]], [107.71, ["Софика! Софика! Софика! Софика!"]], [110.98, ["Софика! Софика! Софика! Софика!"]], [114.1, ["Мяу-мяу!", "Мур-мур-мур!"]], [115.77, ["Котик крутится — ур-ур-ур!"]], [127.02, ["Софика! Софика! Софика! Софика!"]], [130.21, ["Софика! Софика! Софика! Софика!"]], [133.4, ["Котики! Котики! Котики! Мяу!"]], [136.68, ["Софика — супер!", "Софика — вау!"]], [139.87, ["Софика! Софика! Софика! Ура!"]], [142.82, ["С котиками танцевать до утра!"]], [146.17, ["Софика! Софика! Софика! Эй!"]], [149.36, ["Нашей Софике — четыре скорей!"]], [152.47, ["МЯУ-МЯУ-МЯУ! 🐱🎉"]], [153.67, ["МЯУ-МЯУ-МЯУ! 🐱🎉"]]]}, {"key": "sofika-2", "title": "Софика и котики 2", "dur": 155.7, "lyrics": [[0.4, ["🎵 Софика и котики! 🐱💖"]], [9.02, ["Софика, Софика, Софика, Софика!"]], [15.8, ["Софика, Софика, Софика, Софика!"]], [19.15, ["Любит пушистых и милых котиков!"]], [24.18, ["Котик мяукает: мяу-мяу-мяу!"]], [27.29, ["Софика смеётся: вау-вау-вау!"]], [30.8, ["Котик подпрыгнул, хвостиком махнул,"]], [34.07, ["Софику лапкой за ручку тянул!"]], [38.94, ["Софика! Софика! Софика! Эй!"]], [42.21, ["Софика! Софика!", "Танцуй веселей!"]], [45.48, ["Софика! Софика!", "Мяу-мяу-мяу!"]], [48.67, ["Софика! Софика!", "Вау-вау-вау!"]], [51.94, ["Котики, котики, топ-топ-топ!"]], [53.62, ["Софика, Софика, хлоп-хлоп-хлоп!"]], [55.29, ["Котики прыгают — прыг да скок!"]], [56.89, ["Софика кружится — ещё разок!"]], [61.52, ["У Софики котиков целый вагон!"]], [65.03, ["Один на подушке, другой под столом!"]], [68.3, ["Один полосатый, другой озорной,"]], [71.17, ["А третий танцует с Софой одной!"]], [74.76, ["Софика котика нежно погладит,"]], [77.95, ["Софика котика спать укладывает."]], [81.22, ["Но котик не спит, он хочет играть,"]], [84.18, ["И Софика снова пускается в пляс!"]], [89.04, ["Софика! Софика! Софика! Эй!"]], [92.23, ["Софика! Софика!", "Танцуй веселей!"]], [95.43, ["Софика! Софика!", "Мяу-мяу-мяу!"]], [98.7, ["Софика! Софика!", "Вау-вау-вау!"]], [101.65, ["МЯУ-МЯУ-МЯУ! 🐱🎉"]], [105.16, ["Софика — прыг!"]], [106.75, ["Котики — скок!"]], [108.35, ["Софика — хлоп!"]], [109.87, ["Котики — топ!"]], [111.46, ["Софика! Софика! Софика! Софика!"]], [114.57, ["Софика! Софика! Софика! Софика!"]], [117.69, ["Мяу-мяу!", "Мур-мур-мур!"]], [119.28, ["Котик крутится — ур-ур-ур!"]], [123.67, ["Софика! Софика! Софика! Софика!"]], [127.18, ["Софика! Софика! Софика! Софика!"]], [130.29, ["Софика! Софика! Софика! Софика!"]], [133.4, ["Котики! Котики! Котики! Мяу!"]], [136.44, ["Софика — супер!", "Софика — вау!"]], [139.55, ["Софика! Софика! Софика! Ура!"]], [142.5, ["С котиками танцевать до утра!"]], [145.53, ["Софика! Софика! Софика! Эй!"]], [148.8, ["Нашей Софике — четыре скорей!"]], [151.75, ["МЯУ-МЯУ-МЯУ! 🐱🎉"]], [153.27, ["МЯУ-МЯУ-МЯУ! 🐱🎉"]]]}];
+/* each song has its own cat and colour */
+const LOOK=[
+  {bg:"#f06292",dark:"#b83b68",fur:"#f6a04d",line:"#a85a1c",stripe:"#d9782a",ear:"#ffc6cf",eye:"#3b2a20"},  // ginger
+  {bg:"#7e57c2",dark:"#55369a",fur:"#ffffff",line:"#a99cc0",stripe:null,ear:"#ffc6cf",eye:"#3a6fd8"},     // white
+  {bg:"#26a69a",dark:"#167a70",fur:"#a3adb8",line:"#5d6873",stripe:"#7d8894",ear:"#f4b6c2",eye:"#2f8f5b"}, // grey
+  {bg:"#ffb300",dark:"#b26a00",fur:"#34303a",line:"#16131a",stripe:null,ear:"#d98b9b",eye:"#9ccc3d"},     // black
+];
+const $=id=>document.getElementById(id);
+const fmt=s=>{s=Math.max(0,Math.floor(s||0)); return `${Math.floor(s/60)}:${String(s%60).padStart(2,"0")}`};
+const esc=s=>s.replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"})[c]);
+
+function coverSVG(i){
+  const L=LOOK[i], two=/ 2$/.test(SONGS[i].title);
+  const stripes=L.stripe?`<path d="M88 66q4 10 0 20M100 63v24M112 66q-4 10 0 20" fill="none" stroke="${L.stripe}" stroke-width="6" stroke-linecap="round"/>`:"";
+  return `<svg viewBox="0 0 200 200" aria-hidden="true">
+  <defs><radialGradient id="g${i}" cx=".5" cy=".3" r=".8"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>
+  <rect width="200" height="200" fill="${L.bg}"/><rect width="200" height="200" fill="url(#g${i})"/>
+  <g fill="#fff" opacity=".35"><circle cx="28" cy="34" r="4"/><circle cx="170" cy="46" r="5"/><circle cx="160" cy="18" r="3"/><circle cx="40" cy="70" r="3"/><circle cx="182" cy="96" r="3"/><circle cx="16" cy="118" r="4"/></g>
+  <text x="30" y="58" font-size="30" fill="#fff" opacity=".7" font-family="Nunito,sans-serif">♪</text><text x="150" y="80" font-size="26" fill="#fff" opacity=".7" font-family="Nunito,sans-serif">♫</text>
+  <g class="cat">
+    <path d="M40 260V200Q40 150 100 148Q160 150 160 200V260Z" fill="${L.fur}" stroke="${L.line}" stroke-width="4"/>
+    <g class="ear-l"><path d="M48 98L54 40Q58 34 64 38L92 70Z" fill="${L.fur}" stroke="${L.line}" stroke-width="4" stroke-linejoin="round"/><path d="M58 76L61 50L80 70Z" fill="${L.ear}"/></g>
+    <g class="ear-r"><path d="M152 98L146 40Q142 34 136 38L108 70Z" fill="${L.fur}" stroke="${L.line}" stroke-width="4" stroke-linejoin="round"/><path d="M142 76L139 50L120 70Z" fill="${L.ear}"/></g>
+    <ellipse cx="100" cy="110" rx="58" ry="50" fill="${L.fur}" stroke="${L.line}" stroke-width="4"/>
+    ${stripes}
+    <g class="eyes">
+      <ellipse cx="78" cy="106" rx="11" ry="13" fill="${L.eye}"/><ellipse cx="122" cy="106" rx="11" ry="13" fill="${L.eye}"/>
+      <ellipse cx="78" cy="108" rx="5" ry="8" fill="#141414"/><ellipse cx="122" cy="108" rx="5" ry="8" fill="#141414"/>
+      <circle cx="82" cy="100" r="4" fill="#fff"/><circle cx="126" cy="100" r="4" fill="#fff"/>
+    </g>
+    <circle cx="66" cy="128" r="9" fill="#ff8fa8" opacity=".55"/><circle cx="134" cy="128" r="9" fill="#ff8fa8" opacity=".55"/>
+    <path d="M94 122h12l-6 7z" fill="#ff7f9a" stroke="#ff7f9a" stroke-width="2" stroke-linejoin="round"/>
+    <path d="M100 129q-4 9-12 6M100 129q4 9 12 6" fill="none" stroke="${L.line}" stroke-width="3.5" stroke-linecap="round"/>
+    <path d="M60 118L28 112M60 126L28 130M140 118L172 112M140 126L172 130" stroke="${L.line}" stroke-width="2.5" stroke-linecap="round" opacity=".7"/>
+    <ellipse cx="76" cy="186" rx="16" ry="11" fill="${L.fur}" stroke="${L.line}" stroke-width="4"/><ellipse cx="124" cy="186" rx="16" ry="11" fill="${L.fur}" stroke="${L.line}" stroke-width="4"/>
+  </g>
+  ${two?`<circle cx="168" cy="168" r="22" fill="#fff"/><text x="168" y="179" text-anchor="middle" font-size="32" font-weight="900" fill="${L.dark}" font-family="Nunito,Trebuchet MS,sans-serif">2</text>`:""}
+</svg>`}
+
+const PLAY=`<svg viewBox="0 0 40 40"><path d="M13 7l21 13-21 13z" fill="var(--accd)" stroke="var(--accd)" stroke-width="4" stroke-linejoin="round"/></svg>`;
+const PAUSE=`<svg viewBox="0 0 40 40"><path d="M13 8v24M27 8v24" stroke="var(--accd)" stroke-width="8" stroke-linecap="round"/></svg>`;
+
+const audio=new Audio(); audio.preload="metadata";
+let cur=0; try{const n=+localStorage.getItem("music-song"); if(n>=0&&n<SONGS.length) cur=n}catch(e){}
+
+/* tiles */
+$("list").innerHTML=SONGS.map((s,i)=>`<button class="tile" data-i="${i}" aria-label="${esc(s.title)}">
+  <span class="mini">${coverSVG(i).replace(/id="g(\d)"/,'id="t$1"').replace(/url\(#g(\d)\)/,"url(#t$1)")}<span class="eq"><i></i><i></i><i></i></span></span>
+  <span>${esc(s.title)}</span><span class="len">${fmt(s.dur)}</span></button>`).join("");
+document.querySelectorAll(".tile").forEach(t=>t.onclick=()=>{const i=+t.dataset.i; if(i===cur&&audio.src) toggle(); else pick(i,true)});
+
+function show(){
+  const s=SONGS[cur], L=LOOK[cur];
+  document.documentElement.style.setProperty("--acc",L.bg); document.documentElement.style.setProperty("--accd",L.dark);
+  $("cover").innerHTML=coverSVG(cur); $("title").textContent=s.title; $("tot").textContent=fmt(s.dur);
+  document.querySelectorAll(".tile").forEach(t=>t.classList.toggle("on",+t.dataset.i===cur));
+  cueAt=-2; lyrics(0); bar(0);
+  if("mediaSession" in navigator) navigator.mediaSession.metadata=new MediaMetadata({title:s.title,artist:"Софа",album:"Песенки про котиков",
+    artwork:[{src:new URL(`cover-${s.key}.png`,location.href).href,sizes:"512x512",type:"image/png"}]});
+}
+function pick(i,play){
+  cur=(i+SONGS.length)%SONGS.length; try{localStorage.setItem("music-song",cur)}catch(e){}
+  audio.src=`audio/${SONGS[cur].key}.mp3?v=1`; show();
+  if(play) audio.play().catch(()=>{});
+}
+function toggle(){ if(!audio.src) return pick(cur,true); audio.paused?audio.play().catch(()=>{}):audio.pause() }
+function prev(){ if(audio.currentTime>3) audio.currentTime=0; else pick(cur-1,!audio.paused||!audio.src) }
+function next(){ pick(cur+1,!audio.paused||!audio.src) }
+
+/* the words: the line being sung, and the next one faded when there is room */
+let cueAt=-2;
+function lyrics(t){
+  const ly=SONGS[cur].lyrics; let k=-1;
+  for(let j=0;j<ly.length;j++){ if(ly[j][0]<=t+.15) k=j; else break }
+  if(k===cueAt) return; cueAt=k;
+  const el=$("lyrics"), now=k>=0?ly[k][1]:[], nxt=ly[k+1]?ly[k+1][1]:[];
+  let html=now.map(r=>`<div class="cue">${esc(r)}</div>`).join("");
+  if(now.length+nxt.length<=4) html+=nxt.map(r=>`<div class="cue next">${esc(r)}</div>`).join("");
+  el.classList.add("fade"); setTimeout(()=>{el.innerHTML=html; el.classList.remove("fade")},120);
+}
+let dragging=false;
+function bar(t){
+  const d=audio.duration||SONGS[cur].dur, p=d?Math.min(100,t/d*100):0;
+  if(!dragging){$("seek").value=p; $("seek").style.setProperty("--p",p+"%")}
+  $("cur").textContent=fmt(t);
+}
+function tick(){ bar(audio.currentTime); lyrics(audio.currentTime); if(!audio.paused) requestAnimationFrame(tick) }
+
+$("seek").addEventListener("input",e=>{
+  dragging=true; const p=+e.target.value; e.target.style.setProperty("--p",p+"%");
+  const d=audio.duration||SONGS[cur].dur; $("cur").textContent=fmt(p/100*d);
+});
+$("seek").addEventListener("change",e=>{
+  dragging=false; if(!audio.src) pick(cur,false);
+  const d=audio.duration||SONGS[cur].dur; audio.currentTime=+e.target.value/100*d; bar(audio.currentTime); lyrics(audio.currentTime);
+});
+
+audio.addEventListener("play",()=>{document.body.classList.add("playing"); $("play").innerHTML=PAUSE; $("play").setAttribute("aria-label","Пауза"); requestAnimationFrame(tick)});
+audio.addEventListener("pause",()=>{document.body.classList.remove("playing"); $("play").innerHTML=PLAY; $("play").setAttribute("aria-label","Играть")});
+audio.addEventListener("ended",()=>pick(cur+1,true));  // then the next song, round and round
+audio.addEventListener("timeupdate",()=>{ if(audio.paused){bar(audio.currentTime); lyrics(audio.currentTime)} });
+
+$("play").onclick=toggle; $("cover").onclick=toggle; $("prev").onclick=prev; $("next").onclick=next;
+document.addEventListener("keydown",e=>{ if(e.code==="Space"&&e.target.tagName!=="BUTTON"){e.preventDefault(); toggle()} });
+if("mediaSession" in navigator){
+  const ms=navigator.mediaSession;
+  ms.setActionHandler("play",()=>audio.play()); ms.setActionHandler("pause",()=>audio.pause());
+  ms.setActionHandler("previoustrack",prev); ms.setActionHandler("nexttrack",next);
+  try{ms.setActionHandler("seekto",e=>{audio.currentTime=e.seekTime})}catch(e){}
+}
+
+/* music notes float up from the cover while it plays */
+setInterval(()=>{
+  if(audio.paused||document.hidden) return;
+  const c=$("cover").getBoundingClientRect(), n=document.createElement("div");
+  n.className="note"; n.textContent=Math.random()<.5?"♪":"♫";
+  n.style.left=(c.left+window.scrollX+c.width*(.15+Math.random()*.7))+"px"; n.style.top=(c.top+window.scrollY+c.height*.12)+"px";
+  n.style.setProperty("--dx",(Math.random()*80-40)+"px"); n.style.setProperty("--r",(Math.random()*40-20)+"deg");
+  document.body.appendChild(n); setTimeout(()=>n.remove(),2500);
+},650);
+
+$("play").innerHTML=PLAY; show();
+</script>
+</body>
+</html>
