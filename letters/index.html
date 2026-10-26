@@ -100,6 +100,18 @@ body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:
 @keyframes pop{to{transform:scale(1.5);opacity:0}}
 @keyframes away{to{transform:translateY(-120vh) rotate(8deg)}}
 
+/* Sofia's speech bubble: the thing whose letter she asks for (above her head; beside it on tall screens) */
+#bubble{--qb:min(25vh,190px);position:absolute;z-index:5;width:var(--qb);height:var(--qb);padding:0;cursor:pointer;
+  left:max(8px,calc(var(--sx) + var(--sw)/2 - var(--qb)/2));bottom:calc(6% + var(--sh) + 14px);
+  background:#fff;border:6px solid var(--lc);border-radius:34%;box-shadow:0 8px 0 #0002;
+  display:flex;align-items:center;justify-content:center;font-size:calc(var(--qb)*.6);line-height:1;
+  scale:0;transform-origin:50% 120%;transition:scale .45s cubic-bezier(.3,1.6,.5,1)}
+#bubble.show{scale:1}
+#bubble span{position:relative;z-index:1}
+#bubble::after{content:"";position:absolute;width:20%;height:20%;left:50%;bottom:-12%;translate:-50% 0;rotate:45deg;
+  background:#fff;border:solid var(--lc);border-width:0 6px 6px 0;border-bottom-right-radius:6px}
+#bubble:focus-visible{outline:5px dashed #fff;outline-offset:4px}
+
 /* the picture card: the letter, a picture and a word that starts with it (or has it) */
 #card{position:absolute;left:50%;top:50%;z-index:6;translate:-50% -50%;scale:.2;opacity:0;pointer-events:none;
   width:min(86%,400px);padding:14px 18px 18px;border-radius:32px;background:var(--card);border:6px solid var(--lc);
@@ -207,8 +219,10 @@ body.ru{--lc:var(--ru)} body.lv{--lc:var(--lv)}
 @media (orientation:portrait){
   :root{--sh:min(40vh,480px);--bl:min(28vw,24vh,230px)}
   #sky{left:3vw;right:3vw;top:9%;bottom:calc(6% + var(--sh)*.72)}
+  #bubble{--qb:min(22vh,36vw,230px);left:calc(var(--sx) + var(--sw) + 7vw);bottom:calc(6% + var(--sh)*.5);transform-origin:-20% 50%}
+  #bubble::after{left:-12%;bottom:auto;top:50%;translate:0 -50%;border-width:0 0 6px 6px;border-radius:0 0 0 6px}
 }
-@media (max-height:520px){:root{--sh:62vh;--bl:min(19vw,40vh);--mw:68px}#repeat svg{width:36px;height:36px}#card .pic{font-size:20vh}}
+@media (max-height:520px){:root{--sh:62vh;--bl:min(19vw,40vh);--mw:68px}#bubble{--qb:24vh;bottom:calc(6% + var(--sh)*.9)}#repeat svg{width:36px;height:36px}#card .pic{font-size:20vh}}
 </style>
 </head>
 <body class="ru">
@@ -271,6 +285,7 @@ body.ru{--lc:var(--ru)} body.lv{--lc:var(--lv)}
     </svg>
   </div>
   <div id="sky" aria-live="polite"></div>
+  <button id="bubble" aria-label="Повторить вопрос"><span></span></button>
   <button id="repeat" class="big" hidden aria-label="Повторить вопрос"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M6 15h7l9-8v26l-9-8H6z" fill="#fff"/><path d="M27 13a9 9 0 0 1 0 14M31 8a15 15 0 0 1 0 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg></button>
   <div id="overlay"></div>
   <div id="book" hidden></div>
@@ -278,13 +293,13 @@ body.ru{--lc:var(--ru)} body.lv{--lc:var(--lv)}
 </div>
 <script>
 /* each alphabet: [letter, its name as spoken, [[a name (or word) with it, a picture], ...]]; with several, one is picked at random */
-const RU=[["А", "а", [["Амелия", "👧"]]], ["Б", "бэ", [["Богдан", "👦"]]], ["В", "вэ", [["Вероника", "👩"], ["Ваграм", "👨"]]], ["Г", "гэ", [["Глеб", "👦🏼"]]], ["Д", "дэ", [["Даша", "👱‍♀️"]]], ["Е", "йе", [["Ева", "👧🏼"]]], ["Ё", "йо", [["Артём", "👦"]]], ["Ж", "жэ", [["Женя", "🧒"]]], ["З", "зэ", [["Зоя", "👩‍🦰"]]], ["И", "и", [["Иван", "👦🏻"]]], ["Й", "и краткое", [["Майя", "👧🏽"]]], ["К", "ка", [["Катя", "👩‍🦱"]]], ["Л", "эль", [["Лиза", "👧"]]], ["М", "эм", [["Миша", "👦"]]], ["Н", "эн", [["Никита", "🧒🏼"]]], ["О", "о", [["Оля", "👱‍♀️"]]], ["П", "пэ", [["Петя", "👦🏼"]]], ["Р", "эр", [["Рома", "👨‍🦱"]]], ["С", "эс", [["София", "SOFIA"]]], ["Т", "тэ", [["Тата", "👩"]]], ["У", "у", [["Ульяна", "👧🏼"]]], ["Ф", "эф", [["Федя", "👦"]]], ["Х", "ха", [["Хрюша", "🐷"]]], ["Ц", "цэ", [["цветок", "🌸"]]], ["Ч", "чэ", [["часы", "⏰"]]], ["Ш", "ша", [["Шарик", "🐶"]]], ["Щ", "ща", [["щётка", "🪥"]]], ["Ъ", "твёрдый знак", [["подъезд", "🏢"]]], ["Ы", "ы", [["Рыжик", "🐱"]]], ["Ь", "мягкий знак", [["Игорь", "👨"]]], ["Э", "э", [["Эмма", "👩‍🦰"]]], ["Ю", "ю", [["Юля", "👧"]]], ["Я", "я", [["Яна", "👱‍♀️"]]]];
-const LV=[["A", "a", [["Amēlija", "👧"]]], ["Ā", "garais ā", [["Ādams", "👦"]]], ["B", "bē", [["Baiba", "👩‍🦰"]]], ["C", "cē", [["cālis", "🐥"]]], ["Č", "čē", [["čūska", "🐍"]]], ["D", "dē", [["Dāvis", "👦🏼"]]], ["E", "e", [["Elza", "👱‍♀️"]]], ["Ē", "garais ē", [["Ēriks", "👦🏻"]]], ["F", "ef", [["Filips", "🧒"]]], ["G", "gē", [["Gustavs", "👦"]]], ["Ģ", "ģē", [["Ģirts", "👨‍🦱"]]], ["H", "hā", [["Hanna", "👧🏼"]]], ["I", "i", [["Ieva", "👩‍🦱"]]], ["Ī", "garais ī", [["īkšķis", "👍"]]], ["J", "jē", [["Jānis", "👨"]]], ["K", "kā", [["Kārlis", "👦🏼"]]], ["Ķ", "ķē", [["ķirbis", "🎃"]]], ["L", "el", [["Līga", "👧"]]], ["Ļ", "eļ", [["bļoda", "🥣"]]], ["M", "em", [["Marta", "👧🏽"]]], ["N", "en", [["Nora", "👱‍♀️"]]], ["Ņ", "eņ", [["bruņurupucis", "🐢"]]], ["O", "o", [["Oskars", "🧒🏼"]]], ["P", "pē", [["Paula", "👩‍🦰"]]], ["R", "er", [["Roberts", "👦"]]], ["S", "es", [["Sofija", "SOFIA"]]], ["Š", "eš", [["šokolāde", "🍫"]]], ["T", "tē", [["Tata", "👩"]]], ["U", "u", [["Una", "👧🏼"]]], ["Ū", "garais ū", [["ūpis", "🦉"]]], ["V", "vē", [["Veronika", "👩"], ["Vagrams", "👨"]]], ["Z", "zē", [["Zane", "👩‍🦱"]]], ["Ž", "žē", [["žirafe", "🦒"]]]];
+const RU=[["А", "а", [["арбуз", "🍉"], ["Амелия", "👧"]]], ["Б", "бэ", [["банан", "🍌"]]], ["В", "вэ", [["вишня", "🍒"], ["Вероника", "👩"], ["Ваграм", "👨"]]], ["Г", "гэ", [["гриб", "🍄"]]], ["Д", "дэ", [["дом", "🏠"]]], ["Е", "йе", [["енот", "🦝"]]], ["Ё", "йо", [["ёжик", "🦔"]]], ["Ж", "жэ", [["жираф", "🦒"]]], ["З", "зэ", [["зонтик", "☂️"]]], ["И", "и", [["индюк", "🦃"]]], ["Й", "и краткое", [["йо-йо", "🪀"]]], ["К", "ка", [["кот", "🐱"]]], ["Л", "эль", [["лев", "🦁"]]], ["М", "эм", [["мышка", "🐭"]]], ["Н", "эн", [["нос", "👃"]]], ["О", "о", [["облако", "☁️"]]], ["П", "пэ", [["пингвин", "🐧"]]], ["Р", "эр", [["ракета", "🚀"]]], ["С", "эс", [["солнце", "☀️"], ["София", "SOFIA"]]], ["Т", "тэ", [["тигр", "🐯"], ["Тата", "👩"]]], ["У", "у", [["утка", "🦆"]]], ["Ф", "эф", [["фламинго", "🦩"]]], ["Х", "ха", [["хлеб", "🍞"]]], ["Ц", "цэ", [["цветок", "🌸"]]], ["Ч", "чэ", [["черепаха", "🐢"]]], ["Ш", "ша", [["шарик", "🎈"]]], ["Щ", "ща", [["щенок", "🐶"]]], ["Ъ", "твёрдый знак", [["подъезд", "🏢"]]], ["Ы", "ы", [["сыр", "🧀"]]], ["Ь", "мягкий знак", [["конь", "🐴"]]], ["Э", "э", [["эскимо", "🍦"]]], ["Ю", "ю", [["Юля", "👧"]]], ["Я", "я", [["яблоко", "🍎"]]]];
+const LV=[["A", "a", [["apelsīns", "🍊"], ["Amēlija", "👧"]]], ["Ā", "garais ā", [["ābols", "🍎"]]], ["B", "bē", [["banāns", "🍌"]]], ["C", "cē", [["cālis", "🐥"]]], ["Č", "čē", [["čūska", "🐍"]]], ["D", "dē", [["dāvana", "🎁"]]], ["E", "e", [["ezis", "🦔"]]], ["Ē", "garais ē", [["ērglis", "🦅"]]], ["F", "ef", [["flamingo", "🦩"]]], ["G", "gē", [["gailis", "🐓"]]], ["Ģ", "ģē", [["ģitāra", "🎸"]]], ["H", "hā", [["haizivs", "🦈"]]], ["I", "i", [["Ilze", "👧"]]], ["Ī", "garais ī", [["īkšķis", "👍"]]], ["J", "jē", [["jēriņš", "🐑"]]], ["K", "kā", [["kaķis", "🐱"]]], ["Ķ", "ķē", [["ķirbis", "🎃"]]], ["L", "el", [["lācis", "🐻"]]], ["Ļ", "eļ", [["bļoda", "🥣"]]], ["M", "em", [["mašīna", "🚗"]]], ["N", "en", [["nīlzirgs", "🦛"]]], ["Ņ", "eņ", [["bruņurupucis", "🐢"]]], ["O", "o", [["ola", "🥚"]]], ["P", "pē", [["pīle", "🦆"]]], ["R", "er", [["roze", "🌹"]]], ["S", "es", [["saule", "☀️"], ["Sofija", "SOFIA"]]], ["Š", "eš", [["šokolāde", "🍫"]]], ["T", "tē", [["tomāts", "🍅"], ["Tata", "👩"]]], ["U", "u", [["uguns", "🔥"]]], ["Ū", "garais ū", [["ūdens", "💧"]]], ["V", "vē", [["vāvere", "🐿️"], ["Veronika", "👩"], ["Vagrams", "👨"]]], ["Z", "zē", [["zivs", "🐟"]]], ["Ž", "žē", [["žirafe", "🦒"]]]];
 const L={ru:{rows:RU,title:"Русские буквы",q:"Где буква",yes:"Умница!",no:"Попробуй ещё!",end:"Ура! Ты нашла все буквы!",book:"Азбука"},
          lv:{rows:LV,title:"Latviešu burti",q:"Kur ir burts",yes:"Malacīte!",no:"Pamēģini vēlreiz!",end:"Urā! Tu atradi visus burtus!",book:"Ābece"}};
 const num=i=>String(i+1).padStart(2,"0");
 const cap=s=>s[0].toUpperCase()+s.slice(1);
-const nameKeyOf=(lang,i,j)=>`${lang}-${num(i)}-name${j?j+1:""}`;
+const nameKeyOf=(lang,i,j)=>`${lang}-${num(i)}-name${j?j+1:""}`, picKeyOf=(lang,i,j)=>`${lang}-${num(i)}-pic${j?j+1:""}`;
 /* every voice clip; key = file name in audio/ (generated voice) and, with "abc-" in front, the family recording on the server */
 const clips={};
 for(const lang of ["ru","lv"]){const t=L[lang];
@@ -294,11 +309,12 @@ for(const lang of ["ru","lv"]){const t=L[lang];
     {key:"end-"+lang,label:t.end,sub:"Конец игры"},
     ...t.rows.flatMap(([ch,name,words],i)=>[
       {key:`${lang}-${num(i)}-ask`,label:`${t.q} ${name}?`,sub:"Вопрос",group:i},
-      ...words.map(([w],j)=>({key:nameKeyOf(lang,i,j),label:`${cap(name)} — ${cap(w)}!`,sub:"На карточке с картинкой",group:i}))])];
+      ...words.flatMap(([w],j)=>[{key:picKeyOf(lang,i,j),label:`${cap(w)}!`,sub:"Картинка перед вопросом",group:i},
+                                 {key:nameKeyOf(lang,i,j),label:`${cap(name)} — ${cap(w)}!`,sub:"На карточке с картинкой",group:i}])])];
 }
 
 const $=id=>document.getElementById(id);
-const sky=$("sky"), overlay=$("overlay"), sofia=$("sofia"), parent=$("parent"), book=$("book"), repeatBtn=$("repeat");
+const sky=$("sky"), bubble=$("bubble"), overlay=$("overlay"), sofia=$("sofia"), parent=$("parent"), book=$("book"), repeatBtn=$("repeat");
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
 for(let i=0;i<14;i++){const f=document.createElement("div");f.className="flower";f.style.left=(i*7.3+Math.random()*4)+"%";f.style.bottom=(3+Math.random()*15)+"%";
   f.style.transform=`scale(${.6+Math.random()*.5})`;f.style.setProperty("--x",0);$("ground").appendChild(f)}
@@ -379,7 +395,7 @@ const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()
 /* look-alikes (Е/Ё, И/Й, A/Ā, S/Š…) never share a round: one dot or hook is too fine a difference for now */
 const base=ch=>ch.normalize("NFD").replace(/[̀-ͯ]/g,"").replace("Щ","Ш").replace("Ъ","Ь");
 const similar=(a,b)=>base(rows()[a][0])===base(rows()[b][0]);
-const askKey=i=>`${lang}-${num(i)}-ask`, nameKey=(i,j)=>nameKeyOf(lang,i,j);
+const askKey=i=>`${lang}-${num(i)}-ask`, nameKey=(i,j)=>nameKeyOf(lang,i,j), picKey=(i,j)=>picKeyOf(lang,i,j);
 const anyWord=i=>Math.floor(Math.random()*rows()[i][2].length);
 /* pauses, so she has time to look and answer */
 const IDLE=14000, HINT=2500, AFTER_NO=900, AFTER_CARD=1600, BEFORE_ASK=1200;
@@ -401,14 +417,16 @@ async function nextRound(){
   const pick=[target]; for(const i of others){ if(pick.length===CHOICES) break; if(!pick.some(p=>similar(p,i))) pick.push(i) }
   const cols=shuffle([...COLORS]), ys=shuffle([-14,0,12]);
   sky.innerHTML=shuffle(pick).map((i,n)=>balloonHTML(i,cols[n],(n*.7).toFixed(1),ys[n])).join("")+cardHTML();
-  pickJ=anyWord(target); preload([askKey(target),nameKey(target,pickJ)]);
+  pickJ=anyWord(target); preload([picKey(target,pickJ),askKey(target),nameKey(target,pickJ)]);
+  bubble.querySelector("span").innerHTML=pic(rows()[target][2][pickJ][1]);
   await wait(50); sfx.whoosh();
   sky.querySelectorAll(".slot").forEach((s,n)=>setTimeout(()=>s.classList.remove("low"),n*160));
-  await wait(900+BEFORE_ASK); busy=false; ask();
+  await wait(900); bubble.classList.add("show"); await wait(BEFORE_ASK); busy=false; ask(true);
 }
+/* first the thing in the bubble ("Apelsīns!"), then the question ("Kur ir burts A?") */
 async function ask(){
   clearTimeout(idleT); repeatBtn.hidden=false;
-  const t=target; if(!await say([askKey(t)])||t!==target||busy) return;
+  const t=target; if(!await say([picKey(t,pickJ),askKey(t)],sofia,350)||t!==target||busy) return;
   waitForTap();
 }
 /* after the question: a quiet moment, then the right balloon starts to shake a little; much later, show it clearly and ask again */
@@ -444,7 +462,7 @@ sky.addEventListener("click",async e=>{
   const r=b.getBoundingClientRect(); b.classList.remove("help"); b.classList.add("pop"); sfx.pop(); stars(r.left+r.width/2+"px",r.top+r.height*.4+"px");
   sky.querySelectorAll(".balloon:not(.pop)").forEach(o=>o.classList.add("gone"));
   found.push([i,pickJ]); const dot=$("progress").children[found.length-1]; dot.style.setProperty("--c",b.style.getPropertyValue("--c")); dot.classList.add("done");
-  fillCard(i,pickJ); await wait(250); $("card").classList.add("show");
+  bubble.classList.remove("show"); fillCard(i,pickJ); await wait(250); $("card").classList.add("show");
   await say(["yes-"+lang,nameKey(i,pickJ)],sofia,500); await wait(AFTER_CARD);
   $("card").classList.remove("show"); await wait(350);
   if(found.length>=ROUND) return finale();
@@ -452,6 +470,7 @@ sky.addEventListener("click",async e=>{
 });
 $("sky").addEventListener("pointerdown",ac);
 repeatBtn.addEventListener("click",()=>{ac();if(!busy) ask()});
+bubble.addEventListener("click",()=>{ac();if(!busy&&overlay.hidden&&target>=0) ask()});
 sofia.addEventListener("click",()=>{ac();if(!busy&&overlay.hidden&&target>=0) ask()});
 
 async function walkIn(){
@@ -475,7 +494,7 @@ function langCard(l,abc){return `<div class="lang ${l}">
   <button class="go" data-play="${l}"><span class="abc" lang="${l}">${abc}</span><span class="name" lang="${l}">${L[l].title}</span>${playIcon}</button>
   <button class="book" data-book="${l}">${bookIcon}<span lang="${l}">${L[l].book}</span></button></div>`}
 function startScreen(){
-  clearTimeout(idleT); clearTimeout(hintT); sayId++; stopVoice(); repeatBtn.hidden=true; target=-1; sky.innerHTML=""; $("progress").innerHTML="";
+  clearTimeout(idleT); clearTimeout(hintT); sayId++; stopVoice(); repeatBtn.hidden=true; bubble.classList.remove("show"); target=-1; sky.innerHTML=""; $("progress").innerHTML="";
   overlay.hidden=false; book.hidden=true;
   overlay.innerHTML=`${homeBtn}${gearBtn}<h1><span>Буквы</span><span lang="lv">Burti</span></h1>
     <div class="row">${langCard("ru","А Б В")}${langCard("lv","A Ā B")}</div>`;
@@ -484,7 +503,7 @@ function startScreen(){
   overlay.querySelectorAll("[data-book]").forEach(b=>b.onclick=()=>openBook(b.dataset.book));
 }
 function finale(){
-  sfx.yay(); stars(); overlay.hidden=false; repeatBtn.hidden=true; target=-1;
+  sfx.yay(); stars(); overlay.hidden=false; repeatBtn.hidden=true; bubble.classList.remove("show"); target=-1;
   const t=L[lang];
   overlay.innerHTML=`${homeBtn}<h1><span lang="${lang}">${t.end}</span></h1>
    <div class="stickers">${found.map(([i,j])=>`<button class="sticker" data-i="${i}" data-j="${j}"><span class="e">${pic(rows()[i][2][j][1])}</span>${rows()[i][0]}</button>`).join("")}</div>

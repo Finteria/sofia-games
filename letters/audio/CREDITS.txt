@@ -1,8 +1,7 @@
-Computer voices, generated with Piper (https://github.com/OHF-Voice/piper1-gpl) and then trimmed and loudness-normalized.
+Computer voices, trimmed and loudness-normalized.
 
-ru-*.mp3, yes-ru, no-ru, end-ru: voice "ru_RU-denis-medium". Dataset license: CC0.
+lv-*.mp3, yes-lv, no-lv, end-lv: Microsoft neural voice "lv-LV-EveritaNeural", made with edge-tts (https://github.com/rany2/edge-tts).
+ru-*.mp3, yes-ru, no-ru, end-ru: Piper (https://github.com/OHF-Voice/piper1-gpl), voice "ru_RU-denis-medium". Dataset license: CC0.
   https://huggingface.co/rhasspy/piper-voices/tree/main/ru/ru_RU/denis/medium
-lv-*.mp3, yes-lv, no-lv, end-lv: voice "lv_LV-aivars-medium". Dataset license: CC0 1.0 Universal.
-  https://huggingface.co/rhasspy/piper-voices/tree/main/lv/lv_LV/aivars/medium
 
 A family recording (made on the "Голоса для букв" page) replaces the computer voice for that clip.
