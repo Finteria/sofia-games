@@ -1,0 +1,2 @@
+Computer voice: Microsoft neural voice "en-US-AnaNeural" (a child's voice, so the cartoon Sofia does the talking),
+made with edge-tts (https://github.com/rany2/edge-tts), then trimmed and loudness-normalized.

@@ -1,0 +1,441 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Counting · Счёт · Skaitīšana</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap">
+<style>
+/* layout: a meadow; Sofia on the left, a framed picture with animals on the right, number cards below it */
+:root{
+  --sky:#cdeaff; --ground:#8ccf6e; --ink:#24352b; --card:#fffdf6; --pink:#f06292; --frame:#8a5a3b; --badge:#5b3c9e;
+  --display:"Nunito","Trebuchet MS",system-ui,sans-serif;
+  color-scheme:light;
+  --sh:min(58vh,500px,90vw); --sw:calc(var(--sh)*.4624); --sx:max(12px,4vw);
+  --aw:min(15vw,21vh,150px); --mw:84px;
+}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:hidden;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+#stage{position:relative;height:100%;overflow:hidden}
+.layer{position:absolute;inset:0;pointer-events:none}
+#far{background:
+  radial-gradient(ellipse 9% 5% at 18% 12%,#fff 98%,transparent),radial-gradient(ellipse 7% 4% at 23% 9%,#fff 98%,transparent),
+  radial-gradient(ellipse 32% 22% at 12% 76%,#a6dc8a 98%,transparent),
+  radial-gradient(ellipse 36% 24% at 55% 80%,#9bd47f 98%,transparent),
+  radial-gradient(ellipse 30% 22% at 92% 76%,#a6dc8a 98%,transparent)}
+#ground{top:auto;height:22%;background:var(--ground);border-top:6px solid #76b95b}
+#progress{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:0;right:0;display:flex;justify-content:center;gap:10px;z-index:5;pointer-events:none}
+.dot{width:26px;height:26px;border-radius:50%;background:#ffffff99;border:3px solid #8aa7c4;display:flex;align-items:center;justify-content:center;font-size:17px;transition:transform .3s}
+.dot.done{background:#fff;border-color:var(--badge);transform:scale(1.2)}
+
+/* Sofia: the same cartoon as in the other games */
+#sofia{position:absolute;left:var(--sx);bottom:6%;height:var(--sh);aspect-ratio:800/1730;z-index:3;cursor:pointer;
+  transform-origin:50% 100%;animation:bob 2.4s ease-in-out infinite}
+#sofia svg{display:block;width:100%;height:100%;overflow:visible}
+#sofia svg *{transform-box:view-box}
+#sofia .ink{stroke:#1b1717;stroke-linecap:round;stroke-linejoin:round}
+#sofia .skin{fill:#ffe3cf}
+#sofia .hair{fill:#3b2a20}
+#sofia .eye{transform-box:fill-box;transform-origin:center;animation:blink 4.2s infinite}
+#sofia .mouth.open{opacity:0}
+#sofia.talk .mouth.open{animation:flap .3s steps(1,end) infinite}
+#sofia.talk .mouth.shut{animation:flap .3s steps(1,end) infinite -.15s}
+#sofia .head{transform-origin:400px 870px}
+#sofia .arm.l{transform-origin:262px 955px;animation:sway 2.4s ease-in-out infinite}
+#sofia .arm.r{transform-origin:538px 955px;animation:sway 2.4s ease-in-out infinite reverse}
+#sofia .leg.l{transform-origin:335px 1390px}
+#sofia .leg.r{transform-origin:465px 1390px}
+#sofia.walk{animation:stride .6s ease-in-out infinite}
+#sofia.walk .leg.l{animation:stepL .6s ease-in-out infinite}
+#sofia.walk .leg.r{animation:stepR .6s ease-in-out infinite}
+#sofia.walk .arm.l{animation:swingL .6s ease-in-out infinite}
+#sofia.walk .arm.r{animation:swingR .6s ease-in-out infinite}
+#sofia.walk .head{animation:nod .6s ease-in-out infinite}
+#sofia.talk .head{animation:chat .32s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+@keyframes flap{0%{opacity:1}50%{opacity:0}}
+@keyframes sway{50%{transform:rotate(4deg)}}
+@keyframes stride{0%,50%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-3%) rotate(-2deg)}75%{transform:translateY(-3%) rotate(2deg)}}
+@keyframes stepL{0%,50%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-60px) rotate(7deg)}}
+@keyframes stepR{0%,50%,100%{transform:translateY(0) rotate(0)}75%{transform:translateY(-60px) rotate(-7deg)}}
+@keyframes swingL{0%,100%{transform:rotate(-16deg)}50%{transform:rotate(10deg)}}
+@keyframes swingR{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(16deg)}}
+@keyframes nod{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(3deg)}75%{transform:rotate(-3deg)}}
+@keyframes chat{0%,100%{transform:rotate(-3deg) scale(1)}50%{transform:rotate(3deg) scale(1.03)}}
+
+/* the picture: a framed place; animals sit at % positions, their size is % of its height */
+#canvas{position:absolute;left:calc(var(--sx) + var(--sw) + 3vw);right:3vw;top:calc(52px + env(safe-area-inset-top,0px));bottom:calc(var(--aw)*1.1 + 5%);
+  z-index:2;border:10px solid var(--frame);border-radius:18px;box-shadow:0 8px 0 #0002,inset 0 0 0 4px #fff6;overflow:hidden;background:var(--bg)}
+#canvas.pond{--bg:radial-gradient(ellipse 40% 30% at 50% 64%,#4fc3f7 98%,#3aa7d8 99%,transparent 100%),linear-gradient(#bfe6ff 0 30%,#8ccf6e 30%)}
+#canvas.sea{--bg:radial-gradient(ellipse 14% 3% at 30% 8%,#fff6 98%,transparent),linear-gradient(#7fd8f0,#2b8fd6)}
+#canvas.beach{--bg:linear-gradient(#bfe6ff 0 22%,#4dd0e1 22% 36%,#f6e0a4 36%)}
+#canvas.sky{--bg:radial-gradient(ellipse 12% 6% at 20% 20%,#fff 98%,transparent),radial-gradient(ellipse 10% 5% at 78% 72%,#fff 98%,transparent),linear-gradient(#a9dcff,#dff2ff)}
+#canvas.meadow{--bg:linear-gradient(#bfe6ff 0 30%,#9bd47f 30%)}
+.ani{position:absolute;translate:-50% -50%;border:0;padding:0;background:none;cursor:pointer;line-height:1;font-family:inherit}
+.ani .e{display:block;transition:scale .2s}
+.ani.in .e{animation:popin .45s cubic-bezier(.3,1.6,.5,1) both var(--d,0s)}
+@keyframes popin{from{scale:0}}
+.ani.hop .e{animation:hop .45s ease-out}
+@keyframes hop{40%{translate:0 -28%;scale:1.12}}
+.ani.wig .e{animation:wig .4s ease-in-out}
+@keyframes wig{25%{rotate:-10deg}75%{rotate:10deg}}
+.ani.hint .e{animation:hintani 1.4s ease-in-out infinite}
+@keyframes hintani{0%,30%,100%{rotate:0deg}8%{rotate:-9deg}16%{rotate:9deg}24%{rotate:-5deg}}
+.ani.dance .e{animation:dance .8s ease-in-out infinite var(--d,0s)}
+@keyframes dance{0%,100%{translate:0 0;rotate:0deg}25%{translate:0 -18%;rotate:-8deg}75%{translate:0 -8%;rotate:8deg}}
+/* the number she gave it, above the animal */
+.ani .n{position:absolute;left:50%;top:-14%;translate:-50% -50%;width:.62em;height:.62em;border-radius:50%;background:#fff;border:.05em solid var(--badge);
+  color:var(--badge);font-weight:900;font-size:.62em;display:flex;align-items:center;justify-content:center;box-shadow:0 .04em 0 #0002}
+.ani .n b{font-size:.62em;line-height:1}
+.ani .n.pop{animation:popin .4s cubic-bezier(.3,1.6,.5,1)}
+.ani .n.say{animation:say .5s ease-in-out}
+@keyframes say{50%{scale:1.35;background:#ffe36b}}
+
+/* number cards: two or three, the digit and that many dots */
+#answers{position:absolute;left:calc(var(--sx) + var(--sw) + 3vw);right:3vw;bottom:3%;height:calc(var(--aw)*1.1);z-index:4;
+  display:flex;align-items:flex-end;justify-content:space-evenly}
+.ans{width:var(--aw);aspect-ratio:1/1.08;border:0;border-radius:26%;background:var(--card);cursor:pointer;font-family:var(--display);
+  box-shadow:0 8px 0 #0003;border:5px solid var(--c);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4%;
+  color:var(--c);transform-origin:50% 100%;transition:translate .5s cubic-bezier(.2,.8,.3,1),opacity .3s;padding:4% 6%;box-sizing:border-box;overflow:hidden}
+.ans .d{font-size:calc(var(--aw)*.52);font-weight:900;line-height:.9}
+.ans .dots{display:flex;flex-wrap:wrap;justify-content:center;gap:calc(var(--aw)*.025);width:calc(var(--aw)*.62)}   /* rows of five, like fingers */
+.ans .dots i{width:calc(var(--aw)*.095);height:calc(var(--aw)*.095);border-radius:50%;background:var(--c)}
+.ans.low{translate:0 140%;opacity:0;transition:none}
+.ans.hint{animation:hint 3.2s ease-in-out infinite}
+@keyframes hint{0%,24%,100%{rotate:0deg}4%{rotate:-8deg}9%{rotate:8deg}14%{rotate:-5deg}19%{rotate:4deg}}
+.ans.no{animation:no .5s ease-in-out}
+@keyframes no{20%{rotate:-12deg}40%{rotate:10deg}60%{rotate:-6deg}80%{rotate:4deg}}
+.ans.help{animation:help .9s ease-in-out infinite;box-shadow:0 8px 0 #0003,0 0 0 8px #fff,0 0 24px 10px #fff}
+@keyframes help{50%{translate:0 -14%;scale:1.06}}
+.ans.jump{animation:jump .45s ease-out}
+@keyframes jump{40%{translate:0 -22%}}
+.ans:focus-visible{outline:5px dashed #fff;outline-offset:4px}
+
+.big{position:absolute;z-index:7;border:0;cursor:pointer;font-family:var(--display);font-weight:900;color:#fff;
+  background:var(--pink);box-shadow:0 8px 0 #b83b68;border-radius:999px;display:flex;align-items:center;gap:12px;justify-content:center;transition:transform .1s}
+.big:active{transform:translateY(6px);box-shadow:0 2px 0 #b83b68}
+#repeat{left:max(8px,calc(var(--sx) + var(--sw)*.15 - var(--mw) - 4px));bottom:calc(6% + 10px);width:var(--mw);height:var(--mw);padding:0}
+#repeat svg{width:46px;height:46px}
+.corner{position:absolute;top:max(14px,env(safe-area-inset-top,0px));width:60px;height:60px;border-radius:50%;z-index:13;
+  background:#ffffff55;border:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.corner svg{width:34px;height:34px}
+.home{left:max(14px,env(safe-area-inset-left,0px))}
+#stage>.home{background:#1f4f8a55}
+
+#overlay,#numbers{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+  background:#2c5d9bf0;color:#fff;text-align:center;padding:24px;overflow-y:auto}
+#overlay>h1{margin-top:auto!important}
+#overlay>:last-child{margin-bottom:auto}
+#overlay h1{margin:0;font-size:clamp(46px,9vw,92px);font-weight:900;line-height:1;text-shadow:0 4px 0 #0003;display:flex;gap:.12em;align-items:center}
+#overlay h1 .digits{display:flex;gap:.04em}
+#overlay h1 .digits span:nth-child(1){color:#ff6f61}#overlay h1 .digits span:nth-child(2){color:#ffd25a}#overlay h1 .digits span:nth-child(3){color:#7ddc6a}
+#overlay .sub{margin:-8px 0 0;font-size:clamp(20px,3.4vw,28px);font-weight:900;opacity:.9}
+#overlay .row{display:flex;gap:18px;flex-wrap:wrap;justify-content:center;align-items:stretch}
+.go{width:min(40vw,240px);padding:18px 12px 16px;border:0;border-radius:32px;background:var(--card);cursor:pointer;font-family:var(--display);
+  box-shadow:0 8px 0 #0003;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--ink);transition:transform .1s}
+.go:active{transform:translateY(6px);box-shadow:0 2px 0 #0003}
+.go .e{font-size:clamp(40px,6vw,64px);line-height:1.1;white-space:nowrap}
+.go .name{font-size:clamp(20px,3vw,26px);font-weight:900}
+.go svg{width:52px;height:52px}
+/* how far she counts: grows by itself, a grown-up can change it */
+.levels{display:flex;gap:10px;align-items:center;font-size:18px;font-weight:900}
+.levels button{border:0;border-radius:999px;padding:10px 18px;font-family:var(--display);font-weight:900;font-size:20px;cursor:pointer;background:#ffffff33;color:#fff}
+.levels button.on{background:#fff;color:#2c5d9b}
+.stickers{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:760px}
+.sticker{min-width:96px;padding:10px 14px;border-radius:22px;background:var(--card);color:var(--badge);display:flex;align-items:center;gap:8px;font-size:40px;font-weight:900;line-height:1}
+.sticker .e{font-size:44px}
+/* numbers: 1 to 10 as tiles; a tile shows that many animals and says it */
+#numbers{z-index:12;justify-content:flex-start;padding-top:calc(96px + env(safe-area-inset-top,0px))}
+#numbers .tiles{display:grid;grid-template-columns:repeat(5,minmax(0,130px));gap:14px;width:min(100%,720px);justify-content:center}
+.tile{aspect-ratio:1;border:0;border-radius:24px;background:var(--card);cursor:pointer;font-family:var(--display);font-weight:900;font-size:clamp(34px,7vw,64px);color:var(--c);
+  box-shadow:0 6px 0 #0003;display:flex;align-items:center;justify-content:center;line-height:1}
+.tile:active{transform:translateY(4px);box-shadow:0 2px 0 #0003}
+#show{width:min(92%,640px);min-height:min(34vh,260px);border-radius:28px;background:var(--card);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:14px}
+#show .d{font-size:clamp(50px,10vw,90px);font-weight:900;line-height:1;color:var(--c)}
+#show .row2{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 10px;font-size:clamp(34px,6.5vw,56px);line-height:1.15}
+#show .row2 span{animation:popin .4s cubic-bezier(.3,1.6,.5,1) both var(--d)}
+#show .w{font-size:clamp(22px,4vw,32px);font-weight:900}
+
+.star{position:absolute;width:40px;height:40px;z-index:9;pointer-events:none;animation:fly 1.6s ease-out forwards}
+@keyframes fly{from{transform:translate(0,0) scale(.3) rotate(0);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(1.2) rotate(240deg);opacity:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important}}
+/* tall screens: the picture on top, Sofia below on the left with the number cards beside her */
+@media (orientation:portrait){
+  :root{--sh:min(36vh,440px);--aw:min(21vw,15vh,150px)}
+  #canvas{left:3vw;right:3vw;top:calc(84px + env(safe-area-inset-top,0px));bottom:calc(6% + var(--sh)*.9)}
+  #answers{left:calc(var(--sx) + var(--sw) + 2vw);right:2vw;bottom:calc(6% + var(--sh)*.12);height:auto}
+}
+@media (max-height:520px){:root{--sh:66vh;--aw:min(13vw,24vh);--mw:64px}#repeat svg{width:34px;height:34px}#canvas{border-width:6px}}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="layer" id="far"></div>
+  <div class="layer" id="ground"></div>
+  <div id="progress"></div>
+  <div id="sofia" role="img" aria-label="Sofia: tap to hear it again">
+    <svg viewBox="0 0 800 1730" aria-hidden="true">
+      <defs>
+        <g id="leg">
+          <path class="ink" d="M335 1380 L331 1640" fill="none" stroke-width="68"/>
+          <path d="M335 1380 L331 1640" stroke="#ffe3cf" stroke-width="50" stroke-linecap="round"/>
+          <path d="M331 1590 L331 1640" stroke="#fff" stroke-width="50"/>
+          <path d="M305 1592 H357" stroke="#f06292" stroke-width="10" stroke-linecap="round"/>
+          <ellipse class="ink" cx="318" cy="1672" rx="60" ry="34" fill="#d6453d" stroke-width="9"/>
+          <ellipse cx="300" cy="1660" rx="16" ry="8" fill="#fff" opacity=".5"/>
+        </g>
+        <g id="arm">
+          <path class="ink" d="M262 965 Q232 1085 218 1200" fill="none" stroke-width="64"/>
+          <circle cx="216" cy="1222" r="34" fill="#1b1717"/>
+          <path d="M262 965 Q232 1085 218 1200" fill="none" stroke="#ffe3cf" stroke-width="46" stroke-linecap="round"/>
+          <circle class="skin" cx="216" cy="1222" r="25"/>
+          <ellipse class="ink" cx="266" cy="955" rx="58" ry="48" fill="#f7a8c4" stroke-width="9"/>
+        </g>
+      </defs>
+      <g class="leg l"><use href="#leg"/></g>
+      <g class="leg r"><use href="#leg" transform="translate(800 0) scale(-1 1)"/></g>
+      <path class="skin ink" d="M352 820 L350 925 Q400 950 450 925 L448 820Z" stroke-width="8"/>
+      <path class="ink" d="M305 900 Q400 945 495 900 L535 918 Q565 990 562 1080 L640 1420 Q400 1478 160 1420 L238 1080 Q235 990 265 918 Z" fill="#f7a8c4" stroke-width="9"/>
+      <path d="M190 1385 Q400 1440 610 1385" fill="none" stroke="#f06292" stroke-width="12" stroke-linecap="round" stroke-dasharray="2 34"/>
+      <g fill="#fff" opacity=".8"><circle cx="330" cy="1060" r="13"/><circle cx="450" cy="1110" r="13"/><circle cx="390" cy="1210" r="13"/><circle cx="280" cy="1270" r="13"/><circle cx="510" cy="1260" r="13"/><circle cx="400" cy="1340" r="13"/><circle cx="240" cy="1370" r="12"/><circle cx="560" cy="1370" r="12"/></g>
+      <path class="ink" d="M308 902 Q322 980 400 950 L400 930 Q352 936 308 902Z M492 902 Q478 980 400 950 L400 930 Q448 936 492 902Z" fill="#fff" stroke-width="7"/>
+      <g class="arm l"><use href="#arm"/></g>
+      <g class="arm r"><use href="#arm" transform="translate(800 0) scale(-1 1)"/></g>
+      <g class="head"><g transform="rotate(-4 400 560)">
+        <!-- cartoon Sofia after her portrait: round cheeks, top-knot curling right; Amélie-style bob with short blunt bangs -->
+        <path class="hair ink" d="M118 600 C92 360 212 168 400 166 C588 168 708 360 682 600 L694 770 C698 812 650 822 616 800 L184 800 C150 822 102 812 106 770Z" stroke-width="9"/>
+        <g class="tuft">
+          <path class="hair ink" d="M448 230 C400 175 345 150 290 158 C345 118 425 140 472 212Z" stroke-width="9"/>
+          <path class="hair ink" d="M450 225 C428 140 455 70 515 25 C512 95 512 160 490 228Z" stroke-width="9"/>
+          <path class="hair ink" d="M462 228 C495 120 600 62 688 102 C712 150 680 196 648 170 C668 140 632 118 600 128 C555 145 525 185 500 240Z" stroke-width="9"/>
+          <path d="M468 200 C470 140 485 95 508 60 M495 210 C530 145 590 112 650 115" fill="none" stroke="#6b4a36" stroke-width="6" stroke-linecap="round"/>
+        </g>
+        <path class="skin ink" d="M158 540 C158 360 270 280 400 280 C530 280 642 360 642 540 C642 700 610 795 530 842 C475 872 325 872 270 842 C190 795 158 700 158 540Z" stroke-width="9"/>
+        <path d="M262 505 Q300 485 340 500 M462 508 Q502 490 542 506" fill="none" stroke="#3b2a20" stroke-width="10" stroke-linecap="round"/>
+        <g class="eye"><ellipse cx="300" cy="575" rx="27" ry="33" fill="#1b1717"/><circle cx="290" cy="563" r="10" fill="#fff"/><circle cx="310" cy="590" r="4.5" fill="#fff"/></g>
+        <g class="eye"><ellipse cx="500" cy="580" rx="27" ry="33" fill="#1b1717"/><circle cx="490" cy="568" r="10" fill="#fff"/><circle cx="510" cy="595" r="4.5" fill="#fff"/></g>
+        <ellipse cx="252" cy="668" rx="46" ry="30" fill="#ff8fab" opacity=".45"/>
+        <ellipse cx="548" cy="672" rx="46" ry="30" fill="#ff8fab" opacity=".45"/>
+        <path d="M388 640 Q400 656 414 640" fill="none" stroke="#c98f7a" stroke-width="8" stroke-linecap="round"/>
+        <path class="mouth shut" d="M345 705 Q400 752 455 705" fill="none" stroke="#1b1717" stroke-width="10" stroke-linecap="round"/>
+        <g class="mouth open"><path d="M350 700 Q400 706 450 700 Q444 768 400 772 Q356 768 350 700Z" fill="#8e2a3a" stroke="#1b1717" stroke-width="8" stroke-linejoin="round"/><ellipse cx="400" cy="752" rx="26" ry="12" fill="#f28b9b"/></g>
+        <path class="hair ink" d="M168 430 C142 560 146 700 172 795 C196 812 232 800 228 776 C210 690 206 560 222 440Z M632 430 C658 560 654 700 628 795 C604 812 568 800 572 776 C590 690 594 560 578 440Z" stroke-width="9"/>
+        <path class="hair ink" d="M170 480 C150 320 265 208 400 208 C535 208 650 320 630 480 C560 458 480 452 400 454 C320 452 240 458 170 480Z" stroke-width="9"/>
+        <path d="M250 300 C320 255 470 250 550 290 M300 452 L304 418 M400 450 L400 414 M500 452 L496 418 M196 560 L192 700 M604 560 L608 700" fill="none" stroke="#6b4a36" stroke-width="7" stroke-linecap="round"/>
+        <path d="M470 215 L408 172 L414 262 Z M470 215 L536 178 L526 266 Z" fill="#f06292" stroke="#c2185b" stroke-width="6" stroke-linejoin="round"/>
+        <circle cx="470" cy="217" r="21" fill="#e04a7f" stroke="#c2185b" stroke-width="6"/>
+      </g></g>
+    </svg>
+  </div>
+  <div id="canvas" aria-live="polite"></div>
+  <div id="answers"></div>
+  <button id="repeat" class="big" hidden aria-label="Say it again"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M6 15h7l9-8v26l-9-8H6z" fill="#fff"/><path d="M27 13a9 9 0 0 1 0 14M31 8a15 15 0 0 1 0 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg></button>
+  <a class="corner home" href="../index.html" aria-label="Menu"><svg viewBox="0 0 40 40"><path d="M6 19L20 7l14 12M11 16v16h18V16" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+  <div id="overlay"></div>
+  <div id="numbers" hidden></div>
+</div>
+<script>
+/* NUMBERS: words; ANIMALS: key -> [emoji, one, many, place] */
+const NUMBERS=["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
+const ANIMALS={"duck": ["🦆", "duck", "ducks", "pond"], "frog": ["🐸", "frog", "frogs", "pond"], "fish": ["🐟", "fish", "fish", "sea"], "crab": ["🦀", "crab", "crabs", "beach"], "turtle": ["🐢", "turtle", "turtles", "beach"], "bee": ["🐝", "bee", "bees", "sky"], "butterfly": ["🦋", "butterfly", "butterflies", "sky"], "chicken": ["🐔", "chicken", "chickens", "meadow"], "bunny": ["🐰", "bunny", "bunnies", "meadow"], "pig": ["🐷", "pig", "pigs", "meadow"], "ladybug": ["🐞", "ladybug", "ladybugs", "meadow"], "cow": ["🐮", "cow", "cows", "meadow"], "cat": ["🐱", "cat", "cats", "meadow"]};
+const $=id=>document.getElementById(id);
+const canvas=$("canvas"), answersEl=$("answers"), overlay=$("overlay"), numbersEl=$("numbers"), sofia=$("sofia"), repeatBtn=$("repeat");
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const CARD=["#e53935","#1e88e5","#43a047","#fb8c00","#8e24aa","#00897b","#d81b60","#5d4037","#3949ab","#f4511e"];   // one colour per number, the same everywhere
+
+/* ---------- audio: Microsoft's child voice (audio/*.mp3), so it is Sofia who talks ---------- */
+let ctx=null, current=null;
+function ac(){ if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)(); if(ctx.state!=="running") ctx.resume(); return ctx }
+const decode=ab=>new Promise((res,rej)=>ac().decodeAudioData(ab,res,rej));
+const cache={};
+function loadClip(key){return cache[key]||(cache[key]=fetch(`audio/${key}.mp3`).then(r=>r.ok?r.arrayBuffer():Promise.reject()).then(decode).catch(()=>null))}
+function playBuffer(buf){return new Promise(res=>{const c=ac(),s=c.createBufferSource();s.buffer=buf;s.connect(c.destination);
+  if(current) try{current.stop()}catch(e){}; current=s; s.onended=()=>res(); s.start(); setTimeout(res,buf.duration*1000+300)})}
+function stopVoice(){if(current) try{current.stop()}catch(e){}; current=null}
+/* say clips in a row; a newer say() cancels an older one; each clip may come with something to do as it starts */
+let sayId=0;
+async function say(keys,gap=250){const id=++sayId;
+  for(const item of keys){const [k,fn]=Array.isArray(item)?item:[item]; if(id!==sayId) return false; const buf=await loadClip(k); if(id!==sayId) return false;
+    fn&&fn(); if(buf){sofia.classList.add("talk"); await playBuffer(buf); sofia.classList.remove("talk")}
+    if(id!==sayId) return false; await wait(gap) }
+  return id===sayId }
+const preload=keys=>keys.forEach(loadClip);
+
+function tone(type,f0,f1,t0,dur,vol=.3){
+  const c=ac(),o=c.createOscillator(),g=c.createGain(); o.type=type;
+  o.frequency.setValueAtTime(f0,t0); o.frequency.exponentialRampToValueAtTime(f1,t0+dur);
+  g.gain.setValueAtTime(.0001,t0); g.gain.exponentialRampToValueAtTime(vol,t0+.02); g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
+  o.connect(g).connect(c.destination); o.start(t0); o.stop(t0+dur+.05);
+}
+const sfx={
+  pop(i=0){const t=ac().currentTime;tone("sine",500+i*60,900+i*60,t,.12,.18)},
+  boing(){const t=ac().currentTime;tone("triangle",260,180,t,.25,.25)},
+  tick(){const t=ac().currentTime;tone("triangle",880,660,t,.08,.12)},
+  yay(){const t=ac().currentTime;[523,659,784,1047].forEach((f,i)=>tone("triangle",f,f,t+i*.12,.3,.25))}
+};
+function stars(x="50%",y="45%",n=20){for(let i=0;i<n;i++){const s=document.createElementNS("http://www.w3.org/2000/svg","svg");s.setAttribute("viewBox","0 0 24 24");s.classList.add("star");
+  s.innerHTML='<path d="M12 2l3 7 7 .6-5.4 4.7 1.7 7.2L12 17.8 5.7 21.5l1.7-7.2L2 9.6 9 9z" fill="'+["#ffd25a","#f06292","#fff","#5fbf7f","#6ec6ff"][i%5]+'"/>';
+  s.style.left=x;s.style.top=y;s.style.setProperty("--dx",(Math.random()*60-30)+"vw");s.style.setProperty("--dy",(Math.random()*60-30)+"vh");
+  $("stage").appendChild(s);setTimeout(()=>s.remove(),1700)}}
+
+/* ---------- levels: how far she counts ---------- */
+const LEVELS=[{lo:1,hi:3,label:"1–3"},{lo:2,hi:5,label:"1–5"},{lo:3,hi:10,label:"1–10"}];
+let level=Math.min(2,Math.max(0,+store.get("counting-level")||0));
+const setLevel=l=>{level=l; store.set("counting-level",l); store.set("counting-streak",0)};
+/* five right answers on the first try at a level: the next one */
+function rightFirstTry(){const s=(+store.get("counting-streak")||0)+1; store.set("counting-streak",s); if(s>=5&&level<2) setLevel(level+1)}
+
+/* ---------- a picture: n animals of one kind, spread out ---------- */
+const AREA={pond:[18,82,46,84],sea:[10,90,14,88],beach:[10,90,46,88],sky:[10,90,14,86],meadow:[8,92,42,88]};   // x0,x1,y0,y1 in %
+let kind=null, n=0, counted=[], phase="", busy=true, idleT=null, hintT=null, wrong=0, round=[], step=-1;
+function sizeAnis(){const h=canvas.clientHeight, w=canvas.clientWidth;
+  canvas.querySelectorAll(".ani").forEach(el=>el.style.fontSize=Math.min(h,w*.6)*el.dataset.s/100+"px")}
+addEventListener("resize",sizeAnis);
+function spread(count,place,size){
+  const [x0,x1,y0,y1]=AREA[place], w=canvas.clientWidth||800, h=canvas.clientHeight||500, unit=Math.min(h,w*.6)/100;
+  let best=[];
+  for(let tries=0;tries<30;tries++){const pts=[];
+    for(let k=0;k<400&&pts.length<count;k++){const x=x0+Math.random()*(x1-x0), y=y0+Math.random()*(y1-y0);
+      if(pts.every(p=>Math.hypot((p.x-x)*w/100,(p.y-y)*h/100)>size*unit*1.25)) pts.push({x,y})}
+    if(pts.length>best.length) best=pts; if(best.length===count) break}
+  while(best.length<count) best.push({x:x0+Math.random()*(x1-x0),y:y0+Math.random()*(y1-y0)});
+  return best;
+}
+const sizeFor=c=>c<=3?24:c<=5?19:c<=7?16:14;
+function drawPicture(a,count){
+  kind=a; n=count; counted=[];
+  const [e,,,place]=ANIMALS[a], s=sizeFor(count);
+  canvas.className=place;
+  canvas.innerHTML=spread(count,place,s).map((p,i)=>`<button class="ani in" data-i="${i}" data-s="${s}" style="left:${p.x}%;top:${p.y}%;--d:${(i*.12).toFixed(2)}s" aria-label="${ANIMALS[a][1]}"><span class="e">${e}</span></button>`).join("");
+  sizeAnis();
+  canvas.querySelectorAll(".ani").forEach((el,i)=>setTimeout(()=>sfx.pop(i),i*120));
+}
+
+/* ---------- a round: five pictures ---------- */
+async function play(){
+  ac(); overlay.hidden=true; numbersEl.hidden=true; busy=true; answersEl.innerHTML="";
+  const kinds=shuffle(Object.keys(ANIMALS)).slice(0,5), {lo,hi}=LEVELS[level]; let last=0;
+  round=kinds.map(a=>{let c; do c=rnd(lo,hi); while(c===last&&hi>lo); last=c; return [a,c]}); step=-1;
+  $("progress").innerHTML=round.map(()=>'<div class="dot"></div>').join("");
+  preload(["num-1","num-2","num-3",`count-${round[0][0]}`]);
+  await walkIn(); nextPicture();
+}
+async function nextPicture(){
+  clearTimers(); wrong=0; answersEl.innerHTML=""; repeatBtn.hidden=true;
+  if(++step>=round.length) return finale();
+  const [a,c]=round[step]; preload([`count-${a}`,`how-${a}`,`got-${a}-${c}`]);
+  drawPicture(a,c); busy=true; phase="count";
+  await wait(500+c*120); busy=false; askCount();
+}
+/* "Let's count the ducks!" */
+async function askCount(){clearTimers(); repeatBtn.hidden=false; const s=step;
+  if(await say([`count-${kind}`])&&s===step&&phase==="count") waitForCount()}
+const HINT=4000, IDLE=15000;
+function clearTimers(){clearTimeout(idleT); clearTimeout(hintT); canvas.querySelectorAll(".ani.hint").forEach(el=>el.classList.remove("hint"))}
+function waitForCount(){clearTimers();
+  hintT=setTimeout(()=>{const el=canvas.querySelector(".ani:not(.done)"); el&&el.classList.add("hint")},HINT);
+  idleT=setTimeout(askCount,IDLE)}
+canvas.addEventListener("click",e=>{const el=e.target.closest(".ani"); if(!el) return; ac();
+  if(el.classList.contains("done")||busy||phase!=="count"){el.classList.remove("wig"); void el.offsetWidth; el.classList.add("wig"); return}
+  clearTimers(); counted.push(+el.dataset.i); const k=counted.length;
+  el.classList.add("done"); el.classList.remove("in","hop"); void el.offsetWidth; el.classList.add("hop");
+  el.insertAdjacentHTML("beforeend",`<span class="n pop"><b>${k}</b></span>`); sfx.tick();
+  if(k<n){say([`num-${k}`]).then(ok=>ok&&phase==="count"&&waitForCount()); return}
+  phase="ask"; busy=true; say([`num-${k}`]).then(()=>wait(500)).then(()=>{if(phase==="ask") showAnswers()});
+});
+
+/* "How many ducks?" and two or three number cards */
+function cardHTML(v){return `<button class="ans low" data-v="${v}" style="--c:${CARD[v-1]}" aria-label="${NUMBERS[v-1]}"><span class="d">${v}</span><span class="dots">${"<i></i>".repeat(v)}</span></button>`}
+function showAnswers(){
+  const {lo,hi}=LEVELS[level], opts=new Set([n]);
+  const near=shuffle([n-2,n-1,n+1,n+2].filter(v=>v>=1&&v<=10&&(level>0||v<=3)));
+  for(const v of near){if(opts.size>=3) break; opts.add(v)}
+  answersEl.innerHTML=[...opts].sort((a,b)=>a-b).map(cardHTML).join("");
+  answersEl.querySelectorAll(".ans").forEach((b,i)=>setTimeout(()=>b.classList.remove("low"),80+i*140));
+  busy=false; askHow();
+}
+async function askHow(){clearTimers(); const s=step;
+  if(await say([`how-${kind}`])&&s===step&&phase==="ask"&&!busy) waitForAnswer()}
+function waitForAnswer(){clearTimers();
+  hintT=setTimeout(()=>{const b=rightCard(); b&&b.classList.add("hint")},3000);
+  idleT=setTimeout(()=>{const b=rightCard(); b&&b.classList.add("help"); askHow()},IDLE)}
+const rightCard=()=>answersEl.querySelector(`.ans[data-v="${n}"]`);
+answersEl.addEventListener("click",async e=>{
+  const b=e.target.closest(".ans"); if(!b||busy||phase!=="ask") return; ac();
+  const v=+b.dataset.v;
+  if(v!==n){
+    clearTimers(); sfx.boing(); b.classList.remove("no"); void b.offsetWidth; b.classList.add("no"); busy=true;
+    if(++wrong>=2) rightCard().classList.add("help"); else rightCard().classList.add("hint");
+    await recount(); if(phase==="ask"){busy=false; waitForAnswer()}
+    return;
+  }
+  busy=true; phase="done"; clearTimers(); sayId++; stopVoice();
+  if(!wrong) rightFirstTry();
+  b.classList.remove("hint","help"); b.classList.add("jump");
+  answersEl.querySelectorAll(".ans").forEach(o=>o!==b&&o.classList.add("low"));
+  const dot=$("progress").children[step]; dot.textContent=ANIMALS[kind][0]; dot.classList.add("done");
+  sfx.yay(); const r=canvas.getBoundingClientRect(); stars(r.left+r.width/2+"px",r.top+r.height/2+"px",16);
+  canvas.querySelectorAll(".ani").forEach((el,i)=>{el.style.setProperty("--d",(i*.1)+"s");el.classList.remove("hop","in");el.classList.add("dance")});
+  await say([`got-${kind}-${n}`,`yes-${rnd(1,3)}`],350);
+  await wait(700); nextPicture();
+});
+/* after a wrong card: count together, each number lights up as Sofia says it, then ask again */
+async function recount(){
+  const badges=counted.map(i=>canvas.querySelector(`.ani[data-i="${i}"] .n`));
+  const seq=["again",...badges.map((bd,k)=>[`num-${k+1}`,()=>{bd.classList.remove("pop","say"); void bd.offsetWidth; bd.classList.add("say")}]),`how-${kind}`];
+  await say(seq,300);
+}
+repeatBtn.addEventListener("click",()=>{ac(); if(busy) return; phase==="count"?askCount():phase==="ask"&&askHow()});
+sofia.addEventListener("click",()=>{ac(); if(busy||!overlay.hidden) return; phase==="count"?askCount():phase==="ask"&&askHow()});
+
+async function walkIn(){
+  sofia.classList.add("walk");
+  await sofia.animate([{translate:"-40vw 0"},{translate:"0 0"}],{duration:1500,easing:"ease-out"}).finished.catch(()=>{});
+  sofia.classList.remove("walk");
+}
+async function finale(){
+  phase=""; repeatBtn.hidden=true; answersEl.innerHTML=""; sfx.yay(); stars();
+  /* everyone she counted comes back, in a parade */
+  canvas.className="meadow";
+  const all=round.flatMap(([a,c])=>Array(c).fill(ANIMALS[a][0])), s=all.length>20?9:all.length>12?11:13;
+  canvas.innerHTML=spread(all.length,"meadow",s).map((p,i)=>`<span class="ani dance" data-s="${s}" style="left:${p.x}%;top:${p.y}%;--d:${(i*.07).toFixed(2)}s"><span class="e">${all[i]}</span></span>`).join("");
+  sizeAnis();
+  await say(["end"]); await wait(2200);
+  if(overlay.hidden) startScreen(true);
+}
+
+/* ---------- numbers 1-10: tap one, see that many animals ---------- */
+function openNumbers(){ac(); numbersEl.hidden=false;
+  numbersEl.innerHTML=`<button class="corner home" id="back" aria-label="Back"><svg viewBox="0 0 40 40"><path d="M24 8L12 20l12 12" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="tiles">${NUMBERS.map((w,i)=>`<button class="tile" data-v="${i+1}" style="--c:${CARD[i]}" aria-label="${w}">${i+1}</button>`).join("")}</div><div id="show" hidden></div>`;
+  $("back").onclick=()=>{sayId++;stopVoice();numbersEl.hidden=true};
+  numbersEl.querySelector(".tiles").onclick=e=>{const t=e.target.closest(".tile"); if(!t) return; const v=+t.dataset.v;
+    const a=shuffle(Object.keys(ANIMALS))[0], [em,one,many]=ANIMALS[a], show=$("show"); show.hidden=false; show.style.setProperty("--c",CARD[v-1]);
+    show.innerHTML=`<div class="d">${v}</div><div class="row2">${Array.from({length:v},(_,i)=>`<span style="--d:${(i*.1).toFixed(1)}s">${em}</span>`).join("")}</div><div class="w">${NUMBERS[v-1]} ${v===1?one:many}</div>`;
+    say([`got-${a}-${v}`])};
+}
+
+/* ---------- start screen ---------- */
+const playIcon=`<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="var(--pink)"/><path d="M15 11l14 9-14 9z" fill="#fff"/></svg>`;
+function startScreen(afterRound){
+  clearTimers(); sayId++; stopVoice(); repeatBtn.hidden=true; phase=""; busy=true;
+  overlay.hidden=false;
+  const stickers=afterRound?`<div class="stickers">${round.map(([a,c])=>`<div class="sticker"><span class="e">${ANIMALS[a][0]}</span>${c}</div>`).join("")}</div>`:"";
+  overlay.innerHTML=`<h1 aria-label="1 2 3"><span class="digits"><span>1</span><span>2</span><span>3</span></span></h1><p class="sub">Counting · Счёт · Skaitīšana</p>${stickers}
+    <div class="row"><button class="go" id="play"><span class="e">🦆🐝</span><span class="name">Count!</span>${playIcon}</button>
+    <button class="go" id="nums"><span class="e">🔢</span><span class="name">Numbers</span></button></div>
+    <div class="levels" aria-label="How far to count">${LEVELS.map((l,i)=>`<button data-l="${i}" class="${i===level?"on":""}">${l.label}</button>`).join("")}</div>`;
+  $("play").onclick=play; $("nums").onclick=openNumbers;
+  overlay.querySelectorAll("[data-l]").forEach(b=>b.onclick=()=>{setLevel(+b.dataset.l); overlay.querySelectorAll("[data-l]").forEach(o=>o.classList.toggle("on",o===b))});
+}
+drawPicture("duck",3); startScreen(false);
+</script>
+</body>
+</html>
