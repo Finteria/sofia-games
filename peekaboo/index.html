@@ -217,13 +217,13 @@ function ac(){ if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)
 const decode=ab=>new Promise((res,rej)=>ac().decodeAudioData(ab,res,rej));
 const cache={};
 function load(url){return cache[url]||(cache[url]=fetch(url).then(r=>r.ok?r.arrayBuffer():Promise.reject()).then(decode).catch(()=>null))}
-const clipUrl=k=>`audio/${k}.mp3`, soundUrl=a=>`../jungle/audio/${a}-sound.mp3`;
+const clipUrl=k=>`audio/${k}.mp3`, soundUrl=a=>`../jungle/audio/${a}-sound.mp3?v=2`;
 function playBuffer(buf){return new Promise(res=>{const c=ac(),s=c.createBufferSource();s.buffer=buf;s.connect(c.destination);
   if(current) try{current.stop()}catch(e){}; current=s; s.onended=()=>res(); s.start(); setTimeout(res,buf.duration*1000+300)})}
 function stopVoice(){if(current) try{current.stop()}catch(e){}; current=null; stopSound()}
-/* an animal's sound plays on its own channel, at most 2.5 s */
+/* an animal's sound plays on its own channel, at most 3.6 s (the lion's two roars) */
 async function animalSound(a){const buf=await load(soundUrl(a)); if(!buf) return; const c=ac(), s=c.createBufferSource(), g=c.createGain();
-  stopSound(); s.buffer=buf; s.connect(g).connect(c.destination); const t=c.currentTime, d=Math.min(buf.duration,2.5);
+  stopSound(); s.buffer=buf; s.connect(g).connect(c.destination); const t=c.currentTime, d=Math.min(buf.duration,3.6);
   g.gain.setValueAtTime(1,t); g.gain.setValueAtTime(1,t+d-.25); g.gain.linearRampToValueAtTime(0,t+d); s.start(t); s.stop(t+d); fxSrc=s; await wait(d*1000)}
 function stopSound(){if(fxSrc) try{fxSrc.stop()}catch(e){}; fxSrc=null}
 /* say clips in a row; a newer say() cancels an older one; an item can also be a function (e.g. an animal sound) */

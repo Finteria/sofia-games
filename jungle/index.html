@@ -308,7 +308,7 @@ const animals = [
   <path d="M100 130q-8 12-16 8M100 130q8 12 16 8" fill="none" stroke="#3a2a20" stroke-width="4" stroke-linecap="round"/>
   <circle cx="76" cy="96" r="8" fill="#24352b"/><circle cx="124" cy="96" r="8" fill="#24352b"/>
   <circle cx="78" cy="93" r="3" fill="#fff"/><circle cx="126" cy="93" r="3" fill="#fff"/>`)},
- {id:"gorilla", ru:"Горилла", lv:"Gorilla", snd:"Бум-бум-бум!", svg:A(`
+ {id:"gorilla", ru:"Горилла", lv:"Gorilla", snd:"Бум-бум! Р-р-р!", svg:A(`
   <ellipse cx="100" cy="188" rx="74" ry="34" fill="#4a4a52"/>
   <circle cx="34" cy="100" r="15" fill="#4a4a52"/><circle cx="166" cy="100" r="15" fill="#4a4a52"/>
   <circle cx="34" cy="100" r="7" fill="#8a7f78"/><circle cx="166" cy="100" r="7" fill="#8a7f78"/>
@@ -455,11 +455,19 @@ const mic=$("mic");
 let idx=0, opened=false, busy=false, ctx=null, scrollX=0, round=[];
 let micOK=!!(navigator.mediaDevices&&window.MediaRecorder);
 
-/* each game meets ROUND animals, picked at random */
+/* each game meets ROUND animals. They come in turns, remembered on this device, so every animal shows up
+   within a few games instead of some never being picked; the dog leads the very first turn */
 const ROUND=6;
+const shuffled=a=>{a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]} return a};
 function newRound(){
-  const pool=[...animals]; for(let i=pool.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[pool[i],pool[j]]=[pool[j],pool[i]]}
-  round=pool.slice(0,ROUND); idx=0; scrollX=0;
+  let q=null; try{q=JSON.parse(localStorage.getItem("jungle-next"))}catch(e){}
+  const ids=animals.map(a=>a.id);
+  if(!Array.isArray(q)) q=["dog",...shuffled(ids.filter(id=>id!=="dog"))];
+  q=q.filter(id=>ids.includes(id));
+  if(q.length<ROUND) q=q.concat(shuffled(ids.filter(id=>!q.includes(id))));
+  round=shuffled(q.slice(0,ROUND)).map(id=>animals.find(a=>a.id===id));
+  try{localStorage.setItem("jungle-next",JSON.stringify(q.slice(ROUND)))}catch(e){}
+  idx=0; scrollX=0;
   scroller.style.transition="none"; scroller.style.transform="translateX(0)"; requestAnimationFrame(()=>scroller.style.transition="");
   document.querySelectorAll(".dot").forEach(d=>d.classList.remove("done"));
 }
@@ -503,13 +511,14 @@ async function migrateLocal(){
   d.close(); indexedDB.deleteDatabase("sofia-audio"); return n;
 }
 const cache={};
+const AUDIO_V=2;   // bump when a file in audio/ is replaced, so the iPad doesn't keep the old one
 async function loadClip(key){
   const ck=key+"@"+(hasRec(key)?voices[key].v:"");   // a new take gets a new version, so never a stale sound
   if(cache[ck]!==undefined) return cache[ck];
   let buf=null;
   if(hasRec(key)) try{const r=await fetch(`${API}/${key}?v=${voices[key].v}`); if(r.ok) buf=await decode(await r.arrayBuffer())}catch(e){}
   if(!buf) for(const ext of ["mp3","m4a","wav"]){
-    try{const r=await fetch(`audio/${key}.${ext}`); if(r.ok){buf=await decode(await r.arrayBuffer()); break}}catch(e){}
+    try{const r=await fetch(`audio/${key}.${ext}?v=${AUDIO_V}`); if(r.ok){buf=await decode(await r.arrayBuffer()); break}}catch(e){}
   }
   return cache[ck]=buf;
 }

@@ -20,7 +20,7 @@ The game speaks only with recorded family voices, no robot voice.
 - On the start screen, press and hold the microphone button (top right) for about a second to open the recording page.
 - The first time on a device, enter the family code (kept on the server in `family-key.txt`, see below).
 - Record each word and each animal sound. Recordings are saved on the server, so clearing Safari data or switching devices doesn't lose them. A new take replaces the old one, but the old one is archived: «Вернуть» brings it back. «Удалить» archives too.
-- Real animal sounds from Wikimedia Commons are in `jungle/audio/` (`<animal>-sound.mp3`, credits in `jungle/audio/CREDITS.txt`). The snake, gorilla and crocodile sounds are generated. A family recording of a sound replaces the real one.
+- Real animal sounds from Wikimedia Commons and Freesound are in `jungle/audio/` (`<animal>-sound.mp3`, credits in `jungle/audio/CREDITS.txt`); the peekaboo game plays them too. The snake and crocodile sounds are generated. A family recording of a sound replaces the real one in the jungle game. The jungle game meets its animals in turns (remembered on the device), so every animal comes up within a few games.
 - Backup option: put audio files in `jungle/audio/`, named after the clip, e.g. `monkey-ru.m4a`, `monkey-lv.m4a`, `monkey-sound.m4a`, `greet-ru.m4a`, `end-lv.m4a`. A family recording takes priority over a file.
 
 The letters game talks with a computer voice (Microsoft neural voices: Latvian Everita, Russian Svetlana; see `letters/audio/CREDITS.txt`). Holding the mic button on its start screen opens «Голоса для букв», where each phrase can be replaced by a family recording, stored on the same voice server (keys start with `abc-`).

@@ -1,9 +1,8 @@
-Animal sounds, from Wikimedia Commons. Each clip was trimmed, faded and loudness-normalized.
+Animal sounds, from Wikimedia Commons and Freesound. Each clip was trimmed, faded and loudness-normalized.
 
 lion-sound.mp3
-  "Lionroar.wav" by Jonathan Growcott, Alex Lobora, Andrew Markham, Charlotte E. Searle,
-  Johan Wahlström, Matthew Wijers, Benno I. Simmons. CC BY 4.0
-  https://commons.wikimedia.org/wiki/File:Lionroar.wav
+  "Lion loud.mp3" by Bidone (Freesound). CC0
+  https://freesound.org/s/69570/
 
 elephant-sound.mp3
   "Elephant voice - trumpeting.ogg" by தகவலுழவன். CC0
@@ -34,8 +33,8 @@ peacock-sound.mp3
   https://commons.wikimedia.org/wiki/File:Pavo_cristatus_(call).ogg
 
 cat-sound.mp3
-  "Meow of a pleading cat.oga" by Heismark. Public domain
-  https://commons.wikimedia.org/wiki/File:Meow_of_a_pleading_cat.oga
+  "Felis silvestris catus meows.ogg" by Tobias Puderer. CC BY-SA 3.0 (two of its meows)
+  https://commons.wikimedia.org/wiki/File:Felis_silvestris_catus_meows.ogg
 
 dog-sound.mp3
   "Barking of a dog.ogg" by Amada44. CC BY-SA 3.0
@@ -72,4 +71,10 @@ duck-sound.mp3
   https://commons.wikimedia.org/wiki/File:Anas_platyrhynchos_-_Mallard_XC62258.mp3
 
 Licenses: https://creativecommons.org/licenses/by/4.0/ · https://creativecommons.org/licenses/by-sa/4.0/ · https://creativecommons.org/licenses/by-sa/3.0/
-The snake hiss, gorilla chest-drumming and crocodile jaw snaps are generated in the browser.
+The snake hiss and crocodile jaw snaps are generated in the browser.
+
+gorilla-sound.mp3
+  Chest beating from "Chest banging.wav" by shutup_outcast (Freesound). CC0
+  https://freesound.org/s/367821/
+  then a roar from "CaveGorilla.wav" by zatar (Freesound). CC0
+  https://freesound.org/s/370369/
