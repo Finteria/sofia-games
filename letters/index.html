@@ -116,7 +116,7 @@ body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:
 #card{position:absolute;left:50%;top:50%;z-index:6;translate:-50% -50%;scale:.2;opacity:0;pointer-events:none;
   width:min(86%,400px);padding:14px 18px 18px;border-radius:32px;background:var(--card);border:6px solid var(--lc);
   box-shadow:0 10px 0 #0002;text-align:center;transition:scale .5s cubic-bezier(.3,1.6,.5,1),opacity .2s}
-#card.show{scale:1;opacity:1;pointer-events:auto}
+#card.show{scale:.8;opacity:1;pointer-events:auto}   /* a little smaller, so it never covers Sofia's face */
 #card .pic{font-size:min(17vh,130px);line-height:1.15}
 #card .let{font-size:min(13vh,92px);font-weight:900;line-height:1;color:var(--lc)}
 #card .word{font-size:min(6vh,40px);font-weight:900;margin-top:6px}

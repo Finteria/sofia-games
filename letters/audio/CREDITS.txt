@@ -1,7 +1,7 @@
 Computer voices, trimmed and loudness-normalized.
 
-lv-*.mp3, yes-lv, no-lv, end-lv: Microsoft neural voice "lv-LV-EveritaNeural", made with edge-tts (https://github.com/rany2/edge-tts).
-ru-*.mp3, yes-ru, no-ru, end-ru: Piper (https://github.com/OHF-Voice/piper1-gpl), voice "ru_RU-denis-medium". Dataset license: CC0.
-  https://huggingface.co/rhasspy/piper-voices/tree/main/ru/ru_RU/denis/medium
+lv-*.mp3, yes-lv, no-lv, end-lv: Microsoft neural voice "lv-LV-EveritaNeural".
+ru-*.mp3, yes-ru, no-ru, end-ru: Microsoft neural voice "ru-RU-SvetlanaNeural".
+Both made with edge-tts (https://github.com/rany2/edge-tts).
 
 A family recording (made on the "Голоса для букв" page) replaces the computer voice for that clip.
