@@ -8,7 +8,8 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap">
 <style>
 :root{--bg:#bfe9d6;--ink:#24352b;--leaf:#2f8f5b;--card:#fffdf6;--pink:#f06292;color-scheme:light}
-html,body{height:100%;margin:0}
+html{height:100%}
+body{min-height:100%;margin:0}
 body{background:var(--bg);color:var(--ink);font-family:"Nunito","Trebuchet MS",system-ui,sans-serif;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;text-align:center;
   padding-block:24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
@@ -16,7 +17,7 @@ body{background:var(--bg);color:var(--ink);font-family:"Nunito","Trebuchet MS",s
 /* Russian and Latvian always share one size and weight */
 h1{margin:0;font-size:clamp(34px,6.5vw,60px);font-weight:900;line-height:1.1;display:flex;flex-direction:column;gap:.15em}
 .games{display:flex;flex-wrap:wrap;gap:20px;justify-content:center}
-a.game{display:flex;flex-direction:column;align-items:center;gap:8px;width:min(70vw,240px);padding:20px;border-radius:32px;
+a.game{display:flex;flex-direction:column;align-items:center;gap:8px;width:min(42vw,210px);padding:16px 10px;box-sizing:border-box;border-radius:32px;
   background:var(--card);border:5px solid var(--leaf);color:var(--ink);text-decoration:none;font-size:28px;font-weight:900}
 a.game:active{transform:scale(.96)}
 a.game svg{width:70%;height:auto}
@@ -58,6 +59,16 @@ a.game span{font-size:26px;line-height:1.15}
     </svg>
     <span>Песенки</span>
     <span lang="lv">Dziesmiņas</span>
+  </a>
+  <a class="game" href="colours/index.html">
+    <svg viewBox="0 0 200 200" aria-hidden="true">
+      <path d="M100 28C52 28 18 60 18 100s30 72 70 72c14 0 18-8 14-18s2-20 16-20h22c26 0 42-16 42-40 0-38-36-66-82-66z" fill="#f3d9b1" stroke="#8a5a3b" stroke-width="6" stroke-linejoin="round"/>
+      <circle cx="62" cy="80" r="15" fill="#e53935"/><circle cx="100" cy="58" r="15" fill="#fdd835"/><circle cx="142" cy="72" r="15" fill="#1e88e5"/>
+      <circle cx="54" cy="122" r="15" fill="#43a047"/><circle cx="150" cy="112" r="13" fill="#8e24aa"/>
+      <ellipse cx="100" cy="146" rx="11" ry="9" fill="#fffdf6" stroke="#8a5a3b" stroke-width="4"/>
+    </svg>
+    <span>Цвета</span>
+    <span lang="lv">Krāsas</span>
   </a>
 </div>
 </body>

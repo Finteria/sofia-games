@@ -1,0 +1,395 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Colours · Цвета · Krāsas</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap">
+<style>
+/* layout: a meadow; Sofia on the left, a picture in a frame on the right whose things start grey, paint pots below it */
+:root{
+  --sky:#cdeaff; --ground:#8ccf6e; --ink:#24352b; --card:#fffdf6; --sun:#ffd25a; --pink:#f06292; --frame:#8a5a3b;
+  --display:"Nunito","Trebuchet MS",system-ui,sans-serif;
+  color-scheme:light;
+  --sh:min(58vh,500px,90vw); --sw:calc(var(--sh)*.4624); --sx:max(12px,4vw);
+  --pw:min(15vw,21vh,150px); --mw:84px;
+}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:hidden;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+#stage{position:relative;height:100%;overflow:hidden}
+.layer{position:absolute;inset:0;pointer-events:none}
+#far{background:
+  radial-gradient(ellipse 9% 5% at 18% 12%,#fff 98%,transparent),radial-gradient(ellipse 7% 4% at 23% 9%,#fff 98%,transparent),
+  radial-gradient(ellipse 32% 22% at 12% 76%,#a6dc8a 98%,transparent),
+  radial-gradient(ellipse 36% 24% at 55% 80%,#9bd47f 98%,transparent),
+  radial-gradient(ellipse 30% 22% at 92% 76%,#a6dc8a 98%,transparent)}
+#ground{top:auto;height:22%;background:var(--ground);border-top:6px solid #76b95b}
+#progress{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:0;right:0;display:flex;justify-content:center;gap:10px;z-index:5;pointer-events:none}
+.dot{width:22px;height:22px;border-radius:50%;background:#ffffff99;border:3px solid #8aa7c4;transition:background .3s,transform .3s}
+.dot.done{background:var(--c);border-color:#0003;transform:scale(1.15)}
+
+/* Sofia: the same cartoon as in the other games */
+#sofia{position:absolute;left:var(--sx);bottom:6%;height:var(--sh);aspect-ratio:800/1730;z-index:3;cursor:pointer;
+  transform-origin:50% 100%;animation:bob 2.4s ease-in-out infinite}
+#sofia svg{display:block;width:100%;height:100%;overflow:visible}
+#sofia svg *{transform-box:view-box}
+#sofia .ink{stroke:#1b1717;stroke-linecap:round;stroke-linejoin:round}
+#sofia .skin{fill:#ffe3cf}
+#sofia .hair{fill:#3b2a20}
+#sofia .eye{transform-box:fill-box;transform-origin:center;animation:blink 4.2s infinite}
+#sofia .mouth.open{opacity:0}
+#sofia.talk .mouth.open{animation:flap .3s steps(1,end) infinite}
+#sofia.talk .mouth.shut{animation:flap .3s steps(1,end) infinite -.15s}
+#sofia .head{transform-origin:400px 870px}
+#sofia .arm.l{transform-origin:262px 955px;animation:sway 2.4s ease-in-out infinite}
+#sofia .arm.r{transform-origin:538px 955px;animation:sway 2.4s ease-in-out infinite reverse}
+#sofia .leg.l{transform-origin:335px 1390px}
+#sofia .leg.r{transform-origin:465px 1390px}
+#sofia.walk{animation:stride .6s ease-in-out infinite}
+#sofia.walk .leg.l{animation:stepL .6s ease-in-out infinite}
+#sofia.walk .leg.r{animation:stepR .6s ease-in-out infinite}
+#sofia.walk .arm.l{animation:swingL .6s ease-in-out infinite}
+#sofia.walk .arm.r{animation:swingR .6s ease-in-out infinite}
+#sofia.walk .head{animation:nod .6s ease-in-out infinite}
+#sofia.talk .head{animation:chat .32s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+@keyframes flap{0%{opacity:1}50%{opacity:0}}
+@keyframes sway{50%{transform:rotate(4deg)}}
+@keyframes stride{0%,50%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-3%) rotate(-2deg)}75%{transform:translateY(-3%) rotate(2deg)}}
+@keyframes stepL{0%,50%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-60px) rotate(7deg)}}
+@keyframes stepR{0%,50%,100%{transform:translateY(0) rotate(0)}75%{transform:translateY(-60px) rotate(-7deg)}}
+@keyframes swingL{0%,100%{transform:rotate(-16deg)}50%{transform:rotate(10deg)}}
+@keyframes swingR{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(16deg)}}
+@keyframes nod{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(3deg)}75%{transform:rotate(-3deg)}}
+@keyframes chat{0%,100%{transform:rotate(-3deg) scale(1)}50%{transform:rotate(3deg) scale(1.03)}}
+
+/* the picture: a framed canvas; positions of things are % of it, sizes % of its height */
+#canvas{position:absolute;left:calc(var(--sx) + var(--sw) + 3vw);right:3vw;top:calc(52px + env(safe-area-inset-top,0px));bottom:calc(var(--pw)*1.1 + 5%);
+  z-index:2;border:10px solid var(--frame);border-radius:18px;box-shadow:0 8px 0 #0002,inset 0 0 0 4px #fff6;overflow:hidden;background:var(--bg)}
+#canvas.garden{--bg:linear-gradient(#bfe6ff 0 55%,#8ccf6e 55%)}
+#canvas.beach{--bg:radial-gradient(ellipse 12% 4% at 30% 34%,#fff8 98%,transparent),linear-gradient(#bfe6ff 0 34%,#4dd0e1 34% 62%,#f6e0a4 62%)}
+#canvas.farm{--bg:repeating-linear-gradient(90deg,transparent 0 7%,#c9a27a 7% 8.2%,transparent 8.2% 15%) 0 44%/100% 14% no-repeat,
+  linear-gradient(transparent 0 47%,#c9a27a 47% 49%,transparent 49% 53%,#c9a27a 53% 55%,transparent 55%),linear-gradient(#bfe6ff 0 50%,#a5d6a7 50%)}
+.item{position:absolute;translate:-50% -50%;border:0;padding:0;background:none;cursor:pointer;line-height:1;font-family:inherit}
+.item .e{display:block;transition:filter .7s;filter:grayscale(1) contrast(.35) brightness(1.15)}
+.item.painted .e{filter:none}
+/* the thing Sofia asks about glows softly */
+.item .glow{position:absolute;inset:-22%;border-radius:50%;background:radial-gradient(circle,#fff 0 35%,#fff0 70%);opacity:0;transition:opacity .4s}
+.item.target .glow{opacity:1;animation:glow 1.6s ease-in-out infinite}
+.item.target .e{animation:look 1.6s ease-in-out infinite}
+@keyframes glow{50%{scale:1.18}}
+@keyframes look{50%{scale:1.08}}
+.item.yay .e{animation:yay .7s cubic-bezier(.3,1.6,.5,1)}
+@keyframes yay{0%{scale:.6}60%{scale:1.25}100%{scale:1}}
+.item.dance .e{animation:dance .9s ease-in-out infinite var(--d,0s)}
+@keyframes dance{0%,100%{translate:0 0;rotate:0deg}25%{translate:0 -14%;rotate:-8deg}75%{translate:0 -6%;rotate:8deg}}
+
+/* paint pots: two or three, the colour on the lid, a drip and the band */
+#pots{position:absolute;left:calc(var(--sx) + var(--sw) + 3vw);right:3vw;bottom:3%;height:calc(var(--pw)*1.1);z-index:4;
+  display:flex;align-items:flex-end;justify-content:space-evenly}
+.pot{width:var(--pw);aspect-ratio:100/110;border:0;padding:0;background:none;cursor:pointer;transform-origin:50% 100%;
+  transition:translate .5s cubic-bezier(.2,.8,.3,1),opacity .3s}
+.pot svg{display:block;width:100%;height:100%;overflow:visible}
+.pot.low{translate:0 140%;opacity:0;transition:none}
+.pot.hint{animation:hint 3.2s ease-in-out infinite}
+@keyframes hint{0%,24%,100%{rotate:0deg}4%{rotate:-8deg}9%{rotate:8deg}14%{rotate:-5deg}19%{rotate:4deg}}
+.pot.no{animation:no .5s ease-in-out}
+@keyframes no{20%{rotate:-12deg}40%{rotate:10deg}60%{rotate:-6deg}80%{rotate:4deg}}
+.pot.help{animation:help .9s ease-in-out infinite}
+.pot.help svg{filter:drop-shadow(0 0 12px #fff) drop-shadow(0 0 5px #fff)}
+@keyframes help{50%{translate:0 -16%;scale:1.08}}
+.pot.jump{animation:jump .45s ease-out}
+@keyframes jump{40%{translate:0 -22%}}
+.pot:focus-visible{outline:5px dashed #fff;outline-offset:4px;border-radius:20px}
+.blob{position:fixed;left:0;top:0;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;z-index:9;pointer-events:none;box-shadow:inset -6px -6px 0 #0002,0 0 0 3px #0002}
+.splash{position:absolute;translate:-50% -50%;z-index:1;pointer-events:none;animation:splash .8s ease-out forwards}
+@keyframes splash{from{scale:.2;opacity:1}60%{opacity:1}to{scale:1.3;opacity:0}}
+
+.big{position:absolute;z-index:7;border:0;cursor:pointer;font-family:var(--display);font-weight:900;color:#fff;
+  background:var(--pink);box-shadow:0 8px 0 #b83b68;border-radius:999px;display:flex;align-items:center;gap:12px;justify-content:center;transition:transform .1s}
+.big:active{transform:translateY(6px);box-shadow:0 2px 0 #b83b68}
+#repeat{left:max(8px,calc(var(--sx) + var(--sw)*.15 - var(--mw) - 4px));bottom:calc(6% + 10px);width:var(--mw);height:var(--mw);padding:0}
+#repeat svg{width:46px;height:46px}
+.corner{position:absolute;top:max(14px,env(safe-area-inset-top,0px));width:60px;height:60px;border-radius:50%;z-index:12;
+  background:#ffffff55;border:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.corner svg{width:34px;height:34px}
+.home{left:max(14px,env(safe-area-inset-left,0px))}
+#stage>.home{background:#1f4f8a55}
+
+#overlay{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+  background:#2c5d9bf0;color:#fff;text-align:center;padding:24px;overflow-y:auto}
+#overlay>h1{margin-top:auto!important}
+#overlay>:last-child{margin-bottom:auto}
+#overlay h1{margin:0;font-size:clamp(46px,9vw,92px);font-weight:900;line-height:1;letter-spacing:.02em;text-shadow:0 4px 0 #0003}
+#overlay h1 span:nth-child(1){color:#ff6f61}#overlay h1 span:nth-child(2){color:#ffd25a}#overlay h1 span:nth-child(3){color:#7ddc6a}
+#overlay h1 span:nth-child(4){color:#6ec6ff}#overlay h1 span:nth-child(5){color:#ffa64d}#overlay h1 span:nth-child(6){color:#d79bf0}#overlay h1 span:nth-child(7){color:#ff9cc2}
+#overlay .sub{margin:-8px 0 0;font-size:clamp(20px,3.4vw,28px);font-weight:900;opacity:.9}
+#overlay .row{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+.scene{position:relative;width:min(27vw,220px);padding:16px 10px 14px;border:0;border-radius:30px;background:var(--card);cursor:pointer;font-family:var(--display);
+  box-shadow:0 8px 0 #0003;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--ink);transition:transform .1s}
+.scene:active{transform:translateY(6px);box-shadow:0 2px 0 #0003}
+.scene .e{font-size:clamp(54px,9vw,84px);line-height:1.1}
+.scene .name{font-size:clamp(20px,3vw,26px);font-weight:900}
+.scene svg{width:46px;height:46px}
+.scene .done{position:absolute;top:-12px;right:-10px;font-size:38px}
+
+.star{position:absolute;width:40px;height:40px;z-index:9;pointer-events:none;animation:fly 1.6s ease-out forwards}
+@keyframes fly{from{transform:translate(0,0) scale(.3) rotate(0);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(1.2) rotate(240deg);opacity:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important}}
+/* tall screens: the picture on top, Sofia below on the left with the pots beside her */
+@media (orientation:portrait){
+  :root{--sh:min(36vh,440px);--pw:min(21vw,15vh,150px)}
+  #canvas{left:3vw;right:3vw;top:calc(84px + env(safe-area-inset-top,0px));bottom:calc(6% + var(--sh)*.9)}
+  #pots{left:calc(var(--sx) + var(--sw) + 2vw);right:2vw;bottom:calc(6% + var(--sh)*.12);height:auto;flex-wrap:wrap;gap:2vh 0}
+}
+@media (max-height:520px){:root{--sh:66vh;--pw:min(13vw,24vh);--mw:64px}#repeat svg{width:34px;height:34px}#canvas{border-width:6px}}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="layer" id="far"></div>
+  <div class="layer" id="ground"></div>
+  <div id="progress"></div>
+  <div id="sofia" role="img" aria-label="Sofia: tap to hear it again">
+    <svg viewBox="0 0 800 1730" aria-hidden="true">
+      <defs>
+        <g id="leg">
+          <path class="ink" d="M335 1380 L331 1640" fill="none" stroke-width="68"/>
+          <path d="M335 1380 L331 1640" stroke="#ffe3cf" stroke-width="50" stroke-linecap="round"/>
+          <path d="M331 1590 L331 1640" stroke="#fff" stroke-width="50"/>
+          <path d="M305 1592 H357" stroke="#f06292" stroke-width="10" stroke-linecap="round"/>
+          <ellipse class="ink" cx="318" cy="1672" rx="60" ry="34" fill="#d6453d" stroke-width="9"/>
+          <ellipse cx="300" cy="1660" rx="16" ry="8" fill="#fff" opacity=".5"/>
+        </g>
+        <g id="arm">
+          <path class="ink" d="M262 965 Q232 1085 218 1200" fill="none" stroke-width="64"/>
+          <circle cx="216" cy="1222" r="34" fill="#1b1717"/>
+          <path d="M262 965 Q232 1085 218 1200" fill="none" stroke="#ffe3cf" stroke-width="46" stroke-linecap="round"/>
+          <circle class="skin" cx="216" cy="1222" r="25"/>
+          <ellipse class="ink" cx="266" cy="955" rx="58" ry="48" fill="#f7a8c4" stroke-width="9"/>
+        </g>
+      </defs>
+      <g class="leg l"><use href="#leg"/></g>
+      <g class="leg r"><use href="#leg" transform="translate(800 0) scale(-1 1)"/></g>
+      <path class="skin ink" d="M352 820 L350 925 Q400 950 450 925 L448 820Z" stroke-width="8"/>
+      <path class="ink" d="M305 900 Q400 945 495 900 L535 918 Q565 990 562 1080 L640 1420 Q400 1478 160 1420 L238 1080 Q235 990 265 918 Z" fill="#f7a8c4" stroke-width="9"/>
+      <path d="M190 1385 Q400 1440 610 1385" fill="none" stroke="#f06292" stroke-width="12" stroke-linecap="round" stroke-dasharray="2 34"/>
+      <g fill="#fff" opacity=".8"><circle cx="330" cy="1060" r="13"/><circle cx="450" cy="1110" r="13"/><circle cx="390" cy="1210" r="13"/><circle cx="280" cy="1270" r="13"/><circle cx="510" cy="1260" r="13"/><circle cx="400" cy="1340" r="13"/><circle cx="240" cy="1370" r="12"/><circle cx="560" cy="1370" r="12"/></g>
+      <path class="ink" d="M308 902 Q322 980 400 950 L400 930 Q352 936 308 902Z M492 902 Q478 980 400 950 L400 930 Q448 936 492 902Z" fill="#fff" stroke-width="7"/>
+      <g class="arm l"><use href="#arm"/></g>
+      <g class="arm r"><use href="#arm" transform="translate(800 0) scale(-1 1)"/></g>
+      <g class="head"><g transform="rotate(-4 400 560)">
+        <!-- cartoon Sofia after her portrait: round cheeks, top-knot curling right; Amélie-style bob with short blunt bangs -->
+        <path class="hair ink" d="M118 600 C92 360 212 168 400 166 C588 168 708 360 682 600 L694 770 C698 812 650 822 616 800 L184 800 C150 822 102 812 106 770Z" stroke-width="9"/>
+        <g class="tuft">
+          <path class="hair ink" d="M448 230 C400 175 345 150 290 158 C345 118 425 140 472 212Z" stroke-width="9"/>
+          <path class="hair ink" d="M450 225 C428 140 455 70 515 25 C512 95 512 160 490 228Z" stroke-width="9"/>
+          <path class="hair ink" d="M462 228 C495 120 600 62 688 102 C712 150 680 196 648 170 C668 140 632 118 600 128 C555 145 525 185 500 240Z" stroke-width="9"/>
+          <path d="M468 200 C470 140 485 95 508 60 M495 210 C530 145 590 112 650 115" fill="none" stroke="#6b4a36" stroke-width="6" stroke-linecap="round"/>
+        </g>
+        <path class="skin ink" d="M158 540 C158 360 270 280 400 280 C530 280 642 360 642 540 C642 700 610 795 530 842 C475 872 325 872 270 842 C190 795 158 700 158 540Z" stroke-width="9"/>
+        <path d="M262 505 Q300 485 340 500 M462 508 Q502 490 542 506" fill="none" stroke="#3b2a20" stroke-width="10" stroke-linecap="round"/>
+        <g class="eye"><ellipse cx="300" cy="575" rx="27" ry="33" fill="#1b1717"/><circle cx="290" cy="563" r="10" fill="#fff"/><circle cx="310" cy="590" r="4.5" fill="#fff"/></g>
+        <g class="eye"><ellipse cx="500" cy="580" rx="27" ry="33" fill="#1b1717"/><circle cx="490" cy="568" r="10" fill="#fff"/><circle cx="510" cy="595" r="4.5" fill="#fff"/></g>
+        <ellipse cx="252" cy="668" rx="46" ry="30" fill="#ff8fab" opacity=".45"/>
+        <ellipse cx="548" cy="672" rx="46" ry="30" fill="#ff8fab" opacity=".45"/>
+        <path d="M388 640 Q400 656 414 640" fill="none" stroke="#c98f7a" stroke-width="8" stroke-linecap="round"/>
+        <path class="mouth shut" d="M345 705 Q400 752 455 705" fill="none" stroke="#1b1717" stroke-width="10" stroke-linecap="round"/>
+        <g class="mouth open"><path d="M350 700 Q400 706 450 700 Q444 768 400 772 Q356 768 350 700Z" fill="#8e2a3a" stroke="#1b1717" stroke-width="8" stroke-linejoin="round"/><ellipse cx="400" cy="752" rx="26" ry="12" fill="#f28b9b"/></g>
+        <path class="hair ink" d="M168 430 C142 560 146 700 172 795 C196 812 232 800 228 776 C210 690 206 560 222 440Z M632 430 C658 560 654 700 628 795 C604 812 568 800 572 776 C590 690 594 560 578 440Z" stroke-width="9"/>
+        <path class="hair ink" d="M170 480 C150 320 265 208 400 208 C535 208 650 320 630 480 C560 458 480 452 400 454 C320 452 240 458 170 480Z" stroke-width="9"/>
+        <path d="M250 300 C320 255 470 250 550 290 M300 452 L304 418 M400 450 L400 414 M500 452 L496 418 M196 560 L192 700 M604 560 L608 700" fill="none" stroke="#6b4a36" stroke-width="7" stroke-linecap="round"/>
+        <path d="M470 215 L408 172 L414 262 Z M470 215 L536 178 L526 266 Z" fill="#f06292" stroke="#c2185b" stroke-width="6" stroke-linejoin="round"/>
+        <circle cx="470" cy="217" r="21" fill="#e04a7f" stroke="#c2185b" stroke-width="6"/>
+      </g></g>
+    </svg>
+  </div>
+  <div id="canvas" aria-live="polite"></div>
+  <div id="pots"></div>
+  <button id="repeat" class="big" hidden aria-label="Say it again"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M6 15h7l9-8v26l-9-8H6z" fill="#fff"/><path d="M27 13a9 9 0 0 1 0 14M31 8a15 15 0 0 1 0 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg></button>
+  <a class="corner home" href="../index.html" aria-label="Menu"><svg viewBox="0 0 40 40"><path d="M6 19L20 7l14 12M11 16v16h18V16" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+  <div id="overlay"></div>
+</div>
+<script>
+/* colours: key -> [paint, English name]; scenes: [id, emoji, colour, word, plural, x %, y %, size % of the picture's height] */
+const COLOURS={"red": ["#e53935", "red"], "yellow": ["#fdd835", "yellow"], "blue": ["#1e88e5", "blue"], "green": ["#43a047", "green"], "orange": ["#fb8c00", "orange"], "purple": ["#8e24aa", "purple"], "pink": ["#f48fb1", "pink"], "brown": ["#8d5a3b", "brown"], "black": ["#26262b", "black"], "white": ["#ffffff", "white"]};
+const SCENES={"garden": {"pic": "🌸", "items": [["sun", "🌞", "yellow", "sun", 0, 82, 18, 24], ["cloud", "☁️", "white", "cloud", 0, 50, 15, 20], ["apple", "🍎", "red", "apple", 0, 20, 62, 17], ["frog", "🐸", "green", "frog", 0, 78, 80, 17], ["carrot", "🥕", "orange", "carrot", 0, 40, 84, 16], ["grapes", "🍇", "purple", "grapes", 1, 60, 60, 16], ["flower", "🌸", "pink", "flower", 0, 15, 86, 16], ["teddy", "🧸", "brown", "teddy bear", 0, 87, 52, 19]]}, "beach": {"pic": "🦀", "items": [["star", "⭐", "yellow", "star", 0, 18, 16, 16], ["fish", "🐟", "blue", "fish", 0, 62, 46, 17], ["crab", "🦀", "red", "crab", 0, 60, 84, 17], ["turtle", "🐢", "green", "turtle", 0, 18, 82, 18], ["flamingo", "🦩", "pink", "flamingo", 0, 88, 52, 24], ["orange", "🍊", "orange", "orange", 0, 40, 74, 15], ["coconut", "🥥", "brown", "coconut", 0, 82, 86, 16]]}, "farm": {"pic": "🐷", "items": [["pig", "🐷", "pink", "pig", 0, 22, 64, 20], ["chick", "🐥", "yellow", "chick", 0, 52, 86, 15], ["cat", "🐈‍⬛", "black", "cat", 0, 72, 82, 18], ["sheep", "🐑", "white", "sheep", 0, 50, 50, 20], ["horse", "🐴", "brown", "horse", 0, 80, 44, 21], ["strawberry", "🍓", "red", "strawberry", 0, 10, 88, 14], ["pumpkin", "🎃", "orange", "pumpkin", 0, 92, 86, 16], ["blueberries", "🫐", "blue", "blueberries", 1, 32, 90, 15]]}};
+const $=id=>document.getElementById(id);
+const canvas=$("canvas"), potsEl=$("pots"), overlay=$("overlay"), sofia=$("sofia"), repeatBtn=$("repeat");
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+
+/* ---------- audio: Microsoft's child voice (audio/*.mp3), so it is Sofia who talks ---------- */
+let ctx=null, current=null;
+function ac(){ if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)(); if(ctx.state!=="running") ctx.resume(); return ctx }
+const decode=ab=>new Promise((res,rej)=>ac().decodeAudioData(ab,res,rej));
+const cache={};
+function loadClip(key){return cache[key]||(cache[key]=fetch(`audio/${key}.mp3`).then(r=>r.ok?r.arrayBuffer():Promise.reject()).then(decode).catch(()=>null))}
+function playBuffer(buf){return new Promise(res=>{const c=ac(),s=c.createBufferSource();s.buffer=buf;s.connect(c.destination);
+  if(current) try{current.stop()}catch(e){}; current=s; s.onended=()=>res(); s.start(); setTimeout(res,buf.duration*1000+300)})}
+function stopVoice(){if(current) try{current.stop()}catch(e){}; current=null}
+/* say several clips in a row; a newer say() cancels an older one */
+let sayId=0;
+async function say(keys,gap=250){const id=++sayId;
+  for(const k of keys){ if(id!==sayId) return false; const buf=await loadClip(k); if(id!==sayId) return false;
+    if(buf){sofia.classList.add("talk"); await playBuffer(buf); sofia.classList.remove("talk")}
+    if(id!==sayId) return false; await wait(gap) }
+  return id===sayId }
+const preload=keys=>keys.forEach(loadClip);
+
+function tone(type,f0,f1,t0,dur,vol=.3){
+  const c=ac(),o=c.createOscillator(),g=c.createGain(); o.type=type;
+  o.frequency.setValueAtTime(f0,t0); o.frequency.exponentialRampToValueAtTime(f1,t0+dur);
+  g.gain.setValueAtTime(.0001,t0); g.gain.exponentialRampToValueAtTime(vol,t0+.02); g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
+  o.connect(g).connect(c.destination); o.start(t0); o.stop(t0+dur+.05);
+}
+function noise(t0,dur,vol,f,type="highpass"){
+  const c=ac(),b=c.createBuffer(1,c.sampleRate*dur,c.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3);
+  const s=c.createBufferSource(),fl=c.createBiquadFilter(),g=c.createGain(); s.buffer=b; fl.type=type; fl.frequency.value=f; g.gain.value=vol;
+  s.connect(fl).connect(g).connect(c.destination); s.start(t0);
+}
+const sfx={
+  whoosh(){const t=ac().currentTime;noise(t,.35,.25,1800)},
+  splat(){const t=ac().currentTime;noise(t,.3,1.2,900,"lowpass");tone("sine",320,90,t,.18,.3)},
+  boing(){const t=ac().currentTime;tone("triangle",260,180,t,.25,.25)},
+  yay(){const t=ac().currentTime;[523,659,784,1047].forEach((f,i)=>tone("triangle",f,f,t+i*.12,.3,.25))}
+};
+function stars(x="50%",y="45%",n=20){for(let i=0;i<n;i++){const s=document.createElementNS("http://www.w3.org/2000/svg","svg");s.setAttribute("viewBox","0 0 24 24");s.classList.add("star");
+  s.innerHTML='<path d="M12 2l3 7 7 .6-5.4 4.7 1.7 7.2L12 17.8 5.7 21.5l1.7-7.2L2 9.6 9 9z" fill="'+["#ffd25a","#f06292","#fff","#5fbf7f","#6ec6ff"][i%5]+'"/>';
+  s.style.left=x;s.style.top=y;s.style.setProperty("--dx",(Math.random()*60-30)+"vw");s.style.setProperty("--dy",(Math.random()*60-30)+"vh");
+  $("stage").appendChild(s);setTimeout(()=>s.remove(),1700)}}
+
+/* ---------- pots ---------- */
+function potSVG(c){const p=COLOURS[c][0], edge=c==="white"?"#9aa7ad":"#0003";
+  return `<svg viewBox="0 0 100 110" aria-hidden="true">
+  <path d="M14 40Q50 -6 86 40" fill="none" stroke="#7f8c93" stroke-width="4" stroke-linecap="round"/>
+  <path d="M10 28V92Q10 106 50 106Q90 106 90 92V28Z" fill="#dfe6ea" stroke="#9aa7ad" stroke-width="3"/>
+  <path d="M10 54H90V80H10Z" fill="${p}" stroke="${edge}" stroke-width="2"/>
+  <path d="M10 28H90V36Q84 52 78 36Q72 60 64 36Q56 46 48 36Q40 64 32 36Q24 48 18 36Q14 44 10 36Z" fill="${p}" stroke="${edge}" stroke-width="2" stroke-linejoin="round"/>
+  <ellipse cx="50" cy="28" rx="40" ry="11" fill="${p}" stroke="#7f8c93" stroke-width="4"/>
+  <ellipse cx="38" cy="25" rx="12" ry="3.5" fill="#fff" opacity=".45"/></svg>`}
+function setPots(colours){
+  potsEl.innerHTML=colours.map(c=>`<button class="pot low" data-c="${c}" aria-label="${COLOURS[c][1]}">${potSVG(c)}</button>`).join("");
+  potsEl.querySelectorAll(".pot").forEach((p,n)=>setTimeout(()=>p.classList.remove("low"),80+n*140));
+}
+
+/* ---------- the picture ---------- */
+let scene=null, items=[], order=[], step=-1, target=null, wrong=0, busy=true, idleT=null, hintT=null, firstTry=0;
+function sizeItems(){const h=canvas.clientHeight, w=canvas.clientWidth;
+  canvas.querySelectorAll(".item").forEach(el=>el.style.fontSize=Math.min(h*1.2,w*.6)*el.dataset.s/100+"px")}
+addEventListener("resize",sizeItems);
+function drawScene(id){
+  scene=id; items=SCENES[id].items; canvas.className=id;
+  canvas.innerHTML=items.map(([oid,e,c,w,pl,x,y,s])=>`<button class="item" data-id="${oid}" data-s="${s}" style="left:${x}%;top:${y}%" aria-label="${w}"><span class="glow"></span><span class="e">${e}</span></button>`).join("");
+  sizeItems();
+  $("progress").innerHTML=items.map(()=>'<div class="dot"></div>').join("");
+}
+const itemEl=oid=>canvas.querySelector(`.item[data-id="${oid}"]`);
+/* how many pots: two to begin with, three once she has found a few colours on the first try (remembered on this device) */
+const potCount=()=>(+store.get("colours-firsttry")||0)>=4?3:2;
+
+async function nextStep(){
+  clearTimeout(idleT); clearTimeout(hintT); wrong=0;
+  if(++step>=order.length) return finale();
+  target=items[order[step]]; const [oid,,c]=target;
+  canvas.querySelectorAll(".item.target").forEach(el=>el.classList.remove("target"));
+  itemEl(oid).classList.add("target");
+  const others=shuffle(Object.keys(COLOURS).filter(k=>k!==c)).slice(0,potCount()-1);
+  preload([`obj-${oid}`,`where-${c}`,`got-${oid}`]);
+  sfx.whoosh(); setPots(shuffle([c,...others]));
+  await wait(900); busy=false; ask();
+}
+/* "The sun is yellow. Where is yellow?" */
+async function ask(){
+  clearTimeout(idleT); clearTimeout(hintT); repeatBtn.hidden=false;
+  const t=target; if(!await say([`obj-${t[0]}`,`where-${t[2]}`],400)||t!==target||busy) return;
+  waitForTap();
+}
+/* a quiet moment, then the right pot gives a small shake; much later it glows and Sofia asks again */
+const HINT=3000, IDLE=15000;
+function waitForTap(){clearTimeout(idleT); clearTimeout(hintT);
+  hintT=setTimeout(()=>{const p=rightPot(); p&&p.classList.add("hint")},HINT);
+  idleT=setTimeout(()=>{const p=rightPot(); p&&p.classList.add("help"); ask()},IDLE)}
+const rightPot=()=>potsEl.querySelector(`.pot[data-c="${target[2]}"]`);
+
+potsEl.addEventListener("click",async e=>{
+  const pot=e.target.closest(".pot"); if(!pot) return; ac();
+  const c=pot.dataset.c;
+  if(busy||!target){say([`col-${c}`]); return}
+  if(c!==target[2]){
+    clearTimeout(idleT); clearTimeout(hintT); sfx.boing(); pot.classList.remove("no"); void pot.offsetWidth; pot.classList.add("no");
+    if(++wrong>=2){const p=rightPot(); p.classList.remove("hint"); p.classList.add("help")} else rightPot().classList.add("hint");
+    const t=target; if(await say([`col-${c}`,`where-${t[2]}`],500)&&t===target&&!busy) waitForTap();   // "Red. Where is yellow?"
+    return;
+  }
+  busy=true; clearTimeout(idleT); clearTimeout(hintT); sayId++; stopVoice(); repeatBtn.hidden=true;
+  if(!wrong){const n=(+store.get("colours-firsttry")||0)+1; store.set("colours-firsttry",n)}
+  pot.classList.remove("hint","help"); pot.classList.add("jump");
+  const el=itemEl(target[0]); await throwPaint(pot,el,COLOURS[c][0]);
+  el.classList.remove("target"); el.classList.add("painted","yay"); sfx.splat();
+  const r=el.getBoundingClientRect(); stars(r.left+r.width/2+"px",r.top+r.height/2+"px",14);
+  const dot=$("progress").children[step]; dot.style.setProperty("--c",COLOURS[c][0]); dot.classList.add("done");
+  potsEl.querySelectorAll(".pot").forEach(p=>p!==pot&&p.classList.add("low"));
+  await say([`got-${target[0]}`,`yes-${1+Math.floor(Math.random()*3)}`],350);
+  await wait(500); potsEl.innerHTML=""; nextStep();
+});
+/* a blob of paint flies from the pot onto the thing, and splashes */
+async function throwPaint(pot,el,paint){
+  const a=pot.getBoundingClientRect(), b=el.getBoundingClientRect();
+  const x0=a.left+a.width/2, y0=a.top+a.height*.25, x1=b.left+b.width/2, y1=b.top+b.height/2, top=Math.min(y0,y1)-80;
+  const blob=document.createElement("div"); blob.className="blob"; blob.style.background=paint; document.body.appendChild(blob);
+  await blob.animate([{transform:`translate(${x0}px,${y0}px) scale(.6)`},{transform:`translate(${(x0+x1)/2}px,${top}px) scale(1.1)`,offset:.5},{transform:`translate(${x1}px,${y1}px) scale(1)`}],
+    {duration:550,easing:"ease-in-out"}).finished.catch(()=>{});
+  blob.remove();
+  const s=document.createElementNS("http://www.w3.org/2000/svg","svg"); s.setAttribute("viewBox","0 0 100 100"); s.classList.add("splash");
+  const w=b.width*1.9; s.style.width=s.style.height=w+"px"; s.style.left=el.style.left; s.style.top=el.style.top;
+  s.innerHTML=[[50,50,30],[18,30,9],[82,24,8],[86,70,10],[20,78,8],[50,8,6],[54,94,6]].map(([cx,cy,r])=>`<circle cx="${cx}" cy="${cy}" r="${r}" fill="${paint}" stroke="#0002" stroke-width="1.5"/>`).join("");
+  canvas.appendChild(s); setTimeout(()=>s.remove(),850);
+}
+canvas.addEventListener("click",e=>{const el=e.target.closest(".item"); if(!el) return; ac();
+  if(el.classList.contains("painted")) say([`got-${el.dataset.id}`]);          // tap a painted thing: "Yellow sun!"
+  else if(!busy&&target&&el.dataset.id===target[0]) ask()});
+repeatBtn.addEventListener("click",()=>{ac();if(!busy&&target) ask()});
+sofia.addEventListener("click",()=>{ac();if(!busy&&target&&overlay.hidden) ask()});
+
+async function walkIn(){
+  sofia.classList.add("walk");
+  await sofia.animate([{translate:"-40vw 0"},{translate:"0 0"}],{duration:1500,easing:"ease-out"}).finished.catch(()=>{});
+  sofia.classList.remove("walk");
+}
+async function play(id){
+  ac(); overlay.hidden=true; busy=true; target=null; potsEl.innerHTML="";
+  drawScene(id); order=shuffle([...items.keys()]); step=-1;
+  preload(["start",...items.flatMap(([oid,,c])=>[`obj-${oid}`,`where-${c}`])].slice(0,5));
+  await walkIn(); await say(["start"]); nextStep();
+}
+async function finale(){
+  target=null; repeatBtn.hidden=true; potsEl.innerHTML="";
+  const done=new Set((store.get("colours-done")||"").split(",").filter(Boolean)); done.add(scene); store.set("colours-done",[...done].join());
+  sfx.yay(); stars(); canvas.querySelectorAll(".item").forEach((el,i)=>{el.style.setProperty("--d",(i*.12)+"s");el.classList.add("dance")});
+  await say(["end"]); await wait(2500);
+  if(overlay.hidden) startScreen(scene);
+}
+
+/* ---------- start screen: pick a picture ---------- */
+const NAMES={garden:"Garden",beach:"Beach",farm:"Farm"};
+const playIcon=`<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="var(--pink)"/><path d="M15 11l14 9-14 9z" fill="#fff"/></svg>`;
+function startScreen(last){
+  clearTimeout(idleT); clearTimeout(hintT); sayId++; stopVoice(); repeatBtn.hidden=true; target=null; busy=true;
+  const done=(store.get("colours-done")||"").split(",");
+  overlay.hidden=false;
+  overlay.innerHTML=`<h1 aria-label="Colours">${[..."Colours"].map(ch=>`<span>${ch}</span>`).join("")}</h1><p class="sub">Цвета · Krāsas</p>
+    <div class="row">${Object.entries(SCENES).map(([id,s])=>`<button class="scene" data-scene="${id}">${done.includes(id)?'<span class="done">⭐</span>':""}<span class="e">${s.pic}</span><span class="name">${NAMES[id]}</span>${playIcon}</button>`).join("")}</div>`;
+  overlay.querySelectorAll("[data-scene]").forEach(b=>b.onclick=()=>play(b.dataset.scene));
+  if(last){const ids=Object.keys(SCENES); overlay.querySelector(`[data-scene="${ids[(ids.indexOf(last)+1)%ids.length]}"]`).focus()}
+}
+drawScene("garden"); startScreen();
+</script>
+</body>
+</html>
