@@ -113,7 +113,7 @@ body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:
 #bubble:focus-visible{outline:5px dashed #fff;outline-offset:4px}
 
 /* the picture card: the letter, a picture and a word that starts with it (or has it) */
-#card{position:absolute;left:50%;top:50%;z-index:6;translate:-50% -50%;scale:.2;opacity:0;pointer-events:none;
+#card{position:absolute;left:50%;top:50%;z-index:6;translate:-50% calc(-50% - 20px);scale:.2;opacity:0;pointer-events:none;
   width:min(86%,400px);padding:14px 18px 18px;border-radius:32px;background:var(--card);border:6px solid var(--lc);
   box-shadow:0 10px 0 #0002;text-align:center;transition:scale .5s cubic-bezier(.3,1.6,.5,1),opacity .2s}
 #card.show{scale:.8;opacity:1;pointer-events:auto}   /* a little smaller, so it never covers Sofia's face */
