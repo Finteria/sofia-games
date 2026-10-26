@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Peekaboo · Ку-ку · Paslēpes</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap">
+<style>
+/* layout: a meadow; Sofia on the left, three bushes on the right, an animal hides behind one of them */
+:root{
+  --sky:#cdeaff; --ground:#8ccf6e; --ink:#24352b; --card:#fffdf6; --pink:#f06292;
+  --display:"Nunito","Trebuchet MS",system-ui,sans-serif;
+  color-scheme:light;
+  --sh:min(58vh,500px,90vw); --sw:calc(var(--sh)*.4624); --sx:max(12px,4vw);
+  --bw:min(24vw,38vh,280px); --mw:84px;
+}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:hidden;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+#stage{position:fixed;inset:0;overflow:hidden;overflow:clip}   /* never scrolls, even when something flies out of it */
+.layer{position:absolute;inset:0;pointer-events:none}
+#far{background:
+  radial-gradient(circle at 88% 12%,#ffd25a 0 46px,transparent 48px),
+  radial-gradient(ellipse 9% 5% at 18% 14%,#fff 98%,transparent),radial-gradient(ellipse 7% 4% at 23% 11%,#fff 98%,transparent),
+  radial-gradient(ellipse 10% 5% at 60% 9%,#fff 98%,transparent),
+  radial-gradient(ellipse 32% 22% at 12% 76%,#a6dc8a 98%,transparent),
+  radial-gradient(ellipse 36% 24% at 55% 80%,#9bd47f 98%,transparent),
+  radial-gradient(ellipse 30% 22% at 92% 76%,#a6dc8a 98%,transparent)}
+#ground{top:auto;height:24%;background:var(--ground);border-top:6px solid #76b95b}
+.flower{position:absolute;width:16px;height:16px;border-radius:50%;background:#ffd25a;box-shadow:0 0 0 6px #fff}
+#progress{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:0;right:0;display:flex;justify-content:center;gap:10px;z-index:5;pointer-events:none}
+.dot{width:30px;height:30px;border-radius:50%;background:#ffffff99;border:3px solid #8aa7c4;display:flex;align-items:center;justify-content:center;font-size:19px;transition:transform .3s}
+.dot.done{background:#fff;border-color:#2f8f5b;transform:scale(1.2)}
+
+/* Sofia: the same cartoon as in the other games */
+#sofia{position:absolute;left:var(--sx);bottom:6%;height:var(--sh);aspect-ratio:800/1730;z-index:3;cursor:pointer;
+  transform-origin:50% 100%;animation:bob 2.4s ease-in-out infinite}
+#sofia svg{display:block;width:100%;height:100%;overflow:visible}
+#sofia svg *{transform-box:view-box}
+#sofia .ink{stroke:#1b1717;stroke-linecap:round;stroke-linejoin:round}
+#sofia .skin{fill:#ffe3cf}
+#sofia .hair{fill:#3b2a20}
+#sofia .eye{transform-box:fill-box;transform-origin:center;animation:blink 4.2s infinite}
+#sofia .mouth.open{opacity:0}
+#sofia.talk .mouth.open{animation:flap .3s steps(1,end) infinite}
+#sofia.talk .mouth.shut{animation:flap .3s steps(1,end) infinite -.15s}
+#sofia .head{transform-origin:400px 870px}
+#sofia .arm.l{transform-origin:262px 955px;animation:sway 2.4s ease-in-out infinite}
+#sofia .arm.r{transform-origin:538px 955px;animation:sway 2.4s ease-in-out infinite reverse}
+#sofia .leg.l{transform-origin:335px 1390px}
+#sofia .leg.r{transform-origin:465px 1390px}
+#sofia.walk{animation:stride .6s ease-in-out infinite}
+#sofia.walk .leg.l{animation:stepL .6s ease-in-out infinite}
+#sofia.walk .leg.r{animation:stepR .6s ease-in-out infinite}
+#sofia.walk .arm.l{animation:swingL .6s ease-in-out infinite}
+#sofia.walk .arm.r{animation:swingR .6s ease-in-out infinite}
+#sofia.walk .head{animation:nod .6s ease-in-out infinite}
+#sofia.talk .head{animation:chat .32s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+@keyframes flap{0%{opacity:1}50%{opacity:0}}
+@keyframes sway{50%{transform:rotate(4deg)}}
+@keyframes stride{0%,50%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-3%) rotate(-2deg)}75%{transform:translateY(-3%) rotate(2deg)}}
+@keyframes stepL{0%,50%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-60px) rotate(7deg)}}
+@keyframes stepR{0%,50%,100%{transform:translateY(0) rotate(0)}75%{transform:translateY(-60px) rotate(-7deg)}}
+@keyframes swingL{0%,100%{transform:rotate(-16deg)}50%{transform:rotate(10deg)}}
+@keyframes swingR{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(16deg)}}
+@keyframes nod{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(3deg)}75%{transform:rotate(-3deg)}}
+@keyframes chat{0%,100%{transform:rotate(-3deg) scale(1)}50%{transform:rotate(3deg) scale(1.03)}}
+
+/* the bushes */
+#field{position:absolute;left:calc(var(--sx) + var(--sw) + 2vw);right:2vw;top:14%;bottom:7%;z-index:4;
+  display:flex;align-items:flex-end;justify-content:space-evenly}
+.spot{position:relative;width:var(--bw);aspect-ratio:1;border:0;padding:0;background:none;cursor:pointer;transition:translate .6s cubic-bezier(.2,.8,.3,1)}
+.spot.low{translate:0 120vh;transition:none}
+.spot .bush{position:absolute;left:0;bottom:0;width:100%;height:auto;overflow:visible;transform-origin:50% 100%}
+/* the animal sits behind the bush: hidden, its ears peeking over the top, or jumped out on top */
+.spot .ani{position:absolute;left:50%;bottom:6%;translate:-50% 0;font-size:calc(var(--bw)*.5);line-height:1;opacity:0;
+  transition:bottom .4s cubic-bezier(.3,1.5,.5,1),opacity .2s,scale .4s cubic-bezier(.3,1.5,.5,1)}
+.spot.peek .ani{bottom:44%;opacity:1}
+.spot.out .ani{bottom:74%;opacity:1;scale:1.3}
+.spot.out .ani .e{display:block;animation:joy .9s ease-in-out infinite}
+@keyframes joy{0%,100%{rotate:0deg}25%{rotate:-10deg}75%{rotate:10deg}}
+.spot.rustle .bush{animation:rustle .7s ease-in-out}
+@keyframes rustle{15%{rotate:-4deg;scale:1.03 .97}35%{rotate:4deg}55%{rotate:-3deg;scale:.98 1.03}75%{rotate:2deg}}
+.spot.no .bush{animation:shake .5s ease-in-out}
+@keyframes shake{20%{translate:-5% 0}40%{translate:5% 0}60%{translate:-3% 0}80%{translate:2% 0}}
+.spot.help .bush{animation:help .9s ease-in-out infinite;filter:drop-shadow(0 0 14px #fff) drop-shadow(0 0 6px #fff)}
+@keyframes help{50%{scale:1.06}}
+.spot:focus-visible{outline:5px dashed #fff;outline-offset:4px;border-radius:30%}
+.fly{position:absolute;z-index:9;pointer-events:none;font-size:56px;translate:-50% -50%;animation:flyaway 1.6s ease-in forwards}
+@keyframes flyaway{30%{transform:translate(-30px,-80px) rotate(-10deg)}60%{transform:translate(40px,-170px) rotate(10deg)}to{transform:translate(-20px,-60vh) rotate(-8deg);opacity:0}}
+
+.big{position:absolute;z-index:7;border:0;cursor:pointer;font-family:var(--display);font-weight:900;color:#fff;
+  background:var(--pink);box-shadow:0 8px 0 #b83b68;border-radius:999px;display:flex;align-items:center;gap:12px;justify-content:center;transition:transform .1s}
+.big:active{transform:translateY(6px);box-shadow:0 2px 0 #b83b68}
+#repeat{left:max(8px,calc(var(--sx) + var(--sw)*.15 - var(--mw) - 4px));bottom:calc(6% + 10px);width:var(--mw);height:var(--mw);padding:0}
+#repeat svg{width:46px;height:46px}
+.corner{position:absolute;top:max(14px,env(safe-area-inset-top,0px));width:60px;height:60px;border-radius:50%;z-index:13;
+  background:#ffffff55;border:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.corner svg{width:34px;height:34px}
+.home{left:max(14px,env(safe-area-inset-left,0px))}
+#stage>.home{background:#1f4f8a55}
+
+#overlay{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+  background:#2c5d9bf0;color:#fff;text-align:center;padding:24px;overflow-y:auto}
+#overlay>h1{margin-top:auto!important}
+#overlay>:last-child{margin-bottom:auto}
+#overlay h1{margin:0;font-size:clamp(46px,9vw,92px);font-weight:900;line-height:1;text-shadow:0 4px 0 #0003}
+#overlay h1 span:nth-child(odd){color:#ffd25a}#overlay h1 span:nth-child(even){color:#7ddc6a}
+#overlay .sub{margin:-8px 0 0;font-size:clamp(20px,3.4vw,28px);font-weight:900;opacity:.9}
+.go{width:min(60vw,280px);padding:18px 12px 16px;border:0;border-radius:32px;background:var(--card);cursor:pointer;font-family:var(--display);
+  box-shadow:0 8px 0 #0003;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--ink);transition:transform .1s}
+.go:active{transform:translateY(6px);box-shadow:0 2px 0 #0003}
+.go .e{font-size:clamp(50px,8vw,76px);line-height:1.1;white-space:nowrap}
+.go .name{font-size:clamp(20px,3vw,26px);font-weight:900}
+.go svg{width:52px;height:52px}
+.stickers{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:760px}
+.sticker{width:84px;height:84px;border-radius:22px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:52px;border:0;cursor:pointer}
+
+/* the big "yes!": a golden star where she tapped, lots of stars of all sizes, confetti over the whole screen */
+.star{position:absolute;width:40px;height:40px;z-index:9;pointer-events:none;animation:fly 1.6s ease-out forwards}
+@keyframes fly{from{transform:translate(0,0) scale(.3) rotate(0);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(1.2) rotate(240deg);opacity:0}}
+.bigstar{position:absolute;width:min(42vmin,280px);height:min(42vmin,280px);translate:-50% -50%;z-index:9;pointer-events:none;animation:bigstar 1.1s ease-out forwards}
+@keyframes bigstar{0%{scale:0;rotate:-60deg;opacity:1}40%{scale:1.15;rotate:8deg;opacity:1}100%{scale:1.6;rotate:0deg;opacity:0}}
+.confetti{position:absolute;top:-5vh;width:13px;height:20px;border-radius:3px;z-index:9;pointer-events:none;animation:fall var(--t) cubic-bezier(.25,.6,.6,1) var(--dl) forwards}
+@keyframes fall{to{transform:translate(var(--dx),112vh) rotate(var(--r))}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important}}
+/* tall screens: bushes in the middle, Sofia below on the left */
+@media (orientation:portrait){
+  :root{--sh:min(38vh,460px);--bw:min(30vw,26vh,260px)}
+  #field{left:2vw;right:2vw;top:16%;bottom:calc(8% + var(--sh))}   /* above Sofia's head */
+}
+@media (max-height:520px){:root{--sh:66vh;--bw:min(21vw,42vh);--mw:64px}#repeat svg{width:34px;height:34px}#field{top:10%}}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="layer" id="far"></div>
+  <div class="layer" id="ground"></div>
+  <div id="progress"></div>
+  <div id="sofia" role="img" aria-label="Sofia: tap to hear it again">
+    <svg viewBox="0 0 800 1730" aria-hidden="true">
+      <defs>
+        <g id="leg">
+          <path class="ink" d="M335 1380 L331 1640" fill="none" stroke-width="68"/>
+          <path d="M335 1380 L331 1640" stroke="#ffe3cf" stroke-width="50" stroke-linecap="round"/>
+          <path d="M331 1590 L331 1640" stroke="#fff" stroke-width="50"/>
+          <path d="M305 1592 H357" stroke="#f06292" stroke-width="10" stroke-linecap="round"/>
+          <ellipse class="ink" cx="318" cy="1672" rx="60" ry="34" fill="#d6453d" stroke-width="9"/>
+          <ellipse cx="300" cy="1660" rx="16" ry="8" fill="#fff" opacity=".5"/>
+        </g>
+        <g id="arm">
+          <path class="ink" d="M262 965 Q232 1085 218 1200" fill="none" stroke-width="64"/>
+          <circle cx="216" cy="1222" r="34" fill="#1b1717"/>
+          <path d="M262 965 Q232 1085 218 1200" fill="none" stroke="#ffe3cf" stroke-width="46" stroke-linecap="round"/>
+          <circle class="skin" cx="216" cy="1222" r="25"/>
+          <ellipse class="ink" cx="266" cy="955" rx="58" ry="48" fill="#f7a8c4" stroke-width="9"/>
+        </g>
+      </defs>
+      <g class="leg l"><use href="#leg"/></g>
+      <g class="leg r"><use href="#leg" transform="translate(800 0) scale(-1 1)"/></g>
+      <path class="skin ink" d="M352 820 L350 925 Q400 950 450 925 L448 820Z" stroke-width="8"/>
+      <path class="ink" d="M305 900 Q400 945 495 900 L535 918 Q565 990 562 1080 L640 1420 Q400 1478 160 1420 L238 1080 Q235 990 265 918 Z" fill="#f7a8c4" stroke-width="9"/>
+      <path d="M190 1385 Q400 1440 610 1385" fill="none" stroke="#f06292" stroke-width="12" stroke-linecap="round" stroke-dasharray="2 34"/>
+      <g fill="#fff" opacity=".8"><circle cx="330" cy="1060" r="13"/><circle cx="450" cy="1110" r="13"/><circle cx="390" cy="1210" r="13"/><circle cx="280" cy="1270" r="13"/><circle cx="510" cy="1260" r="13"/><circle cx="400" cy="1340" r="13"/><circle cx="240" cy="1370" r="12"/><circle cx="560" cy="1370" r="12"/></g>
+      <path class="ink" d="M308 902 Q322 980 400 950 L400 930 Q352 936 308 902Z M492 902 Q478 980 400 950 L400 930 Q448 936 492 902Z" fill="#fff" stroke-width="7"/>
+      <g class="arm l"><use href="#arm"/></g>
+      <g class="arm r"><use href="#arm" transform="translate(800 0) scale(-1 1)"/></g>
+      <g class="head"><g transform="rotate(-4 400 560)">
+        <!-- cartoon Sofia after her portrait: round cheeks, top-knot curling right; Amélie-style bob with short blunt bangs -->
+        <path class="hair ink" d="M118 600 C92 360 212 168 400 166 C588 168 708 360 682 600 L694 770 C698 812 650 822 616 800 L184 800 C150 822 102 812 106 770Z" stroke-width="9"/>
+        <g class="tuft">
+          <path class="hair ink" d="M448 230 C400 175 345 150 290 158 C345 118 425 140 472 212Z" stroke-width="9"/>
+          <path class="hair ink" d="M450 225 C428 140 455 70 515 25 C512 95 512 160 490 228Z" stroke-width="9"/>
+          <path class="hair ink" d="M462 228 C495 120 600 62 688 102 C712 150 680 196 648 170 C668 140 632 118 600 128 C555 145 525 185 500 240Z" stroke-width="9"/>
+          <path d="M468 200 C470 140 485 95 508 60 M495 210 C530 145 590 112 650 115" fill="none" stroke="#6b4a36" stroke-width="6" stroke-linecap="round"/>
+        </g>
+        <path class="skin ink" d="M158 540 C158 360 270 280 400 280 C530 280 642 360 642 540 C642 700 610 795 530 842 C475 872 325 872 270 842 C190 795 158 700 158 540Z" stroke-width="9"/>
+        <path d="M262 505 Q300 485 340 500 M462 508 Q502 490 542 506" fill="none" stroke="#3b2a20" stroke-width="10" stroke-linecap="round"/>
+        <g class="eye"><ellipse cx="300" cy="575" rx="27" ry="33" fill="#1b1717"/><circle cx="290" cy="563" r="10" fill="#fff"/><circle cx="310" cy="590" r="4.5" fill="#fff"/></g>
+        <g class="eye"><ellipse cx="500" cy="580" rx="27" ry="33" fill="#1b1717"/><circle cx="490" cy="568" r="10" fill="#fff"/><circle cx="510" cy="595" r="4.5" fill="#fff"/></g>
+        <ellipse cx="252" cy="668" rx="46" ry="30" fill="#ff8fab" opacity=".45"/>
+        <ellipse cx="548" cy="672" rx="46" ry="30" fill="#ff8fab" opacity=".45"/>
+        <path d="M388 640 Q400 656 414 640" fill="none" stroke="#c98f7a" stroke-width="8" stroke-linecap="round"/>
+        <path class="mouth shut" d="M345 705 Q400 752 455 705" fill="none" stroke="#1b1717" stroke-width="10" stroke-linecap="round"/>
+        <g class="mouth open"><path d="M350 700 Q400 706 450 700 Q444 768 400 772 Q356 768 350 700Z" fill="#8e2a3a" stroke="#1b1717" stroke-width="8" stroke-linejoin="round"/><ellipse cx="400" cy="752" rx="26" ry="12" fill="#f28b9b"/></g>
+        <path class="hair ink" d="M168 430 C142 560 146 700 172 795 C196 812 232 800 228 776 C210 690 206 560 222 440Z M632 430 C658 560 654 700 628 795 C604 812 568 800 572 776 C590 690 594 560 578 440Z" stroke-width="9"/>
+        <path class="hair ink" d="M170 480 C150 320 265 208 400 208 C535 208 650 320 630 480 C560 458 480 452 400 454 C320 452 240 458 170 480Z" stroke-width="9"/>
+        <path d="M250 300 C320 255 470 250 550 290 M300 452 L304 418 M400 450 L400 414 M500 452 L496 418 M196 560 L192 700 M604 560 L608 700" fill="none" stroke="#6b4a36" stroke-width="7" stroke-linecap="round"/>
+        <path d="M470 215 L408 172 L414 262 Z M470 215 L536 178 L526 266 Z" fill="#f06292" stroke="#c2185b" stroke-width="6" stroke-linejoin="round"/>
+        <circle cx="470" cy="217" r="21" fill="#e04a7f" stroke="#c2185b" stroke-width="6"/>
+      </g></g>
+    </svg>
+  </div>
+  <div id="field" aria-live="polite"></div>
+  <button id="repeat" class="big" hidden aria-label="Say it again"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M6 15h7l9-8v26l-9-8H6z" fill="#fff"/><path d="M27 13a9 9 0 0 1 0 14M31 8a15 15 0 0 1 0 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg></button>
+  <a class="corner home" href="../index.html" aria-label="Menu"><svg viewBox="0 0 40 40"><path d="M6 19L20 7l14 12M11 16v16h18V16" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+  <div id="overlay"></div>
+</div>
+<script>
+/* ANIMALS: key -> [emoji, name, what it says]; their real sounds are the jungle game's */
+const ANIMALS={"cow": ["🐮", "cow", "The cow says moo!"], "dog": ["🐶", "dog", "The dog says woof!"], "cat": ["🐱", "cat", "The cat says meow!"], "duck": ["🦆", "duck", "The duck says quack!"], "pig": ["🐷", "pig", "The pig says oink!"], "sheep": ["🐑", "sheep", "The sheep says baa!"], "horse": ["🐴", "horse", "The horse says neigh!"], "frog": ["🐸", "frog", "The frog says ribbit!"], "rooster": ["🐓", "rooster", "The rooster says cock-a-doodle-doo!"], "lion": ["🦁", "lion", "The lion says roar!"], "tiger": ["🐯", "tiger", "The tiger says grrr!"], "elephant": ["🐘", "elephant", "The elephant says toot!"], "monkey": ["🐵", "monkey", "The monkey says ooh ooh ah ah!"], "parrot": ["🦜", "parrot", "The parrot says squawk!"]};
+const $=id=>document.getElementById(id);
+const field=$("field"), overlay=$("overlay"), sofia=$("sofia"), repeatBtn=$("repeat");
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+for(let i=0;i<12;i++){const f=document.createElement("div");f.className="flower";f.style.left=(i*8.2+Math.random()*4)+"%";f.style.bottom=(3+Math.random()*14)+"%";
+  f.style.transform=`scale(${.6+Math.random()*.5})`;$("ground").appendChild(f)}
+
+/* ---------- audio: Sofia's voice (audio/*.mp3, Microsoft's child voice) and the animals' real sounds ---------- */
+let ctx=null, current=null, fxSrc=null;
+function ac(){ if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)(); if(ctx.state!=="running") ctx.resume(); return ctx }
+const decode=ab=>new Promise((res,rej)=>ac().decodeAudioData(ab,res,rej));
+const cache={};
+function load(url){return cache[url]||(cache[url]=fetch(url).then(r=>r.ok?r.arrayBuffer():Promise.reject()).then(decode).catch(()=>null))}
+const clipUrl=k=>`audio/${k}.mp3`, soundUrl=a=>`../jungle/audio/${a}-sound.mp3`;
+function playBuffer(buf){return new Promise(res=>{const c=ac(),s=c.createBufferSource();s.buffer=buf;s.connect(c.destination);
+  if(current) try{current.stop()}catch(e){}; current=s; s.onended=()=>res(); s.start(); setTimeout(res,buf.duration*1000+300)})}
+function stopVoice(){if(current) try{current.stop()}catch(e){}; current=null; stopSound()}
+/* an animal's sound plays on its own channel, at most 2.5 s */
+async function animalSound(a){const buf=await load(soundUrl(a)); if(!buf) return; const c=ac(), s=c.createBufferSource(), g=c.createGain();
+  stopSound(); s.buffer=buf; s.connect(g).connect(c.destination); const t=c.currentTime, d=Math.min(buf.duration,2.5);
+  g.gain.setValueAtTime(1,t); g.gain.setValueAtTime(1,t+d-.25); g.gain.linearRampToValueAtTime(0,t+d); s.start(t); s.stop(t+d); fxSrc=s; await wait(d*1000)}
+function stopSound(){if(fxSrc) try{fxSrc.stop()}catch(e){}; fxSrc=null}
+/* say clips in a row; a newer say() cancels an older one; an item can also be a function (e.g. an animal sound) */
+let sayId=0;
+async function say(keys,gap=250){const id=++sayId;
+  for(const k of keys){ if(id!==sayId) return false;
+    if(typeof k==="function") await k();
+    else{const buf=await load(clipUrl(k)); if(id!==sayId) return false;
+      if(buf){sofia.classList.add("talk"); await playBuffer(buf); sofia.classList.remove("talk")}}
+    if(id!==sayId) return false; await wait(gap) }
+  return id===sayId }
+
+function tone(type,f0,f1,t0,dur,vol=.3){
+  const c=ac(),o=c.createOscillator(),g=c.createGain(); o.type=type;
+  o.frequency.setValueAtTime(f0,t0); o.frequency.exponentialRampToValueAtTime(f1,t0+dur);
+  g.gain.setValueAtTime(.0001,t0); g.gain.exponentialRampToValueAtTime(vol,t0+.02); g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
+  o.connect(g).connect(c.destination); o.start(t0); o.stop(t0+dur+.05);
+}
+function rustleSound(){const c=ac(),t=c.currentTime,b=c.createBuffer(1,c.sampleRate*.5,c.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*(.5+.5*Math.sin(i/900))*Math.pow(1-i/d.length,2);
+  const s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain(); s.buffer=b; f.type="bandpass"; f.frequency.value=2500; g.gain.value=.5;
+  s.connect(f).connect(g).connect(c.destination); s.start(t)}
+const sfx={
+  boing(){const t=ac().currentTime;tone("triangle",260,180,t,.25,.25)},
+  whoosh(){const t=ac().currentTime;tone("sine",300,900,t,.3,.12)},
+  yay(){const t=ac().currentTime;[523,659,784,1047].forEach((f,i)=>tone("triangle",f,f,t+i*.12,.3,.25))}
+};
+
+/* ---------- bushes ---------- */
+const BUSH=`<svg class="bush" viewBox="0 0 200 150" aria-hidden="true"><ellipse cx="100" cy="146" rx="96" ry="9" fill="#2e6b2e" opacity=".25"/>
+  <g stroke="#2e6b2e" stroke-width="5"><circle cx="48" cy="96" r="46" fill="#3f9142"/><circle cx="152" cy="96" r="46" fill="#3f9142"/>
+  <circle cx="100" cy="66" r="58" fill="#4caf50"/><circle cx="72" cy="110" r="40" fill="#4caf50"/><circle cx="130" cy="110" r="40" fill="#4caf50"/></g>
+  <circle cx="78" cy="48" r="10" fill="#fff" opacity=".18"/><circle cx="62" cy="84" r="5" fill="#e53935"/><circle cx="138" cy="70" r="5" fill="#e53935"/>
+  <circle cx="112" cy="104" r="5" fill="#e53935"/><circle cx="40" cy="108" r="5" fill="#ffd25a"/><circle cx="164" cy="112" r="5" fill="#ffd25a"/></svg>`;
+function setBushes(animals){   // animals[k]: key or null (an empty bush)
+  field.innerHTML=animals.map((a,k)=>`<button class="spot low" data-k="${k}" ${a?`data-a="${a}"`:""} aria-label="bush"><span class="ani">${a?`<span class="e">${ANIMALS[a][0]}</span>`:""}</span>${BUSH}</button>`).join("");
+  field.querySelectorAll(".spot").forEach((s,k)=>setTimeout(()=>s.classList.remove("low"),80+k*150));
+}
+const spot=k=>field.querySelector(`.spot[data-k="${k}"]`);
+function bump(el,cls){el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls)}
+
+/* ---------- a round: six animals; the first three hide alone (find the bush that rustles and peeks),
+   then three peek out together and one of them calls (who is it?) ---------- */
+let round=[], turn=-1, mode="", target=null, where=-1, busy=true, wrong=0, peekT=null, idleT=null, found=[];
+const TURNS=6;
+async function play(){
+  ac(); overlay.hidden=true; busy=true; found=[];
+  round=shuffle(Object.keys(ANIMALS)).slice(0,TURNS); turn=-1;
+  $("progress").innerHTML=round.map(()=>'<div class="dot"></div>').join("");
+  load(clipUrl("start")); load(clipUrl("who")); round.forEach(a=>load(soundUrl(a)));
+  await walkIn(); await say(["start"]); nextTurn();
+}
+function clearTimers(){clearTimeout(peekT); clearTimeout(idleT)}
+async function nextTurn(){
+  clearTimers(); wrong=0; repeatBtn.hidden=true;
+  if(++turn>=TURNS) return finale();
+  target=round[turn]; mode=turn<3?"find":"who"; where=rnd(0,2);
+  load(clipUrl(`found-${target}`)); load(clipUrl(`says-${target}`));
+  if(mode==="find"){const a=[null,null,null]; a[where]=target; setBushes(a)}
+  else{const others=shuffle(Object.keys(ANIMALS).filter(k=>k!==target)).slice(0,2), a=[...others]; a.splice(where,0,target); setBushes(a);
+    a.forEach(k=>load(soundUrl(k)))}
+  sfx.whoosh(); await wait(800);
+  if(mode==="who"){field.querySelectorAll(".spot").forEach((s,i)=>setTimeout(()=>s.classList.add("peek"),i*200)); await wait(700)}
+  busy=false; ask();
+}
+/* find: "Who's hiding? Listen!" then the bush rustles, the ears peek out and the animal calls; again every few seconds */
+async function peekOnce(){const s=spot(where); if(!s||busy) return;
+  s.classList.add("peek"); bump(s,"rustle"); rustleSound(); await animalSound(target); if(mode==="find"&&!busy) s.classList.remove("peek")}
+async function ask(){
+  clearTimers(); repeatBtn.hidden=false; const t=turn;
+  if(mode==="find"){ if(!await say(["who"])||t!==turn||busy) return; await peekOnce() }
+  else{ if(!await say(["which",()=>animalSound(target)])||t!==turn||busy) return }
+  if(t===turn&&!busy) waitForTap();
+}
+function waitForTap(){clearTimers();
+  if(mode==="find") peekT=setTimeout(async function again(){await peekOnce(); if(!busy) peekT=setTimeout(again,5000)},4000);
+  idleT=setTimeout(()=>{spot(where).classList.add("help"); ask()},16000)}
+
+field.addEventListener("click",async e=>{
+  const s=e.target.closest(".spot"); if(!s||busy) return; ac();
+  const k=+s.dataset.k;
+  if(k!==where){
+    clearTimers(); sfx.boing(); bump(s,"no"); wrong++;
+    if(mode==="find"){   // an empty bush: a butterfly flutters out
+      const r=s.getBoundingClientRect(), f=document.createElement("span"); f.className="fly"; f.textContent=["🦋","🐞","🐝"][rnd(0,2)];
+      f.style.left=r.left+r.width/2+"px"; f.style.top=r.top+r.height*.4+"px"; $("stage").appendChild(f); setTimeout(()=>f.remove(),1700);
+      const t=turn; busy=true; await say([`no-${rnd(1,3)}`]); busy=false; if(t!==turn) return;
+      if(wrong>=2) spot(where).classList.add("help"); await peekOnce();
+    }else{               // another animal: it pops up and calls, then the one she is looking for calls again
+      const a=s.dataset.a, t=turn; busy=true; s.classList.add("out");
+      await say([()=>animalSound(a)]); s.classList.remove("out"); await wait(300); if(t!==turn) return;
+      if(wrong>=2) spot(where).classList.add("help");
+      await say([()=>animalSound(target)]); busy=false;
+    }
+    if(!busy) waitForTap();
+    return;
+  }
+  busy=true; clearTimers(); sayId++; stopVoice(); repeatBtn.hidden=true;
+  s.classList.remove("help"); field.querySelectorAll(".spot").forEach(o=>o!==s&&o.classList.remove("peek"));
+  bump(s,"rustle"); s.classList.add("out"); found.push(target);
+  const r=s.getBoundingClientRect(); celebrate(r.left+r.width/2+"px",r.top+r.height*.2+"px"); sfx.yay();
+  const dot=$("progress").children[turn]; dot.textContent=ANIMALS[target][0]; dot.classList.add("done");
+  await say([`found-${target}`,`says-${target}`,()=>animalSound(target)],300);
+  await wait(500); field.querySelectorAll(".spot").forEach(o=>o.classList.add("low")); await wait(150); nextTurn();
+});
+repeatBtn.addEventListener("click",()=>{ac(); if(!busy) ask()});
+sofia.addEventListener("click",()=>{ac(); if(!busy&&overlay.hidden&&target) ask()});
+
+async function walkIn(){
+  sofia.classList.add("walk");
+  await sofia.animate([{translate:"-40vw 0"},{translate:"0 0"}],{duration:1500,easing:"ease-out"}).finished.catch(()=>{});
+  sofia.classList.remove("walk");
+}
+async function finale(){
+  target=null; repeatBtn.hidden=true; sfx.yay();
+  /* everyone she found jumps out of the bushes together */
+  setBushes(found.slice(0,3)); await wait(700);
+  field.querySelectorAll(".spot").forEach((s,i)=>setTimeout(()=>s.classList.add("out"),i*200));
+  celebrate("50%","40%"); await say(["end"]); await wait(1800);
+  if(overlay.hidden) startScreen(true);
+}
+
+/* ---------- start screen ---------- */
+const playIcon=`<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="var(--pink)"/><path d="M15 11l14 9-14 9z" fill="#fff"/></svg>`;
+function startScreen(after){
+  clearTimers(); sayId++; stopVoice(); repeatBtn.hidden=true; busy=true; target=null;
+  overlay.hidden=false;
+  overlay.innerHTML=`<h1 aria-label="Peekaboo!">${[..."Peekaboo!"].map(c=>`<span>${c}</span>`).join("")}</h1><p class="sub">Ку-ку! · Paslēpes</p>
+    ${after?`<div class="stickers">${found.map(a=>`<button class="sticker" data-a="${a}" aria-label="${ANIMALS[a][1]}">${ANIMALS[a][0]}</button>`).join("")}</div>`:""}
+    <button class="go" id="play"><span class="e">🌳🙈</span><span class="name">Play!</span>${playIcon}</button>`;
+  $("play").onclick=play;
+  overlay.querySelectorAll(".sticker").forEach(b=>b.onclick=()=>{ac(); say([`says-${b.dataset.a}`,()=>animalSound(b.dataset.a)])});
+}
+
+/* the big "yes!" for a right answer: a golden star bursts where she tapped, about forty stars of all sizes fly out,
+   confetti rains over the whole screen, Sofia hops and it sparkles */
+function celebrate(x,y){
+  const st=$("stage"), NS="http://www.w3.org/2000/svg", STAR='M12 2l3 7 7 .6-5.4 4.7 1.7 7.2L12 17.8 5.7 21.5l1.7-7.2L2 9.6 9 9z';
+  const big=document.createElementNS(NS,"svg"); big.setAttribute("viewBox","0 0 24 24"); big.classList.add("bigstar");
+  big.innerHTML=`<path d="${STAR}" fill="#ffd25a" stroke="#f5a623" stroke-width="1.2" stroke-linejoin="round"/><circle cx="9.6" cy="11" r=".9" fill="#5a3a12"/><circle cx="14.4" cy="11" r=".9" fill="#5a3a12"/><path d="M9.8 13.6q2.2 1.8 4.4 0" fill="none" stroke="#5a3a12" stroke-width=".8" stroke-linecap="round"/>`;
+  big.style.left=x; big.style.top=y; st.appendChild(big); setTimeout(()=>big.remove(),1200);
+  const COL=["#ffd25a","#f06292","#fff","#5fbf7f","#6ec6ff","#ff8a50","#b388ff"];
+  for(let i=0;i<40;i++){const s=document.createElementNS(NS,"svg"), z=22+Math.random()*44; s.setAttribute("viewBox","0 0 24 24"); s.classList.add("star");
+    s.innerHTML=`<path d="${STAR}" fill="${COL[i%COL.length]}" stroke="#0002" stroke-width=".6"/>`;
+    s.style.cssText=`left:${x};top:${y};width:${z}px;height:${z}px;margin:${-z/2}px 0 0 ${-z/2}px;animation-duration:${(1.5+Math.random()*.9).toFixed(2)}s`;
+    s.style.setProperty("--dx",(Math.random()*90-45)+"vw"); s.style.setProperty("--dy",(Math.random()*90-45)+"vh");
+    st.appendChild(s); setTimeout(()=>s.remove(),2600)}
+  for(let i=0;i<34;i++){const c=document.createElement("div"); c.className="confetti";
+    c.style.cssText=`left:${Math.random()*100}%;background:${COL[(i+2)%COL.length]};--dx:${(Math.random()*24-12).toFixed(1)}vw;--r:${Math.round(Math.random()*900-450)}deg;--t:${(2+Math.random()*1.2).toFixed(2)}s;--dl:${(Math.random()*.5).toFixed(2)}s`;
+    if(i%3===0){c.style.borderRadius="50%"; c.style.height="13px"}
+    st.appendChild(c); setTimeout(()=>c.remove(),3900)}
+  sofia.animate([{translate:"0 0"},{translate:"0 -9%"},{translate:"0 0"},{translate:"0 -5%"},{translate:"0 0"}],{duration:800,easing:"ease-out"});
+  try{const t=ac().currentTime; [1319,1568,1760,2093,2637].forEach((f,i)=>tone("sine",f,f*1.01,t+.05+i*.07,.25,.08))}catch(e){}
+}
+startScreen(false);
+</script>
+</body>
+</html>
