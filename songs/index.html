@@ -336,7 +336,7 @@ function schedule(v,t0,vocal){
     band.kick(T(bb)); if(B===4) band.kick(T(bb+2));
     for(let x=0;x<B;x+=.5) band.shaker(T(bb+x),x%1?.03:.06);
   }
-  v.ev.forEach(e=>e.clap?band.clap(T(e.b)):band.lead(e.m,T(e.b),e.d*spb,vocal?.35:1));   // under the singer the melody just hums along
+  v.ev.forEach(e=>e.clap?band.clap(T(e.b)):band.lead(e.m,T(e.b),e.d*spb,vocal?.2:1));   // under the singer the melody just hums along
   if(vocal){const s=ctx.createBufferSource(), g=ctx.createGain(); s.buffer=vocal; g.gain.value=1.6; s.connect(g).connect(bus);
     const at=T(v.ev[0].b)-LEAD; s.start(Math.max(ctx.currentTime,at),Math.max(0,ctx.currentTime-at)); live.push(s)}
 }
@@ -422,7 +422,7 @@ async function recStop(keep){
 /* ---------- playing a song ---------- */
 const verseKey=(id,k,c)=>c?`${id}-${c[0].replace(/-/g,"").toLowerCase()}`:`${id}-${k}`;
 const vocals={};
-function vocalFor(key){return vocals[key]||(vocals[key]=loadBuf(`voice/${key}.mp3`).catch(()=>null))}
+function vocalFor(key){return vocals[key]||(vocals[key]=loadBuf(`voice/${key}.mp3?v=2`).catch(()=>null))}
 let song=null, used=[];
 const homeBtn=`<a class="corner home" href="../index.html" aria-label="Меню"><svg viewBox="0 0 40 40"><path d="M6 19L20 7l14 12M11 16v16h18V16" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`;
 const backBtn=`<button class="corner home" id="back" aria-label="Назад"><svg viewBox="0 0 40 40"><path d="M24 8L12 20l12 12" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>`;
