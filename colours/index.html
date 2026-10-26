@@ -19,7 +19,7 @@
 html,body{height:100%;margin:0}
 body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:hidden;
   -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
-#stage{position:relative;height:100%;overflow:hidden}
+#stage{position:fixed;inset:0;overflow:hidden;overflow:clip}   /* never scrolls, even when something flies out of it */
 .layer{position:absolute;inset:0;pointer-events:none}
 #far{background:
   radial-gradient(ellipse 9% 5% at 18% 12%,#fff 98%,transparent),radial-gradient(ellipse 7% 4% at 23% 9%,#fff 98%,transparent),
@@ -139,6 +139,11 @@ body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:
 
 .star{position:absolute;width:40px;height:40px;z-index:9;pointer-events:none;animation:fly 1.6s ease-out forwards}
 @keyframes fly{from{transform:translate(0,0) scale(.3) rotate(0);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(1.2) rotate(240deg);opacity:0}}
+/* the big "yes!": a golden star where she tapped, lots of stars of all sizes, confetti over the whole screen */
+.bigstar{position:absolute;width:min(42vmin,280px);height:min(42vmin,280px);translate:-50% -50%;z-index:9;pointer-events:none;animation:bigstar 1.1s ease-out forwards}
+@keyframes bigstar{0%{scale:0;rotate:-60deg;opacity:1}40%{scale:1.15;rotate:8deg;opacity:1}100%{scale:1.6;rotate:0deg;opacity:0}}
+.confetti{position:absolute;top:-5vh;width:13px;height:20px;border-radius:3px;z-index:9;pointer-events:none;animation:fall var(--t) cubic-bezier(.25,.6,.6,1) var(--dl) forwards}
+@keyframes fall{to{transform:translate(var(--dx),112vh) rotate(var(--r))}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important}}
 /* tall screens: the picture on top, Sofia below on the left with the pots beside her */
 @media (orientation:portrait){
@@ -333,7 +338,7 @@ potsEl.addEventListener("click",async e=>{
   pot.classList.remove("hint","help"); pot.classList.add("jump");
   const el=itemEl(target[0]); await throwPaint(pot,el,COLOURS[c][0]);
   el.classList.remove("target"); el.classList.add("painted","yay"); sfx.splat();
-  const r=el.getBoundingClientRect(); stars(r.left+r.width/2+"px",r.top+r.height/2+"px",14);
+  const r=el.getBoundingClientRect(); celebrate(r.left+r.width/2+"px",r.top+r.height/2+"px");
   const dot=$("progress").children[step]; dot.style.setProperty("--c",COLOURS[c][0]); dot.classList.add("done");
   potsEl.querySelectorAll(".pot").forEach(p=>p!==pot&&p.classList.add("low"));
   await say([`got-${target[0]}`,`yes-${1+Math.floor(Math.random()*3)}`],350);
@@ -390,6 +395,27 @@ function startScreen(last){
   if(last){const ids=Object.keys(SCENES); overlay.querySelector(`[data-scene="${ids[(ids.indexOf(last)+1)%ids.length]}"]`).focus()}
 }
 drawScene("garden"); startScreen();
+
+/* the big "yes!" for a right answer: a golden star bursts where she tapped, about forty stars of all sizes fly out,
+   confetti rains over the whole screen, Sofia hops and it sparkles */
+function celebrate(x,y){
+  const st=$("stage"), NS="http://www.w3.org/2000/svg", STAR='M12 2l3 7 7 .6-5.4 4.7 1.7 7.2L12 17.8 5.7 21.5l1.7-7.2L2 9.6 9 9z';
+  const big=document.createElementNS(NS,"svg"); big.setAttribute("viewBox","0 0 24 24"); big.classList.add("bigstar");
+  big.innerHTML=`<path d="${STAR}" fill="#ffd25a" stroke="#f5a623" stroke-width="1.2" stroke-linejoin="round"/><circle cx="9.6" cy="11" r=".9" fill="#5a3a12"/><circle cx="14.4" cy="11" r=".9" fill="#5a3a12"/><path d="M9.8 13.6q2.2 1.8 4.4 0" fill="none" stroke="#5a3a12" stroke-width=".8" stroke-linecap="round"/>`;
+  big.style.left=x; big.style.top=y; st.appendChild(big); setTimeout(()=>big.remove(),1200);
+  const COL=["#ffd25a","#f06292","#fff","#5fbf7f","#6ec6ff","#ff8a50","#b388ff"];
+  for(let i=0;i<40;i++){const s=document.createElementNS(NS,"svg"), z=22+Math.random()*44; s.setAttribute("viewBox","0 0 24 24"); s.classList.add("star");
+    s.innerHTML=`<path d="${STAR}" fill="${COL[i%COL.length]}" stroke="#0002" stroke-width=".6"/>`;
+    s.style.cssText=`left:${x};top:${y};width:${z}px;height:${z}px;margin:${-z/2}px 0 0 ${-z/2}px;animation-duration:${(1.5+Math.random()*.9).toFixed(2)}s`;
+    s.style.setProperty("--dx",(Math.random()*90-45)+"vw"); s.style.setProperty("--dy",(Math.random()*90-45)+"vh");
+    st.appendChild(s); setTimeout(()=>s.remove(),2600)}
+  for(let i=0;i<34;i++){const c=document.createElement("div"); c.className="confetti";
+    c.style.cssText=`left:${Math.random()*100}%;background:${COL[(i+2)%COL.length]};--dx:${(Math.random()*24-12).toFixed(1)}vw;--r:${Math.round(Math.random()*900-450)}deg;--t:${(2+Math.random()*1.2).toFixed(2)}s;--dl:${(Math.random()*.5).toFixed(2)}s`;
+    if(i%3===0){c.style.borderRadius="50%"; c.style.height="13px"}
+    st.appendChild(c); setTimeout(()=>c.remove(),3900)}
+  sofia.animate([{translate:"0 0"},{translate:"0 -9%"},{translate:"0 0"},{translate:"0 -5%"},{translate:"0 0"}],{duration:800,easing:"ease-out"});
+  try{const t=ac().currentTime; [1319,1568,1760,2093,2637].forEach((f,i)=>tone("sine",f,f*1.01,t+.05+i*.07,.25,.08))}catch(e){}
+}
 </script>
 </body>
 </html>
