@@ -1,0 +1,3 @@
+Voices: Microsoft neural voices made with edge-tts (https://github.com/rany2/edge-tts), then trimmed and loudness-normalized:
+English "en-US-AnaNeural" (a child's voice), Russian "ru-RU-SvetlanaNeural", Latvian "lv-LV-EveritaNeural".
+Files are <clip>-<lang>.mp3. The animals' own sounds are the jungle game's (../jungle/audio/, credits in ../jungle/audio/CREDITS.txt).

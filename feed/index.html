@@ -1,0 +1,458 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Feed the animals · Покорми зверят · Pabaro dzīvniekus</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap">
+<style>
+/* layout: a picnic in a meadow; Sofia on the left, a hungry animal on the right, plates of food on a blanket in front of it */
+:root{
+  --sky:#d6f0ff; --ground:#9bd47f; --ink:#24352b; --card:#fffdf6; --pink:#f06292;
+  --display:"Nunito","Trebuchet MS",system-ui,sans-serif;
+  color-scheme:light;
+  --sh:min(58vh,500px,90vw); --sw:calc(var(--sh)*.4624); --sx:max(12px,4vw);
+  --aw:min(34vh,28vw,280px); --pw:min(19vh,15vw,170px); --mw:84px;
+}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:hidden;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+#stage{position:fixed;inset:0;overflow:hidden;overflow:clip}   /* never scrolls, even when something flies out of it */
+.layer{position:absolute;inset:0;pointer-events:none}
+#far{background:
+  radial-gradient(circle at 12% 13%,#ffd25a 0 44px,transparent 46px),
+  radial-gradient(ellipse 9% 5% at 40% 12%,#fff 98%,transparent),radial-gradient(ellipse 7% 4% at 45% 9%,#fff 98%,transparent),
+  radial-gradient(ellipse 10% 5% at 80% 10%,#fff 98%,transparent),
+  radial-gradient(ellipse 34% 22% at 10% 78%,#b4e39a 98%,transparent),
+  radial-gradient(ellipse 38% 24% at 58% 80%,#a9dd8e 98%,transparent),
+  radial-gradient(ellipse 30% 22% at 94% 77%,#b4e39a 98%,transparent)}
+#ground{top:auto;height:26%;background:var(--ground);border-top:6px solid #82c066}
+.flower{position:absolute;width:14px;height:14px;border-radius:50%;background:#ffd25a;box-shadow:0 0 0 6px #fff}
+.flower:nth-child(3n){box-shadow:0 0 0 6px #f8bbd0}
+#progress{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:0;right:0;display:flex;justify-content:center;gap:10px;z-index:5;pointer-events:none}
+.dot{width:34px;height:34px;border-radius:50%;background:#ffffff99;border:3px solid #8aa7c4;display:flex;align-items:center;justify-content:center;font-size:21px;transition:transform .3s}
+.dot.done{background:#fff;border-color:#2f8f5b;transform:scale(1.2)}
+@media (max-width:500px){#progress{gap:6px;padding-left:60px}.dot{width:26px;height:26px;font-size:16px}}
+
+/* Sofia: the same cartoon as in the other games */
+#sofia{position:absolute;left:var(--sx);bottom:6%;height:var(--sh);aspect-ratio:800/1730;z-index:3;cursor:pointer;
+  transform-origin:50% 100%;animation:bob 2.4s ease-in-out infinite}
+#sofia svg{display:block;width:100%;height:100%;overflow:visible}
+#sofia svg *{transform-box:view-box}
+#sofia .ink{stroke:#1b1717;stroke-linecap:round;stroke-linejoin:round}
+#sofia .skin{fill:#ffe3cf}
+#sofia .hair{fill:#3b2a20}
+#sofia .eye{transform-box:fill-box;transform-origin:center;animation:blink 4.2s infinite}
+#sofia .mouth.open{opacity:0}
+#sofia.talk .mouth.open{animation:flap .3s steps(1,end) infinite}
+#sofia.talk .mouth.shut{animation:flap .3s steps(1,end) infinite -.15s}
+#sofia .head{transform-origin:400px 870px}
+#sofia .arm.l{transform-origin:262px 955px;animation:sway 2.4s ease-in-out infinite}
+#sofia .arm.r{transform-origin:538px 955px;animation:sway 2.4s ease-in-out infinite reverse}
+#sofia .leg.l{transform-origin:335px 1390px}
+#sofia .leg.r{transform-origin:465px 1390px}
+#sofia.walk{animation:stride .6s ease-in-out infinite}
+#sofia.walk .leg.l{animation:stepL .6s ease-in-out infinite}
+#sofia.walk .leg.r{animation:stepR .6s ease-in-out infinite}
+#sofia.walk .arm.l{animation:swingL .6s ease-in-out infinite}
+#sofia.walk .arm.r{animation:swingR .6s ease-in-out infinite}
+#sofia.walk .head{animation:nod .6s ease-in-out infinite}
+#sofia.talk .head{animation:chat .32s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+@keyframes flap{0%{opacity:1}50%{opacity:0}}
+@keyframes sway{50%{transform:rotate(4deg)}}
+@keyframes stride{0%,50%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-3%) rotate(-2deg)}75%{transform:translateY(-3%) rotate(2deg)}}
+@keyframes stepL{0%,50%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-60px) rotate(7deg)}}
+@keyframes stepR{0%,50%,100%{transform:translateY(0) rotate(0)}75%{transform:translateY(-60px) rotate(-7deg)}}
+@keyframes swingL{0%,100%{transform:rotate(-16deg)}50%{transform:rotate(10deg)}}
+@keyframes swingR{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(16deg)}}
+@keyframes nod{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(3deg)}75%{transform:rotate(-3deg)}}
+@keyframes chat{0%,100%{transform:rotate(-3deg) scale(1)}50%{transform:rotate(3deg) scale(1.03)}}
+
+/* the animal and its plates */
+#field{position:absolute;left:calc(var(--sx) + var(--sw) + 2vw);right:2vw;top:11%;bottom:3%;z-index:4;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2vh}
+#pal{position:relative;width:calc(var(--aw)*1.25);height:calc(var(--aw)*1.1);display:flex;align-items:flex-end;justify-content:center;cursor:pointer}
+#pal .mound{position:absolute;left:5%;right:5%;bottom:0;height:18%;border-radius:50%;background:#7fbf62;box-shadow:inset 0 -8px 0 #6aa951}
+#pal .ani{position:relative;font-size:var(--aw);line-height:1;bottom:6%;transform-origin:50% 90%}
+#pal .ani .e{display:block;transform-origin:50% 90%}
+#pal.hungry .ani .e{animation:hungry 2.2s ease-in-out infinite}
+@keyframes hungry{0%,60%,100%{transform:rotate(0)}68%{transform:rotate(-6deg)}76%{transform:rotate(6deg)}84%{transform:rotate(-3deg)}}
+#pal.near .ani{scale:1.1;transition:scale .2s}
+#pal .bubble{position:absolute;right:2%;top:0;width:calc(var(--aw)*.36);aspect-ratio:1;border-radius:50%;background:#fff;box-shadow:0 4px 0 #0001;
+  display:flex;align-items:center;justify-content:center;font-size:calc(var(--aw)*.2);font-weight:900;color:#e2a12b;scale:0;transition:scale .35s cubic-bezier(.3,1.6,.5,1)}
+#pal .bubble::after{content:"";position:absolute;left:4%;bottom:-6%;width:22%;height:22%;border-radius:50%;background:#fff}
+#pal.hungry .bubble,#pal.happy .bubble{scale:1}
+#pal.happy .ani .e{animation:joy .8s ease-in-out infinite}
+@keyframes joy{0%,100%{transform:rotate(0) translateY(0)}25%{transform:rotate(-8deg) translateY(-6%)}75%{transform:rotate(8deg) translateY(-6%)}}
+
+#plates{display:flex;gap:min(4vw,40px);justify-content:center;align-items:flex-end;padding:1.4vh 3vw 1vh;border-radius:26px;
+  background:repeating-conic-gradient(#ef5350 0 25%,#fff 0 50%) 0 0/44px 44px;box-shadow:0 6px 0 #0002}
+.plate{position:relative;width:var(--pw);height:calc(var(--pw)*.78);border:0;padding:0;background:none;cursor:grab;touch-action:none}
+.plate svg{position:absolute;left:0;bottom:0;width:100%;height:auto}
+.plate .food{position:absolute;left:50%;bottom:22%;translate:-50% 0;font-size:calc(var(--pw)*.56);line-height:1;z-index:2;pointer-events:none}
+.plate .food.lift{z-index:20;scale:1.25;filter:drop-shadow(0 10px 6px #0003)}
+.plate.low{translate:0 40vh;transition:none}
+.plate{transition:translate .5s cubic-bezier(.2,.8,.3,1)}
+.plate.nudge .food{animation:nudge .9s ease-in-out}
+@keyframes nudge{20%{rotate:-12deg}40%{rotate:12deg}60%{rotate:-8deg}80%{rotate:5deg}}
+.plate.help .food{animation:help .9s ease-in-out infinite;filter:drop-shadow(0 0 12px #fff) drop-shadow(0 0 6px #fff)}
+@keyframes help{50%{scale:1.15}}
+.plate:focus-visible{outline:5px dashed #fff;outline-offset:2px;border-radius:30%}
+.crumb,.heart{position:absolute;z-index:9;pointer-events:none;translate:-50% -50%}
+.crumb{animation:crumb .7s ease-out forwards}
+@keyframes crumb{to{transform:translate(var(--dx),var(--dy)) rotate(var(--r)) scale(.4);opacity:0}}
+.heart{font-size:42px;animation:heart 1.6s ease-out forwards}
+@keyframes heart{from{transform:translate(0,0) scale(.4);opacity:0}20%{opacity:1}to{transform:translate(var(--dx),-180px) scale(1.2);opacity:0}}
+
+.big{position:absolute;z-index:7;border:0;cursor:pointer;font-family:var(--display);font-weight:900;color:#fff;
+  background:var(--pink);box-shadow:0 8px 0 #b83b68;border-radius:999px;display:flex;align-items:center;gap:12px;justify-content:center;transition:transform .1s}
+.big:active{transform:translateY(6px);box-shadow:0 2px 0 #b83b68}
+#repeat{left:max(8px,calc(var(--sx) + var(--sw)*.15 - var(--mw) - 4px));bottom:calc(6% + 10px);width:var(--mw);height:var(--mw);padding:0}
+#repeat svg{width:46px;height:46px}
+.corner{position:absolute;top:max(14px,env(safe-area-inset-top,0px));width:60px;height:60px;border-radius:50%;z-index:13;
+  background:#ffffff55;border:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.corner svg{width:34px;height:34px}
+.home{left:max(14px,env(safe-area-inset-left,0px))}
+#stage>.home{background:#1f4f8a55}
+
+#overlay{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+  background:#e8743bf0;color:#fff;text-align:center;padding:24px;overflow-y:auto}
+#overlay>h1{margin-top:auto!important}
+#overlay>:last-child{margin-bottom:auto}
+#overlay h1{margin:0;font-size:clamp(40px,7.5vw,80px);font-weight:900;line-height:1.05;text-shadow:0 4px 0 #0003}
+#overlay .sub{margin:-8px 0 0;font-size:clamp(20px,3.4vw,28px);font-weight:900;opacity:.92}
+.langs{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+.go{width:min(40vw,220px);padding:16px 10px 14px;border:0;border-radius:32px;background:var(--card);cursor:pointer;font-family:var(--display);
+  box-shadow:0 8px 0 #0003;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--ink);transition:transform .1s}
+.go:active{transform:translateY(6px);box-shadow:0 2px 0 #0003}
+.go .e{font-size:clamp(44px,7vw,64px);line-height:1.1;white-space:nowrap}
+.go .name{font-size:clamp(20px,3vw,26px);font-weight:900}
+.go svg{width:48px;height:48px}
+.go.last{outline:5px solid #ffd25a;outline-offset:3px}
+.stickers{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:760px}
+.sticker{width:84px;height:84px;border-radius:22px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:52px;border:0;cursor:pointer}
+
+/* the big "yes!": a golden star where she tapped, lots of stars of all sizes, confetti over the whole screen */
+.star{position:absolute;width:40px;height:40px;z-index:9;pointer-events:none;animation:fly 1.6s ease-out forwards}
+@keyframes fly{from{transform:translate(0,0) scale(.3) rotate(0);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(1.2) rotate(240deg);opacity:0}}
+.bigstar{position:absolute;width:min(42vmin,280px);height:min(42vmin,280px);translate:-50% -50%;z-index:9;pointer-events:none;animation:bigstar 1.1s ease-out forwards}
+@keyframes bigstar{0%{scale:0;rotate:-60deg;opacity:1}40%{scale:1.15;rotate:8deg;opacity:1}100%{scale:1.6;rotate:0deg;opacity:0}}
+.confetti{position:absolute;top:-5vh;width:13px;height:20px;border-radius:3px;z-index:9;pointer-events:none;animation:fall var(--t) cubic-bezier(.25,.6,.6,1) var(--dl) forwards}
+@keyframes fall{to{transform:translate(var(--dx),112vh) rotate(var(--r))}}
+/* at the end, everyone she fed dances together */
+#party{display:flex;flex-wrap:wrap;justify-content:center;gap:1vw;max-width:90%}
+#party span{font-size:calc(var(--aw)*.5);line-height:1;display:block;animation:joy .8s ease-in-out infinite}
+#party span:nth-child(even){animation-delay:-.4s}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important}}
+/* tall screens: the animal and the plates in the middle, Sofia below on the left */
+@media (orientation:portrait){
+  :root{--sh:min(36vh,440px);--aw:min(24vh,40vw,260px);--pw:min(14vh,24vw,160px)}
+  #field{left:2vw;right:2vw;top:8%;bottom:calc(7% + var(--sh));gap:2.5vh}
+}
+@media (max-height:520px){:root{--sh:66vh;--aw:min(30vh,22vw);--pw:min(22vh,13vw);--mw:64px}#repeat svg{width:34px;height:34px}#field{top:6%}}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="layer" id="far"></div>
+  <div class="layer" id="ground"></div>
+  <div id="progress"></div>
+  <div id="sofia" role="img" aria-label="Sofia: tap to hear it again">
+    <svg viewBox="0 0 800 1730" aria-hidden="true">
+      <defs>
+        <g id="leg">
+          <path class="ink" d="M335 1380 L331 1640" fill="none" stroke-width="68"/>
+          <path d="M335 1380 L331 1640" stroke="#ffe3cf" stroke-width="50" stroke-linecap="round"/>
+          <path d="M331 1590 L331 1640" stroke="#fff" stroke-width="50"/>
+          <path d="M305 1592 H357" stroke="#f06292" stroke-width="10" stroke-linecap="round"/>
+          <ellipse class="ink" cx="318" cy="1672" rx="60" ry="34" fill="#d6453d" stroke-width="9"/>
+          <ellipse cx="300" cy="1660" rx="16" ry="8" fill="#fff" opacity=".5"/>
+        </g>
+        <g id="arm">
+          <path class="ink" d="M262 965 Q232 1085 218 1200" fill="none" stroke-width="64"/>
+          <circle cx="216" cy="1222" r="34" fill="#1b1717"/>
+          <path d="M262 965 Q232 1085 218 1200" fill="none" stroke="#ffe3cf" stroke-width="46" stroke-linecap="round"/>
+          <circle class="skin" cx="216" cy="1222" r="25"/>
+          <ellipse class="ink" cx="266" cy="955" rx="58" ry="48" fill="#f7a8c4" stroke-width="9"/>
+        </g>
+      </defs>
+      <g class="leg l"><use href="#leg"/></g>
+      <g class="leg r"><use href="#leg" transform="translate(800 0) scale(-1 1)"/></g>
+      <path class="skin ink" d="M352 820 L350 925 Q400 950 450 925 L448 820Z" stroke-width="8"/>
+      <path class="ink" d="M305 900 Q400 945 495 900 L535 918 Q565 990 562 1080 L640 1420 Q400 1478 160 1420 L238 1080 Q235 990 265 918 Z" fill="#f7a8c4" stroke-width="9"/>
+      <path d="M190 1385 Q400 1440 610 1385" fill="none" stroke="#f06292" stroke-width="12" stroke-linecap="round" stroke-dasharray="2 34"/>
+      <g fill="#fff" opacity=".8"><circle cx="330" cy="1060" r="13"/><circle cx="450" cy="1110" r="13"/><circle cx="390" cy="1210" r="13"/><circle cx="280" cy="1270" r="13"/><circle cx="510" cy="1260" r="13"/><circle cx="400" cy="1340" r="13"/><circle cx="240" cy="1370" r="12"/><circle cx="560" cy="1370" r="12"/></g>
+      <path class="ink" d="M308 902 Q322 980 400 950 L400 930 Q352 936 308 902Z M492 902 Q478 980 400 950 L400 930 Q448 936 492 902Z" fill="#fff" stroke-width="7"/>
+      <g class="arm l"><use href="#arm"/></g>
+      <g class="arm r"><use href="#arm" transform="translate(800 0) scale(-1 1)"/></g>
+      <g class="head"><g transform="rotate(-4 400 560)">
+        <!-- cartoon Sofia after her portrait: round cheeks, top-knot curling right; Amélie-style bob with short blunt bangs -->
+        <path class="hair ink" d="M118 600 C92 360 212 168 400 166 C588 168 708 360 682 600 L694 770 C698 812 650 822 616 800 L184 800 C150 822 102 812 106 770Z" stroke-width="9"/>
+        <g class="tuft">
+          <path class="hair ink" d="M448 230 C400 175 345 150 290 158 C345 118 425 140 472 212Z" stroke-width="9"/>
+          <path class="hair ink" d="M450 225 C428 140 455 70 515 25 C512 95 512 160 490 228Z" stroke-width="9"/>
+          <path class="hair ink" d="M462 228 C495 120 600 62 688 102 C712 150 680 196 648 170 C668 140 632 118 600 128 C555 145 525 185 500 240Z" stroke-width="9"/>
+          <path d="M468 200 C470 140 485 95 508 60 M495 210 C530 145 590 112 650 115" fill="none" stroke="#6b4a36" stroke-width="6" stroke-linecap="round"/>
+        </g>
+        <path class="skin ink" d="M158 540 C158 360 270 280 400 280 C530 280 642 360 642 540 C642 700 610 795 530 842 C475 872 325 872 270 842 C190 795 158 700 158 540Z" stroke-width="9"/>
+        <path d="M262 505 Q300 485 340 500 M462 508 Q502 490 542 506" fill="none" stroke="#3b2a20" stroke-width="10" stroke-linecap="round"/>
+        <g class="eye"><ellipse cx="300" cy="575" rx="27" ry="33" fill="#1b1717"/><circle cx="290" cy="563" r="10" fill="#fff"/><circle cx="310" cy="590" r="4.5" fill="#fff"/></g>
+        <g class="eye"><ellipse cx="500" cy="580" rx="27" ry="33" fill="#1b1717"/><circle cx="490" cy="568" r="10" fill="#fff"/><circle cx="510" cy="595" r="4.5" fill="#fff"/></g>
+        <ellipse cx="252" cy="668" rx="46" ry="30" fill="#ff8fab" opacity=".45"/>
+        <ellipse cx="548" cy="672" rx="46" ry="30" fill="#ff8fab" opacity=".45"/>
+        <path d="M388 640 Q400 656 414 640" fill="none" stroke="#c98f7a" stroke-width="8" stroke-linecap="round"/>
+        <path class="mouth shut" d="M345 705 Q400 752 455 705" fill="none" stroke="#1b1717" stroke-width="10" stroke-linecap="round"/>
+        <g class="mouth open"><path d="M350 700 Q400 706 450 700 Q444 768 400 772 Q356 768 350 700Z" fill="#8e2a3a" stroke="#1b1717" stroke-width="8" stroke-linejoin="round"/><ellipse cx="400" cy="752" rx="26" ry="12" fill="#f28b9b"/></g>
+        <path class="hair ink" d="M168 430 C142 560 146 700 172 795 C196 812 232 800 228 776 C210 690 206 560 222 440Z M632 430 C658 560 654 700 628 795 C604 812 568 800 572 776 C590 690 594 560 578 440Z" stroke-width="9"/>
+        <path class="hair ink" d="M170 480 C150 320 265 208 400 208 C535 208 650 320 630 480 C560 458 480 452 400 454 C320 452 240 458 170 480Z" stroke-width="9"/>
+        <path d="M250 300 C320 255 470 250 550 290 M300 452 L304 418 M400 450 L400 414 M500 452 L496 418 M196 560 L192 700 M604 560 L608 700" fill="none" stroke="#6b4a36" stroke-width="7" stroke-linecap="round"/>
+        <path d="M470 215 L408 172 L414 262 Z M470 215 L536 178 L526 266 Z" fill="#f06292" stroke="#c2185b" stroke-width="6" stroke-linejoin="round"/>
+        <circle cx="470" cy="217" r="21" fill="#e04a7f" stroke="#c2185b" stroke-width="6"/>
+      </g></g>
+    </svg>
+  </div>
+  <div id="field" aria-live="polite">
+    <div id="pal" hidden><div class="mound"></div><div class="ani"><span class="e"></span></div><div class="bubble">?</div></div>
+    <div id="plates" hidden></div>
+  </div>
+  <button id="repeat" class="big" hidden aria-label="Say it again"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M6 15h7l9-8v26l-9-8H6z" fill="#fff"/><path d="M27 13a9 9 0 0 1 0 14M31 8a15 15 0 0 1 0 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg></button>
+  <a class="corner home" href="../index.html" aria-label="Menu"><svg viewBox="0 0 40 40"><path d="M6 19L20 7l14 12M11 16v16h18V16" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+  <div id="overlay"></div>
+</div>
+<script>
+/* ANIMALS: key -> [emoji, food, foods never offered as a wrong choice, real sound or null]; FOODS: key -> [emoji] */
+const ANIMALS={"cat": ["🐱", "fish", ["cheese"], "cat"], "dog": ["🐶", "bone", ["fish", "cheese", "apple", "carrot"], "dog"], "rabbit": ["🐰", "carrot", ["apple", "grass", "leaf", "corn", "banana"], null], "monkey": ["🐵", "banana", ["apple", "nuts", "leaf", "corn", "worm", "carrot", "honey"], "monkey"], "mouse": ["🐭", "cheese", ["corn", "nuts", "apple", "carrot", "banana", "honey", "worm", "leaf"], null], "cow": ["🐮", "grass", ["leaf", "corn", "carrot", "apple"], "cow"], "horse": ["🐴", "apple", ["carrot", "grass", "corn", "leaf", "banana"], "horse"], "bear": ["🐻", "honey", ["fish", "apple", "nuts", "corn", "banana", "worm", "bone", "grass", "leaf"], null], "squirrel": ["🐿️", "nuts", ["corn", "apple", "carrot", "banana", "worm"], null], "hen": ["🐔", "corn", ["worm", "grass", "leaf", "nuts", "apple", "carrot", "banana", "cheese"], null], "bird": ["🐦", "worm", ["corn", "nuts", "apple", "banana", "fish", "grass"], null], "caterpillar": ["🐛", "leaf", ["grass", "apple", "carrot", "corn"], null]};const FOODS={"fish": ["🐟"], "bone": ["🦴"], "carrot": ["🥕"], "banana": ["🍌"], "cheese": ["🧀"], "grass": ["🌿"], "apple": ["🍎"], "honey": ["🍯"], "nuts": ["🥜"], "corn": ["🌽"], "worm": ["🪱"], "leaf": ["🍃"]};
+const $=id=>document.getElementById(id);
+const overlay=$("overlay"), sofia=$("sofia"), repeatBtn=$("repeat"), pal=$("pal"), plates=$("plates");
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+for(let i=0;i<14;i++){const f=document.createElement("div");f.className="flower";f.style.left=(i*7+Math.random()*4)+"%";f.style.bottom=(3+Math.random()*16)+"%";
+  f.style.transform=`scale(${.6+Math.random()*.5})`;$("ground").appendChild(f)}
+
+/* ---------- audio: the voice (audio/<clip>-<lang>.mp3; English: Microsoft's child voice Ana, Russian Svetlana, Latvian Everita)
+   and the animals' real sounds from the jungle game ---------- */
+let lang=store.get("feed-lang")||"en";
+let ctx=null, current=null, fxSrc=null;
+function ac(){ if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)(); if(ctx.state!=="running") ctx.resume(); return ctx }
+const decode=ab=>new Promise((res,rej)=>ac().decodeAudioData(ab,res,rej));
+const cache={};
+function load(url){return cache[url]||(cache[url]=fetch(url).then(r=>r.ok?r.arrayBuffer():Promise.reject()).then(decode).catch(()=>null))}
+const clipUrl=k=>`audio/${k}-${lang}.mp3`, soundUrl=a=>`../jungle/audio/${a}-sound.mp3?v=2`;
+function playBuffer(buf){return new Promise(res=>{const c=ac(),s=c.createBufferSource();s.buffer=buf;s.connect(c.destination);
+  if(current) try{current.stop()}catch(e){}; current=s; s.onended=()=>res(); s.start(); setTimeout(res,buf.duration*1000+300)})}
+function stopVoice(){if(current) try{current.stop()}catch(e){}; current=null; stopSound()}
+async function animalSound(a){const snd=ANIMALS[a][3]; if(!snd) return; const buf=await load(soundUrl(snd)); if(!buf) return;
+  const c=ac(), s=c.createBufferSource(), g=c.createGain();
+  stopSound(); s.buffer=buf; s.connect(g).connect(c.destination); const t=c.currentTime, d=Math.min(buf.duration,3);
+  g.gain.setValueAtTime(1,t); g.gain.setValueAtTime(1,t+d-.25); g.gain.linearRampToValueAtTime(0,t+d); s.start(t); s.stop(t+d); fxSrc=s; await wait(d*1000)}
+function stopSound(){if(fxSrc) try{fxSrc.stop()}catch(e){}; fxSrc=null}
+/* say clips in a row; a newer say() cancels an older one; an item can also be a function (e.g. an animal sound) */
+let sayId=0;
+async function say(keys,gap=250){const id=++sayId;
+  for(const k of keys){ if(id!==sayId) return false;
+    if(typeof k==="function") await k();
+    else{const buf=await load(clipUrl(k)); if(id!==sayId) return false;
+      if(buf){sofia.classList.add("talk"); await playBuffer(buf); sofia.classList.remove("talk")}}
+    if(id!==sayId) return false; await wait(gap) }
+  return id===sayId }
+
+function tone(type,f0,f1,t0,dur,vol=.3){
+  const c=ac(),o=c.createOscillator(),g=c.createGain(); o.type=type;
+  o.frequency.setValueAtTime(f0,t0); o.frequency.exponentialRampToValueAtTime(f1,t0+dur);
+  g.gain.setValueAtTime(.0001,t0); g.gain.exponentialRampToValueAtTime(vol,t0+.02); g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
+  o.connect(g).connect(c.destination); o.start(t0); o.stop(t0+dur+.05);
+}
+/* a munch: three soft crunchy bites */
+function munch(){const c=ac(); for(let k=0;k<3;k++){const t=c.currentTime+k*.26, n=c.sampleRate*.12, b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0);
+  for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3)*(i%400<200?1:.4);
+  const s=c.createBufferSource(), f=c.createBiquadFilter(), g=c.createGain(); s.buffer=b; f.type="lowpass"; f.frequency.value=1400; g.gain.value=.7;
+  s.connect(f).connect(g).connect(c.destination); s.start(t)}}
+const sfx={
+  boing(){const t=ac().currentTime;tone("triangle",260,180,t,.25,.25)},
+  pop(){const t=ac().currentTime;tone("sine",500,900,t,.12,.18)},
+  whoosh(){const t=ac().currentTime;tone("sine",300,900,t,.3,.12)},
+  yay(){const t=ac().currentTime;[523,659,784,1047].forEach((f,i)=>tone("triangle",f,f,t+i*.12,.3,.25))}
+};
+
+/* ---------- a round: six hungry animals, met in turns so every animal comes up within a couple of games ---------- */
+const TURNS=6;
+let round=[], turn=-1, target=null, busy=true, wrong=0, firstTry=true, nudgeT=null, idleT=null, fed=[];
+let level=+(store.get("feed-level")||2);   // plates: two, then three once she has fed four animals on the first try
+function pickRound(){
+  const ids=Object.keys(ANIMALS); let q=null; try{q=JSON.parse(store.get("feed-next"))}catch(e){}
+  if(!Array.isArray(q)) q=shuffle([...ids]);
+  q=q.filter(id=>ids.includes(id)); if(q.length<TURNS) q=q.concat(shuffle(ids.filter(id=>!q.includes(id))));
+  store.set("feed-next",JSON.stringify(q.slice(TURNS))); return shuffle(q.slice(0,TURNS));
+}
+async function play(l){
+  ac(); lang=l; store.set("feed-lang",l); document.documentElement.lang=l;
+  overlay.hidden=true; busy=true; fed=[]; round=pickRound(); turn=-1;
+  $("progress").innerHTML=round.map(()=>'<div class="dot"></div>').join("");
+  ["start","no-1","no-2"].forEach(k=>load(clipUrl(k))); round.forEach(a=>{load(clipUrl(`ask-${a}`)); load(clipUrl(`yes-${a}`)); if(ANIMALS[a][3]) load(soundUrl(ANIMALS[a][3]))});
+  $("party")?.remove(); pal.hidden=true; plates.hidden=true;
+  await walkIn(); await say(["start"]); nextTurn();
+}
+function clearTimers(){clearTimeout(nudgeT); clearTimeout(idleT)}
+const PLATE=`<svg viewBox="0 0 200 80" aria-hidden="true"><ellipse cx="100" cy="52" rx="96" ry="26" fill="#0002"/><ellipse cx="100" cy="44" rx="96" ry="28" fill="#fff" stroke="#cfd8dc" stroke-width="4"/>
+  <ellipse cx="100" cy="44" rx="62" ry="15" fill="#eef3f5"/></svg>`;
+async function nextTurn(){
+  clearTimers(); wrong=0; firstTry=true; repeatBtn.hidden=true;
+  if(++turn>=TURNS) return finale();
+  target=round[turn]; const [emo,food,excl]=ANIMALS[target];
+  const others=shuffle(Object.keys(FOODS).filter(f=>f!==food&&!excl.includes(f))).slice(0,level-1);
+  const foods=shuffle([food,...others]); foods.forEach(f=>load(clipUrl(`food-${f}`)));
+  /* the animal hops in from the right */
+  pal.className=""; pal.querySelector(".e").textContent=emo; pal.querySelector(".bubble").textContent="?"; pal.hidden=false;
+  plates.innerHTML=foods.map(f=>`<button class="plate low" data-f="${f}" aria-label="${f}">${PLATE}<span class="food">${FOODS[f][0]}</span></button>`).join("");
+  plates.hidden=false; sfx.whoosh();
+  await pal.animate([{translate:"60vw 0"},{translate:"30vw -8vh"},{translate:"15vw 0"},{translate:"6vw -4vh"},{translate:"0 0"}],{duration:900,easing:"ease-out"}).finished.catch(()=>{});
+  plates.querySelectorAll(".plate").forEach((p,k)=>setTimeout(()=>p.classList.remove("low"),k*130));
+  pal.classList.add("hungry"); await wait(400);
+  busy=false; ask();
+}
+const plateOf=f=>plates.querySelector(`.plate[data-f="${f}"]`);
+async function ask(){
+  clearTimers(); repeatBtn.hidden=false; const t=turn;
+  if(!await say([`ask-${target}`])||t!==turn||busy) return;
+  waitForFood();
+}
+function waitForFood(){clearTimers();
+  nudgeT=setTimeout(()=>{const p=plateOf(ANIMALS[target][1]); if(p&&!busy){p.classList.remove("nudge"); void p.offsetWidth; p.classList.add("nudge")}},8000);
+  idleT=setTimeout(()=>{if(busy) return; plateOf(ANIMALS[target][1])?.classList.add("help"); ask()},16000)}
+
+/* ---------- dragging food: pick it up (it says its name), drop it on the animal; a tap sends it flying there ---------- */
+let drag=null, namePlaying=null;
+plates.addEventListener("pointerdown",e=>{
+  const p=e.target.closest(".plate"); if(!p||busy||drag) return; ac(); e.preventDefault();
+  const food=p.querySelector(".food"); clearTimers();
+  drag={p,food,f:p.dataset.f,x0:e.clientX,y0:e.clientY,moved:false,id:e.pointerId};
+  try{p.setPointerCapture(e.pointerId)}catch(err){}
+  food.classList.add("lift"); sfx.pop(); namePlaying=say([`food-${drag.f}`]);
+});
+plates.addEventListener("pointermove",e=>{
+  if(!drag||e.pointerId!==drag.id) return;
+  const dx=e.clientX-drag.x0, dy=e.clientY-drag.y0; if(Math.hypot(dx,dy)>12) drag.moved=true;
+  drag.food.style.transform=`translate(${dx}px,${dy}px)`;
+  pal.classList.toggle("near",overAnimal(e.clientX,e.clientY));
+});
+function overAnimal(x,y){const r=pal.getBoundingClientRect(), m=r.width*.15; return x>r.left-m&&x<r.right+m&&y>r.top-m&&y<r.bottom+m}
+async function endDrag(e,cancel){
+  if(!drag||e.pointerId!==drag.id) return; const d=drag; drag=null; pal.classList.remove("near");
+  if(cancel||(d.moved&&!overAnimal(e.clientX,e.clientY))){ await back(d.food); waitForFood(); return }
+  feed(d);
+}
+plates.addEventListener("pointerup",e=>endDrag(e,false));
+plates.addEventListener("pointercancel",e=>endDrag(e,true));
+/* the food glides from where it is to the animal's mouth, or back onto its plate */
+function mouthOffset(food){const a=pal.querySelector(".ani").getBoundingClientRect(), r=food.getBoundingClientRect(), m=new DOMMatrix(getComputedStyle(food).transform);
+  return [a.left+a.width/2-(r.left+r.width/2)+m.e, a.top+a.height*.62-(r.top+r.height/2)+m.f]}
+async function glide(food,to,ms=450){const from=food.style.transform||"translate(0px,0px)";
+  food.style.transform=to; await food.animate([{transform:from},{transform:to}],{duration:ms,easing:"cubic-bezier(.3,.7,.4,1)"}).finished.catch(()=>{})}
+async function back(food){await glide(food,"translate(0px,0px)",350); food.classList.remove("lift"); food.style.transform=""}
+
+async function feed(d){
+  busy=true; repeatBtn.hidden=true; clearTimers();
+  const [mx,my]=mouthOffset(d.food); await glide(d.food,`translate(${mx}px,${my}px)`);
+  await namePlaying;   // let her hear the food's name first
+  const ani=pal.querySelector(".ani");
+  if(d.f!==ANIMALS[target][1]){
+    /* "no, thank you": the animal turns its head away, the food goes back to its plate */
+    wrong++; firstTry=false; sfx.boing();
+    ani.animate([{transform:"none"},{transform:"scaleX(-1) rotate(-6deg)"},{transform:"scaleX(-1) rotate(6deg)"},{transform:"scaleX(-1)"},{transform:"none"}],{duration:900,easing:"ease-in-out"});
+    await back(d.food); const t=turn;
+    await say([`no-${wrong>1?2:1}`]); if(t!==turn) return;
+    if(wrong>=2) plateOf(ANIMALS[target][1])?.classList.add("help");
+    busy=false; if(wrong>=2) ask(); else waitForFood();
+    return;
+  }
+  /* yum: the food goes into its mouth, three big bites with crumbs, hearts and the big celebration */
+  plates.querySelectorAll(".plate").forEach(p=>p.classList.remove("help","nudge"));
+  pal.classList.remove("hungry"); munch();
+  d.food.animate([{opacity:1,scale:1},{opacity:0,scale:.2}],{duration:300,fill:"forwards"});
+  const a=ani.getBoundingClientRect(), mxp=a.left+a.width/2, myp=a.top+a.height*.62;
+  ani.animate([{scale:"1 1"},{scale:"1.12 .86"},{scale:"1 1"},{scale:"1.12 .86"},{scale:"1 1"},{scale:"1.12 .86"},{scale:"1 1"}],{duration:780});
+  for(let i=0;i<10;i++){const c=document.createElement("span"); c.className="crumb"; c.textContent=FOODS[d.f][0];
+    c.style.cssText=`left:${mxp}px;top:${myp}px;font-size:${14+Math.random()*14}px;animation-delay:${Math.floor(i/4)*.26}s`;
+    c.style.setProperty("--dx",(Math.random()*160-80)+"px"); c.style.setProperty("--dy",(Math.random()*90-10)+"px"); c.style.setProperty("--r",(Math.random()*360)+"deg");
+    $("stage").appendChild(c); setTimeout(()=>c.remove(),1500)}
+  await wait(800);
+  fed.push(target); if(firstTry){const n=+(store.get("feed-first")||0)+1; store.set("feed-first",n); if(n>=4&&level<3){level=3; store.set("feed-level",3)}}
+  pal.querySelector(".bubble").textContent="❤️"; pal.classList.add("happy");
+  celebrate(mxp+"px",a.top+a.height*.3+"px"); sfx.yay(); hearts(mxp,a.top);
+  const dot=$("progress").children[turn]; dot.textContent=ANIMALS[target][0]; dot.classList.add("done");
+  await say([`yes-${target}`,()=>animalSound(target)],300);
+  await wait(400);
+  /* off it hops, and the empty plates slide away */
+  plates.querySelectorAll(".plate").forEach(p=>p.classList.add("low"));
+  await pal.animate([{translate:"0 0"},{translate:"-8vw -6vh"},{translate:"-20vw 0"},{translate:"-34vw -6vh"},{translate:"-60vw 0"}],{duration:900,easing:"ease-in"}).finished.catch(()=>{});
+  pal.hidden=true; nextTurn();
+}
+function hearts(x,y){for(let i=0;i<6;i++){const h=document.createElement("span"); h.className="heart"; h.textContent=["❤️","💕","💖"][i%3];
+  h.style.cssText=`left:${x+(Math.random()*120-60)}px;top:${y+40}px;animation-delay:${i*.15}s`; h.style.setProperty("--dx",(Math.random()*80-40)+"px");
+  $("stage").appendChild(h); setTimeout(()=>h.remove(),2600)}}
+
+repeatBtn.addEventListener("click",()=>{ac(); if(!busy) ask()});
+sofia.addEventListener("click",()=>{ac(); if(!busy&&overlay.hidden&&target) ask()});
+/* tapping the animal: it calls (if it has a real sound) and asks again */
+pal.addEventListener("click",async()=>{ac(); if(busy||!target||drag) return; clearTimers(); const t=turn;
+  pal.querySelector(".ani").animate([{translate:"0 0"},{translate:"0 -8%"},{translate:"0 0"}],{duration:400});
+  if(!await say([()=>animalSound(target),`ask-${target}`])||t!==turn||busy) return; waitForFood()});
+
+async function walkIn(){
+  sofia.classList.add("walk");
+  await sofia.animate([{translate:"-40vw 0"},{translate:"0 0"}],{duration:1500,easing:"ease-out"}).finished.catch(()=>{});
+  sofia.classList.remove("walk");
+}
+async function finale(){
+  target=null; repeatBtn.hidden=true; plates.hidden=true; pal.hidden=true; sfx.yay();
+  const party=document.createElement("div"); party.id="party"; party.innerHTML=fed.map(a=>`<span>${ANIMALS[a][0]}</span>`).join("");
+  $("field").prepend(party); party.animate([{opacity:0,scale:.5},{opacity:1,scale:1}],{duration:500,easing:"ease-out"});
+  const r=party.getBoundingClientRect(); celebrate(r.left+r.width/2+"px",r.top+r.height/2+"px"); hearts(r.left+r.width/2,r.top);
+  await say(["end"]); await wait(1800);
+  if(overlay.hidden) startScreen(true);
+}
+
+/* ---------- start screen: pick the language (the voice and all the words) ---------- */
+const TITLE={en:"Feed the animals!",ru:"Покорми зверят!",lv:"Pabaro dzīvniekus!"};
+const LNAME={en:"English",ru:"По-русски",lv:"Latviski"}, LEMO={en:"🐶🦴",ru:"🐰🥕",lv:"🐱🐟"};
+const playIcon=`<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="var(--pink)"/><path d="M15 11l14 9-14 9z" fill="#fff"/></svg>`;
+function startScreen(after){
+  clearTimers(); sayId++; stopVoice(); repeatBtn.hidden=true; busy=true; target=null;
+  overlay.hidden=false;
+  overlay.innerHTML=`<h1>${after?TITLE[lang]:TITLE.en}</h1><p class="sub">${after?"":"Покорми зверят! · Pabaro dzīvniekus!"}</p>
+    ${after?`<div class="stickers">${fed.map(a=>`<button class="sticker" data-a="${a}" aria-label="${a}">${ANIMALS[a][0]}</button>`).join("")}</div>`:""}
+    <div class="langs">${["en","ru","lv"].map(l=>`<button class="go${l===lang?" last":""}" data-l="${l}" lang="${l}"><span class="e">${LEMO[l]}</span><span class="name">${LNAME[l]}</span>${playIcon}</button>`).join("")}</div>`;
+  overlay.querySelectorAll(".go").forEach(b=>b.onclick=()=>play(b.dataset.l));
+  overlay.querySelectorAll(".sticker").forEach(b=>b.onclick=()=>{ac(); say([`yes-${b.dataset.a}`,()=>animalSound(b.dataset.a)])});
+}
+
+/* the big "yes!" for a right answer: a golden star bursts where she tapped, about forty stars of all sizes fly out,
+   confetti rains over the whole screen, Sofia hops and it sparkles */
+function celebrate(x,y){
+  const st=$("stage"), NS="http://www.w3.org/2000/svg", STAR='M12 2l3 7 7 .6-5.4 4.7 1.7 7.2L12 17.8 5.7 21.5l1.7-7.2L2 9.6 9 9z';
+  const big=document.createElementNS(NS,"svg"); big.setAttribute("viewBox","0 0 24 24"); big.classList.add("bigstar");
+  big.innerHTML=`<path d="${STAR}" fill="#ffd25a" stroke="#f5a623" stroke-width="1.2" stroke-linejoin="round"/><circle cx="9.6" cy="11" r=".9" fill="#5a3a12"/><circle cx="14.4" cy="11" r=".9" fill="#5a3a12"/><path d="M9.8 13.6q2.2 1.8 4.4 0" fill="none" stroke="#5a3a12" stroke-width=".8" stroke-linecap="round"/>`;
+  big.style.left=x; big.style.top=y; st.appendChild(big); setTimeout(()=>big.remove(),1200);
+  const COL=["#ffd25a","#f06292","#fff","#5fbf7f","#6ec6ff","#ff8a50","#b388ff"];
+  for(let i=0;i<40;i++){const s=document.createElementNS(NS,"svg"), z=22+Math.random()*44; s.setAttribute("viewBox","0 0 24 24"); s.classList.add("star");
+    s.innerHTML=`<path d="${STAR}" fill="${COL[i%COL.length]}" stroke="#0002" stroke-width=".6"/>`;
+    s.style.cssText=`left:${x};top:${y};width:${z}px;height:${z}px;margin:${-z/2}px 0 0 ${-z/2}px;animation-duration:${(1.5+Math.random()*.9).toFixed(2)}s`;
+    s.style.setProperty("--dx",(Math.random()*90-45)+"vw"); s.style.setProperty("--dy",(Math.random()*90-45)+"vh");
+    st.appendChild(s); setTimeout(()=>s.remove(),2600)}
+  for(let i=0;i<34;i++){const c=document.createElement("div"); c.className="confetti";
+    c.style.cssText=`left:${Math.random()*100}%;background:${COL[(i+2)%COL.length]};--dx:${(Math.random()*24-12).toFixed(1)}vw;--r:${Math.round(Math.random()*900-450)}deg;--t:${(2+Math.random()*1.2).toFixed(2)}s;--dl:${(Math.random()*.5).toFixed(2)}s`;
+    if(i%3===0){c.style.borderRadius="50%"; c.style.height="13px"}
+    st.appendChild(c); setTimeout(()=>c.remove(),3900)}
+  sofia.animate([{translate:"0 0"},{translate:"0 -9%"},{translate:"0 0"},{translate:"0 -5%"},{translate:"0 0"}],{duration:800,easing:"ease-out"});
+  try{const t=ac().currentTime; [1319,1568,1760,2093,2637].forEach((f,i)=>tone("sine",f,f*1.01,t+.05+i*.07,.25,.08))}catch(e){}
+}
+startScreen(false);
+</script>
+</body>
+</html>
