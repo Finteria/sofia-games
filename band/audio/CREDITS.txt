@@ -1,0 +1,2 @@
+meow.mp3: the first meow of the jungle game's cat sound (../../jungle/audio/cat-sound.mp3; see ../../jungle/audio/CREDITS.txt for its source and licence),
+cut and loudness-normalized. Everything else in the band (xylophone, drums, the beat) is made live in the browser with Web Audio.
