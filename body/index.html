@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Where is my nose? · Где носик? · Kur ir deguntiņš?</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap">
+<style>
+/* layout: a big Sofia in the middle of a cosy wall; she asks about her nose, eyes, hands… and the part she taps comes alive */
+:root{
+  --ink:#24352b; --card:#fffdf6; --pink:#f06292;
+  --display:"Nunito","Trebuchet MS",system-ui,sans-serif;
+  color-scheme:light;
+  --sh:min(88vh,195vw,900px); --sw:calc(var(--sh)*.4624); --mw:84px;
+}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:#f3e8ff;color:var(--ink);font-family:var(--display);overflow:hidden;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+#stage{position:fixed;inset:0;overflow:hidden;overflow:clip}
+#wall{position:absolute;inset:0;pointer-events:none;background:
+  radial-gradient(circle at 50% 42%,#fff 0 22%,transparent 50%),
+  radial-gradient(#e4d2fb 3px,transparent 4px) 0 0/52px 52px,#f3e8ff}
+#wall::after{content:"";position:absolute;left:0;right:0;bottom:0;height:12%;background:#d9c2f2;border-top:8px solid #c7a8ea}
+#progress{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:0;right:0;display:flex;justify-content:center;gap:10px;z-index:5;pointer-events:none}
+.dot{width:38px;height:38px;border-radius:50%;background:#ffffffaa;border:3px solid #b79bd8;display:flex;align-items:center;justify-content:center;font-size:22px;transition:transform .3s}
+.dot.done{background:#fff;border-color:#2f8f5b;transform:scale(1.15)}
+@media (max-width:500px){#progress{gap:6px;padding-left:60px}.dot{width:30px;height:30px;font-size:17px}}
+
+/* Sofia: the same cartoon as in the other games, here big and in the middle */
+#sofia{position:absolute;left:50%;bottom:3%;height:var(--sh);aspect-ratio:800/1730;margin-left:calc(var(--sw) / -2);z-index:3;
+  transform-origin:50% 100%;animation:bob 2.4s ease-in-out infinite}
+#sofia svg{display:block;width:100%;height:100%;overflow:visible}
+#sofia svg *{transform-box:view-box}
+#sofia .ink{stroke:#1b1717;stroke-linecap:round;stroke-linejoin:round}
+#sofia .skin{fill:#ffe3cf}
+#sofia .hair{fill:#3b2a20}
+#sofia .eye{transform-box:fill-box;transform-origin:center;animation:blink 4.2s infinite}
+#sofia .mouth.open{opacity:0}
+#sofia.talk .mouth.open{animation:flap .3s steps(1,end) infinite}
+#sofia.talk .mouth.shut{animation:flap .3s steps(1,end) infinite -.15s}
+#sofia .head{transform-origin:400px 870px}
+#sofia .arm.l{transform-origin:262px 955px;animation:sway 2.4s ease-in-out infinite}
+#sofia .arm.r{transform-origin:538px 955px;animation:sway 2.4s ease-in-out infinite reverse}
+#sofia .leg.l{transform-origin:335px 1390px}
+#sofia .leg.r{transform-origin:465px 1390px}
+#sofia.walk{animation:stride .6s ease-in-out infinite}
+#sofia.walk .leg.l{animation:stepL .6s ease-in-out infinite}
+#sofia.walk .leg.r{animation:stepR .6s ease-in-out infinite}
+#sofia.walk .arm.l{animation:swingL .6s ease-in-out infinite}
+#sofia.walk .arm.r{animation:swingR .6s ease-in-out infinite}
+#sofia.walk .head{animation:nod .6s ease-in-out infinite}
+#sofia.talk .head{animation:chat .32s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+@keyframes flap{0%{opacity:1}50%{opacity:0}}
+@keyframes sway{50%{transform:rotate(4deg)}}
+@keyframes stride{0%,50%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-3%) rotate(-2deg)}75%{transform:translateY(-3%) rotate(2deg)}}
+@keyframes stepL{0%,50%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-60px) rotate(7deg)}}
+@keyframes stepR{0%,50%,100%{transform:translateY(0) rotate(0)}75%{transform:translateY(-60px) rotate(-7deg)}}
+@keyframes swingL{0%,100%{transform:rotate(-16deg)}50%{transform:rotate(10deg)}}
+@keyframes swingR{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(16deg)}}
+@keyframes nod{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(3deg)}75%{transform:rotate(-3deg)}}
+@keyframes chat{0%,100%{transform:rotate(-3deg) scale(1)}50%{transform:rotate(3deg) scale(1.03)}}
+/* only the parts she can tap catch the finger */
+#sofia svg *{pointer-events:none}
+#sofia svg defs *{pointer-events:inherit}   /* arms and legs are <use> copies: let them take the finger from their <use> */
+#sofia svg .zone{pointer-events:all;cursor:pointer}
+#sofia svg .hit{fill:transparent;stroke:transparent}
+#sofia svg .ring{fill:none;stroke:#ffd25a;stroke-width:16;pointer-events:none;opacity:0;transform-box:fill-box;transform-origin:center}
+#sofia svg .ring.on{opacity:1;animation:ring 1s ease-in-out infinite}
+#sofia svg .ring.soft{opacity:.7;stroke-width:10;animation:ring 1.4s ease-in-out infinite}
+#sofia svg .ring.other{opacity:1;stroke:#6ec6ff;animation:none}
+@keyframes ring{50%{transform:scale(1.12)}}
+.fx{position:absolute;z-index:8;pointer-events:none;translate:-50% -50%;font-size:46px;animation:rise 1.4s ease-out forwards}
+@keyframes rise{from{transform:translate(0,0) scale(.5);opacity:0}15%{opacity:1}to{transform:translate(var(--dx),-140px) scale(1.2);opacity:0}}
+
+.big{position:absolute;z-index:7;border:0;cursor:pointer;font-family:var(--display);font-weight:900;color:#fff;
+  background:var(--pink);box-shadow:0 8px 0 #b83b68;border-radius:999px;display:flex;align-items:center;gap:12px;justify-content:center;transition:transform .1s}
+.big:active{transform:translateY(6px);box-shadow:0 2px 0 #b83b68}
+#repeat{left:max(16px,env(safe-area-inset-left,0px));bottom:calc(4% + 10px);width:var(--mw);height:var(--mw);padding:0}
+#repeat svg{width:46px;height:46px}
+.corner{position:absolute;top:max(14px,env(safe-area-inset-top,0px));width:60px;height:60px;border-radius:50%;z-index:13;
+  background:#ffffff55;border:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.corner svg{width:34px;height:34px}
+.home{left:max(14px,env(safe-area-inset-left,0px))}
+#stage>.home{background:#9a7cc488}
+#back{right:max(14px,env(safe-area-inset-right,0px));background:#9a7cc488}
+
+#overlay{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+  background:#8e5fd0f0;color:#fff;text-align:center;padding:24px;overflow-y:auto}
+#overlay>h1{margin-top:auto!important}
+#overlay>:last-child{margin-bottom:auto}
+#overlay h1{margin:0;font-size:clamp(40px,7.5vw,80px);font-weight:900;line-height:1.05;text-shadow:0 4px 0 #0003}
+#overlay .sub{margin:-8px 0 0;font-size:clamp(20px,3.4vw,28px);font-weight:900;opacity:.92}
+.langs{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+.go{width:min(40vw,220px);padding:16px 10px 14px;border:0;border-radius:32px;background:var(--card);cursor:pointer;font-family:var(--display);
+  box-shadow:0 8px 0 #0003;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--ink);transition:transform .1s}
+.go:active{transform:translateY(6px);box-shadow:0 2px 0 #0003}
+.go .e{font-size:clamp(44px,7vw,64px);line-height:1.1;white-space:nowrap}
+.go .name{font-size:clamp(20px,3vw,26px);font-weight:900}
+.go svg{width:48px;height:48px}
+.go.last{outline:5px solid #ffd25a;outline-offset:3px}
+.pill{border:0;border-radius:999px;padding:12px 26px;font:900 clamp(18px,2.6vw,24px) var(--display);background:#ffffff33;color:#fff;cursor:pointer;min-height:56px}
+.stickers{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:760px}
+.sticker{width:84px;height:84px;border-radius:22px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:52px;border:0;cursor:pointer}
+
+/* the big "yes!" */
+.star{position:absolute;width:40px;height:40px;z-index:9;pointer-events:none;animation:fly 1.6s ease-out forwards}
+@keyframes fly{from{transform:translate(0,0) scale(.3) rotate(0);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(1.2) rotate(240deg);opacity:0}}
+.bigstar{position:absolute;width:min(42vmin,280px);height:min(42vmin,280px);translate:-50% -50%;z-index:9;pointer-events:none;animation:bigstar 1.1s ease-out forwards}
+@keyframes bigstar{0%{scale:0;rotate:-60deg;opacity:1}40%{scale:1.15;rotate:8deg;opacity:1}100%{scale:1.6;rotate:0deg;opacity:0}}
+.confetti{position:absolute;top:-5vh;width:13px;height:20px;border-radius:3px;z-index:9;pointer-events:none;animation:fall var(--t) cubic-bezier(.25,.6,.6,1) var(--dl) forwards}
+@keyframes fall{to{transform:translate(var(--dx),112vh) rotate(var(--r))}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important}}
+@media (orientation:portrait){:root{--sh:min(80vh,195vw,900px)}}
+@media (max-height:520px){:root{--mw:64px}#repeat svg{width:34px;height:34px}}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="wall"></div>
+  <div id="progress"></div>
+  <div id="sofia" role="img" aria-label="Sofia: tap to hear it again">
+    <svg viewBox="0 0 800 1730" aria-hidden="true">
+      <defs>
+        <g id="leg">
+          <path class="ink" d="M335 1380 L331 1640" fill="none" stroke-width="68"/>
+          <path d="M335 1380 L331 1640" stroke="#ffe3cf" stroke-width="50" stroke-linecap="round"/>
+          <path d="M331 1590 L331 1640" stroke="#fff" stroke-width="50"/>
+          <path d="M305 1592 H357" stroke="#f06292" stroke-width="10" stroke-linecap="round"/>
+          <ellipse class="ink" cx="318" cy="1672" rx="60" ry="34" fill="#d6453d" stroke-width="9"/>
+          <ellipse cx="300" cy="1660" rx="16" ry="8" fill="#fff" opacity=".5"/>
+        </g>
+        <g id="arm">
+          <path class="ink" d="M262 965 Q232 1085 218 1200" fill="none" stroke-width="64"/>
+          <circle cx="216" cy="1222" r="34" fill="#1b1717"/>
+          <path d="M262 965 Q232 1085 218 1200" fill="none" stroke="#ffe3cf" stroke-width="46" stroke-linecap="round"/>
+          <circle class="skin" cx="216" cy="1222" r="25"/>
+          <ellipse class="ink" cx="266" cy="955" rx="58" ry="48" fill="#f7a8c4" stroke-width="9"/>
+        </g>
+      </defs>
+      <g class="leg l"><use href="#leg"/></g>
+      <g class="leg r"><use href="#leg" transform="translate(800 0) scale(-1 1)"/></g>
+      <path class="skin ink" d="M352 820 L350 925 Q400 950 450 925 L448 820Z" stroke-width="8"/>
+      <path class="ink" d="M305 900 Q400 945 495 900 L535 918 Q565 990 562 1080 L640 1420 Q400 1478 160 1420 L238 1080 Q235 990 265 918 Z" fill="#f7a8c4" stroke-width="9"/>
+      <path d="M190 1385 Q400 1440 610 1385" fill="none" stroke="#f06292" stroke-width="12" stroke-linecap="round" stroke-dasharray="2 34"/>
+      <g fill="#fff" opacity=".8"><circle cx="330" cy="1060" r="13"/><circle cx="450" cy="1110" r="13"/><circle cx="390" cy="1210" r="13"/><circle cx="280" cy="1270" r="13"/><circle cx="510" cy="1260" r="13"/><circle cx="400" cy="1340" r="13"/><circle cx="240" cy="1370" r="12"/><circle cx="560" cy="1370" r="12"/></g>
+      <path class="ink" d="M308 902 Q322 980 400 950 L400 930 Q352 936 308 902Z M492 902 Q478 980 400 950 L400 930 Q448 936 492 902Z" fill="#fff" stroke-width="7"/>
+      <g class="arm l"><use href="#arm"/></g>
+      <g class="arm r"><use href="#arm" transform="translate(800 0) scale(-1 1)"/></g>
+      <g class="head"><g transform="rotate(-4 400 560)">
+        <!-- cartoon Sofia after her portrait: round cheeks, top-knot curling right; Amélie-style bob with short blunt bangs -->
+        <path class="hair ink" d="M118 600 C92 360 212 168 400 166 C588 168 708 360 682 600 L694 770 C698 812 650 822 616 800 L184 800 C150 822 102 812 106 770Z" stroke-width="9"/>
+        <g class="tuft">
+          <path class="hair ink" d="M448 230 C400 175 345 150 290 158 C345 118 425 140 472 212Z" stroke-width="9"/>
+          <path class="hair ink" d="M450 225 C428 140 455 70 515 25 C512 95 512 160 490 228Z" stroke-width="9"/>
+          <path class="hair ink" d="M462 228 C495 120 600 62 688 102 C712 150 680 196 648 170 C668 140 632 118 600 128 C555 145 525 185 500 240Z" stroke-width="9"/>
+          <path d="M468 200 C470 140 485 95 508 60 M495 210 C530 145 590 112 650 115" fill="none" stroke="#6b4a36" stroke-width="6" stroke-linecap="round"/>
+        </g>
+        <path class="skin ink" d="M158 540 C158 360 270 280 400 280 C530 280 642 360 642 540 C642 700 610 795 530 842 C475 872 325 872 270 842 C190 795 158 700 158 540Z" stroke-width="9"/>
+        <path d="M262 505 Q300 485 340 500 M462 508 Q502 490 542 506" fill="none" stroke="#3b2a20" stroke-width="10" stroke-linecap="round"/>
+        <g class="eye"><ellipse cx="300" cy="575" rx="27" ry="33" fill="#1b1717"/><circle cx="290" cy="563" r="10" fill="#fff"/><circle cx="310" cy="590" r="4.5" fill="#fff"/></g>
+        <g class="eye"><ellipse cx="500" cy="580" rx="27" ry="33" fill="#1b1717"/><circle cx="490" cy="568" r="10" fill="#fff"/><circle cx="510" cy="595" r="4.5" fill="#fff"/></g>
+        <ellipse cx="252" cy="668" rx="46" ry="30" fill="#ff8fab" opacity=".45"/>
+        <ellipse cx="548" cy="672" rx="46" ry="30" fill="#ff8fab" opacity=".45"/>
+        <path d="M388 640 Q400 656 414 640" fill="none" stroke="#c98f7a" stroke-width="8" stroke-linecap="round"/>
+        <path class="mouth shut" d="M345 705 Q400 752 455 705" fill="none" stroke="#1b1717" stroke-width="10" stroke-linecap="round"/>
+        <g class="mouth open"><path d="M350 700 Q400 706 450 700 Q444 768 400 772 Q356 768 350 700Z" fill="#8e2a3a" stroke="#1b1717" stroke-width="8" stroke-linejoin="round"/><ellipse cx="400" cy="752" rx="26" ry="12" fill="#f28b9b"/></g>
+        <path class="hair ink" d="M168 430 C142 560 146 700 172 795 C196 812 232 800 228 776 C210 690 206 560 222 440Z M632 430 C658 560 654 700 628 795 C604 812 568 800 572 776 C590 690 594 560 578 440Z" stroke-width="9"/>
+        <path class="hair ink" d="M170 480 C150 320 265 208 400 208 C535 208 650 320 630 480 C560 458 480 452 400 454 C320 452 240 458 170 480Z" stroke-width="9"/>
+        <path d="M250 300 C320 255 470 250 550 290 M300 452 L304 418 M400 450 L400 414 M500 452 L496 418 M196 560 L192 700 M604 560 L608 700" fill="none" stroke="#6b4a36" stroke-width="7" stroke-linecap="round"/>
+        <path d="M470 215 L408 172 L414 262 Z M470 215 L536 178 L526 266 Z" fill="#f06292" stroke="#c2185b" stroke-width="6" stroke-linejoin="round"/>
+        <circle cx="470" cy="217" r="21" fill="#e04a7f" stroke="#c2185b" stroke-width="6"/>
+      </g></g>
+    </svg>
+  </div>
+  <button id="repeat" class="big" hidden aria-label="Say it again"><svg viewBox="0 0 40 40" aria-hidden="true"><path d="M6 15h7l9-8v26l-9-8H6z" fill="#fff"/><path d="M27 13a9 9 0 0 1 0 14M31 8a15 15 0 0 1 0 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg></button>
+  <a class="corner home" href="../index.html" aria-label="Menu"><svg viewBox="0 0 40 40"><path d="M6 19L20 7l14 12M11 16v16h18V16" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+  <button class="corner" id="back" hidden aria-label="Back"><svg viewBox="0 0 40 40"><path d="M24 8L12 20l12 12" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  <div id="overlay"></div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const stage=$("stage"), overlay=$("overlay"), sofia=$("sofia"), repeatBtn=$("repeat");
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const NS="http://www.w3.org/2000/svg";
+
+/* ---------- the parts of Sofia she can tap. Each part gets invisible tap areas (generous, for small fingers) and a glow ring,
+   both in the cartoon's own coordinates (800 × 1730), inside the group that moves (head, arms, legs). ---------- */
+const svg=sofia.querySelector("svg"), head=svg.querySelector(".head"), headG=svg.querySelector(".head > g");
+const armL=svg.querySelector(".arm.l"), armR=svg.querySelector(".arm.r"), legL=svg.querySelector(".leg.l"), legR=svg.querySelector(".leg.r");
+const brows=headG.querySelector('path[d^="M262 505"]'), eyes=[...headG.querySelectorAll(".eye")], cheeks=[...headG.querySelectorAll('ellipse[fill="#ff8fab"]')];
+const bodyG=document.createElementNS(NS,"g"); svg.insertBefore(bodyG,armL);
+function el(parent,tag,attrs){const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); parent.appendChild(e); return e}
+const RINGS={}; const ring=(part,parent,attrs)=>{(RINGS[part]=RINGS[part]||[]).push(el(parent,"ellipse",{class:"ring",...attrs}))};
+const zone=(part,parent,tag,attrs)=>el(parent,tag,{class:"zone hit","data-part":part,...attrs});
+/* hair: the hair itself (its paths), under everything on the face */
+headG.querySelectorAll(".hair").forEach(p=>{p.classList.add("zone"); p.dataset.part="hair"});
+[...headG.children].slice(-2).forEach(p=>{p.classList.add("zone"); p.dataset.part="hair"});   // the bow
+headG.querySelector(":scope > path.skin").classList.add("zone"); headG.querySelector(":scope > path.skin").dataset.part="face";
+/* the small parts of the face, on top; the nose last so it wins */
+zone("cheeks",headG,"ellipse",{cx:248,cy:672,rx:58,ry:48}); zone("cheeks",headG,"ellipse",{cx:552,cy:676,rx:58,ry:48});
+zone("eyebrows",headG,"path",{d:"M250 500 Q300 478 352 496 M450 503 Q502 484 554 502",fill:"none",stroke:"transparent","stroke-width":64,"stroke-linecap":"round",class:"zone","data-part":"eyebrows"});
+zone("mouth",headG,"ellipse",{cx:400,cy:728,rx:82,ry:52});
+zone("eyes",headG,"ellipse",{cx:300,cy:575,rx:62,ry:62}); zone("eyes",headG,"ellipse",{cx:500,cy:580,rx:62,ry:62});
+zone("nose",headG,"circle",{cx:400,cy:645,r:50});
+ring("hair",headG,{cx:400,cy:250,rx:320,ry:150}); ring("eyebrows",headG,{cx:300,cy:498,rx:70,ry:32}); ring("eyebrows",headG,{cx:502,cy:503,rx:70,ry:32});
+ring("eyes",headG,{cx:300,cy:575,rx:58,ry:62}); ring("eyes",headG,{cx:500,cy:580,rx:58,ry:62}); ring("nose",headG,{cx:400,cy:645,rx:42,ry:38});
+ring("mouth",headG,{cx:400,cy:728,rx:78,ry:50}); ring("cheeks",headG,{cx:250,cy:670,rx:56,ry:42}); ring("cheeks",headG,{cx:550,cy:674,rx:56,ry:42});
+/* body: the dress is the tummy, the neck above it, arms are hands, legs are feet (a tap anywhere on them counts) */
+zone("tummy",bodyG,"path",{d:"M305 900 Q400 945 495 900 L535 918 Q565 990 562 1080 L640 1420 Q400 1478 160 1420 L238 1080 Q235 990 265 918 Z"});
+zone("neck",bodyG,"ellipse",{cx:400,cy:888,rx:66,ry:44});
+ring("tummy",bodyG,{cx:400,cy:1160,rx:170,ry:150}); ring("neck",bodyG,{cx:400,cy:888,rx:62,ry:40});
+for(const [g,mirror] of [[armL,false],[armR,true]]){
+  g.querySelector("use").classList.add("zone"); g.querySelector("use").dataset.part="hands";
+  const h=mirror?584:216; zone("hands",g,"circle",{cx:h,cy:1222,r:62}); ring("hands",g,{cx:h,cy:1222,rx:52,ry:52});
+}
+for(const [g,mirror] of [[legL,false],[legR,true]]){
+  g.querySelector("use").classList.add("zone"); g.querySelector("use").dataset.part="feet";
+  const x=mirror?482:318; zone("feet",g,"ellipse",{cx:x,cy:1668,rx:84,ry:56}); ring("feet",g,{cx:x,cy:1672,rx:76,ry:46});
+}
+function rings(part,cls){Object.values(RINGS).flat().forEach(r=>r.classList.remove(cls)); if(part) RINGS[part].forEach(r=>r.classList.add(cls))}
+function clearRings(){Object.values(RINGS).flat().forEach(r=>r.classList.remove("on","soft","other"))}
+/* where a part is on screen (for stars and effects) */
+const CENTER={hair:[400,240],eyebrows:[400,500],eyes:[400,578],nose:[400,645],mouth:[400,728],cheeks:[400,670],neck:[400,888],hands:[400,1222],tummy:[400,1160],feet:[400,1670]};
+function onSofia(x,y){const r=sofia.getBoundingClientRect(); return [r.left+x/800*r.width, r.top+y/1730*r.height]}
+const EMO={hair:"💇‍♀️",eyebrows:"🤨",eyes:"👀",nose:"👃",mouth:"👄",cheeks:"😊",neck:"🦒",hands:"👏",tummy:"😋",feet:"🦶"};
+const PARTS=Object.keys(EMO);
+
+/* ---------- audio ---------- */
+let lang=store.get("body-lang")||"en";
+let ctx=null, current=null;
+function ac(){ if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)(); if(ctx.state!=="running") ctx.resume(); return ctx }
+const decode=ab=>new Promise((res,rej)=>ac().decodeAudioData(ab,res,rej));
+const cache={};
+function load(url){return cache[url]||(cache[url]=fetch(url).then(r=>r.ok?r.arrayBuffer():Promise.reject()).then(decode).catch(()=>null))}
+const clipUrl=k=>`audio/${k}-${lang}.mp3`;
+function playBuffer(buf){return new Promise(res=>{const c=ac(),s=c.createBufferSource();s.buffer=buf;s.connect(c.destination);
+  if(current) try{current.stop()}catch(e){}; current=s; s.onended=()=>res(); s.start(); setTimeout(res,buf.duration*1000+300)})}
+function stopVoice(){if(current) try{current.stop()}catch(e){}; current=null}
+let sayId=0;
+async function say(keys,gap=250){const id=++sayId;
+  for(const k of keys){ if(id!==sayId) return false;
+    if(typeof k==="function") await k();
+    else{const buf=await load(clipUrl(k)); if(id!==sayId) return false;
+      if(buf){sofia.classList.add("talk"); await playBuffer(buf); sofia.classList.remove("talk")}}
+    if(id!==sayId) return false; await wait(gap) }
+  return id===sayId }
+function tone(type,f0,f1,t0,dur,vol=.3){
+  const c=ac(),o=c.createOscillator(),g=c.createGain(); o.type=type;
+  o.frequency.setValueAtTime(f0,t0); o.frequency.exponentialRampToValueAtTime(f1,t0+dur);
+  g.gain.setValueAtTime(.0001,t0); g.gain.exponentialRampToValueAtTime(vol,t0+.02); g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
+  o.connect(g).connect(c.destination); o.start(t0); o.stop(t0+dur+.05);
+}
+function noise(dur,type,freq,vol,when=0){const c=ac(), n=c.sampleRate*dur, b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0);
+  for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/n,2);
+  const s=c.createBufferSource(), f=c.createBiquadFilter(), g=c.createGain(); s.buffer=b; f.type=type; f.frequency.value=freq; g.gain.value=vol;
+  s.connect(f).connect(g).connect(c.destination); s.start(c.currentTime+when)}
+const sfx={
+  boing(){const t=ac().currentTime;tone("triangle",260,180,t,.25,.25)},
+  tap(){const t=ac().currentTime;tone("sine",660,520,t,.08,.12)},
+  clap(when){noise(.12,"bandpass",1800,1.2,when)},
+  stomp(when){noise(.25,"lowpass",220,1.6,when)},
+  rumble(){const t=ac().currentTime;tone("sawtooth",70,55,t,.9,.12);tone("sawtooth",62,48,t+.5,.8,.1)},
+  boop(){const t=ac().currentTime;tone("sine",900,1400,t,.15,.15)},
+  yay(){const t=ac().currentTime;[523,659,784,1047].forEach((f,i)=>tone("triangle",f,f,t+i*.12,.3,.25))}
+};
+function fx(part,chars,n=4){const [x,y]=onSofia(...CENTER[part]); for(let i=0;i<n;i++){const f=document.createElement("div"); f.className="fx"; f.textContent=chars[i%chars.length];
+  f.style.cssText=`left:${x+(Math.random()*80-40)}px;top:${y}px;animation-delay:${i*.18}s`; f.style.setProperty("--dx",(Math.random()*120-60)+"px");
+  stage.appendChild(f); setTimeout(()=>f.remove(),2000)}}
+
+/* ---------- what each part does when it is found (the fun clip plays at the same time) ---------- */
+const A=(e,k,o)=>e.animate(k,o).finished.catch(()=>{});
+const ACT={
+  nose(){ A(head,[{transform:"rotate(0)"},{transform:"rotate(-6deg) translateY(-14px)",offset:.45},{transform:"rotate(7deg) translateY(10px)",offset:.6},{transform:"rotate(0)"}],{duration:1100}); setTimeout(()=>fx("nose",["💨","✨"],3),550) },
+  eyes(){ eyes.forEach(e=>A(e,[{transform:"scaleY(1)"},{transform:"scaleY(.1)"},{transform:"scaleY(1)"},{transform:"scaleY(.1)"},{transform:"scaleY(1.2)"},{transform:"scaleY(1)"}],{duration:1100})) },
+  mouth(){ fx("mouth",["🎵","🎶"],5) },
+  hair(){ A(head,[{transform:"rotate(0)"},{transform:"rotate(-9deg)"},{transform:"rotate(9deg)"},{transform:"rotate(-7deg)"},{transform:"rotate(7deg)"},{transform:"rotate(0)"}],{duration:1200}); fx("hair",["✨"],3) },
+  eyebrows(){ A(brows,[{transform:"translateY(0)"},{transform:"translateY(-34px)"},{transform:"translateY(0)"},{transform:"translateY(-34px)"},{transform:"translateY(0)"}],{duration:1100});
+    eyes.forEach(e=>A(e,[{transform:"scale(1)"},{transform:"scale(1.25)"},{transform:"scale(1)"}],{duration:1100})) },
+  cheeks(){ cheeks.forEach(c=>A(c,[{opacity:.45,transform:"scale(1)"},{opacity:.95,transform:"scale(1.35)"},{opacity:.95,transform:"scale(1.35)"},{opacity:.45,transform:"scale(1)"}],{duration:1800})); fx("cheeks",["💕","💖"],4) },
+  neck(){ A(head,[{transform:"rotate(0)"},{transform:"rotate(-12deg)"},{transform:"rotate(12deg)"},{transform:"rotate(0)"}],{duration:1600,easing:"ease-in-out"}) },
+  hands(){ for(let i=0;i<3;i++) sfx.clap(.18+i*.4);
+    A(armL,[{transform:"rotate(0)"},{transform:"rotate(-48deg)"},{transform:"rotate(-20deg)"},{transform:"rotate(-48deg)"},{transform:"rotate(-20deg)"},{transform:"rotate(-48deg)"},{transform:"rotate(0)"}],{duration:1400});
+    A(armR,[{transform:"rotate(0)"},{transform:"rotate(48deg)"},{transform:"rotate(20deg)"},{transform:"rotate(48deg)"},{transform:"rotate(20deg)"},{transform:"rotate(48deg)"},{transform:"rotate(0)"}],{duration:1400}) },
+  tummy(){ sfx.rumble(); A(sofia,[{scale:"1 1"},{scale:"1.04 .98"},{scale:".98 1.02"},{scale:"1.04 .98"},{scale:"1 1"}],{duration:1000}); fx("tummy",["🍎","🍪","🥛"],3) },
+  feet(){ sfx.stomp(.05); sfx.stomp(.45);
+    A(legL,[{transform:"translateY(0)"},{transform:"translateY(-60px)"},{transform:"translateY(0)"},{transform:"translateY(0)"}],{duration:800});
+    A(legR,[{transform:"translateY(0)"},{transform:"translateY(0)"},{transform:"translateY(-60px)"},{transform:"translateY(0)"}],{duration:800});
+    setTimeout(()=>{sfx.stomp(); A(sofia,[{translate:"0 0"},{translate:"0 -12%"},{translate:"0 0"}],{duration:550,easing:"ease-in-out"})},900) },
+};
+async function react(part){const t=say([`fun-${part}`]); ACT[part](); await t; await wait(300)}
+
+/* ---------- a game: six parts, met in turns so every part comes up ---------- */
+const TURNS=6;
+let round=[], turn=-1, target=null, busy=true, wrong=0, softT=null, idleT=null, found=[], free=false;
+function clearTimers(){clearTimeout(softT); clearTimeout(idleT)}
+function pickRound(){
+  let q=null; try{q=JSON.parse(store.get("body-next"))}catch(e){}
+  if(!Array.isArray(q)) q=shuffle([...PARTS]);
+  q=q.filter(id=>PARTS.includes(id)); if(q.length<TURNS) q=q.concat(shuffle(PARTS.filter(id=>!q.includes(id))));
+  store.set("body-next",JSON.stringify(q.slice(TURNS))); return shuffle(q.slice(0,TURNS));
+}
+function preload(){["start","yes","end","free"].forEach(k=>load(clipUrl(k))); PARTS.forEach(p=>["ask","this","fun"].forEach(k=>load(clipUrl(`${k}-${p}`))))}
+async function play(l){
+  ac(); lang=l; store.set("body-lang",l); document.documentElement.lang=l; free=false; $("back").hidden=true;
+  overlay.hidden=true; busy=true; found=[]; round=pickRound(); turn=-1; clearRings();
+  $("progress").innerHTML=round.map(()=>'<div class="dot"></div>').join(""); preload();
+  await walkIn(); await say(["start"]); nextTurn();
+}
+async function nextTurn(){
+  clearTimers(); wrong=0; clearRings(); repeatBtn.hidden=true;
+  if(++turn>=TURNS) return finale();
+  target=round[turn]; busy=false; ask();
+}
+async function ask(){
+  clearTimers(); repeatBtn.hidden=false; const t=turn;
+  if(!await say([`ask-${target}`])||t!==turn||busy) return;
+  waitForTap();
+}
+function waitForTap(){clearTimers();
+  softT=setTimeout(()=>{if(!busy) rings(target,"soft")},9000);
+  idleT=setTimeout(()=>{if(busy) return; rings(target,"on"); ask()},17000)}
+
+svg.addEventListener("click",async e=>{
+  const z=e.target.closest("[data-part]"); if(!z||!overlay.hidden) return; ac();
+  const part=z.dataset.part;
+  if(free) return explore(part);
+  if(busy||!target) return;
+  if(part==="face"){sfx.tap(); return}   // between the eyes, nose and mouth: nothing to name there
+  if(part!==target){
+    /* another part: it says its own name, then she asks again */
+    clearTimers(); wrong++; busy=true; sfx.boop(); clearRings(); rings(part,"other");
+    const t=turn; await say([`this-${part}`,`ask-${target}`],350); if(t!==turn) return;
+    RINGS[part].forEach(r=>r.classList.remove("other"));
+    if(wrong>=2) rings(target,"on");
+    busy=false; waitForTap(); return;
+  }
+  busy=true; clearTimers(); repeatBtn.hidden=true; clearRings(); rings(part,"on"); found.push(part);
+  const [x,y]=onSofia(...CENTER[part]); celebrate(x+"px",y+"px"); sfx.yay();
+  const dot=$("progress").children[turn]; dot.textContent=EMO[part]; dot.classList.add("done");
+  await say(["yes",`this-${part}`],200); await react(part);
+  clearRings(); await wait(300); nextTurn();
+});
+repeatBtn.addEventListener("click",()=>{ac(); if(!busy&&target) ask()});
+
+/* free play: every tap names the part and it does its trick */
+let exploring=false;
+async function explore(part){
+  if(part==="face"){sfx.tap(); return}
+  if(exploring) return; exploring=true; clearRings(); rings(part,"on");
+  await say([`this-${part}`],150); await react(part); clearRings(); exploring=false;
+}
+function freePlay(){ac(); free=true; target=null; busy=false; overlay.hidden=true; $("progress").innerHTML=""; repeatBtn.hidden=true; $("back").hidden=false; preload(); say(["free"])}
+$("back").addEventListener("click",()=>{free=false; $("back").hidden=true; startScreen(false)});
+
+async function walkIn(){
+  sofia.classList.add("walk");
+  await sofia.animate([{translate:"-60vw 0"},{translate:"0 0"}],{duration:1600,easing:"ease-out"}).finished.catch(()=>{});
+  sofia.classList.remove("walk");
+}
+async function finale(){
+  target=null; repeatBtn.hidden=true; sfx.yay();
+  const r=sofia.getBoundingClientRect(); celebrate(r.left+r.width/2+"px",r.top+r.height*.3+"px");
+  const t=say(["end"]); ACT.hands(); await wait(1500); ACT.feet(); await t; await wait(1500);
+  if(overlay.hidden) startScreen(true);
+}
+
+/* ---------- start screen ---------- */
+const TITLE={en:"Where is my nose?",ru:"Где мой носик?",lv:"Kur ir mans deguntiņš?"};
+const FREE={en:"Just play",ru:"Просто играть",lv:"Vienkārši spēlēt"};
+const LNAME={en:"English",ru:"По-русски",lv:"Latviski"}, LEMO={en:"👃👀",ru:"👏🦶",lv:"😊💇‍♀️"};
+const playIcon=`<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="var(--pink)"/><path d="M15 11l14 9-14 9z" fill="#fff"/></svg>`;
+function startScreen(after){
+  clearTimers(); sayId++; stopVoice(); repeatBtn.hidden=true; busy=true; target=null; clearRings();
+  overlay.hidden=false;
+  overlay.innerHTML=`<h1>${after?TITLE[lang]:TITLE.en}</h1><p class="sub">${after?"":"Где мой носик? · Kur ir mans deguntiņš?"}</p>
+    ${after?`<div class="stickers">${found.map(p=>`<button class="sticker" data-p="${p}" aria-label="${p}">${EMO[p]}</button>`).join("")}</div>`:""}
+    <div class="langs">${["en","ru","lv"].map(l=>`<button class="go${l===lang?" last":""}" data-l="${l}" lang="${l}"><span class="e">${LEMO[l]}</span><span class="name">${LNAME[l]}</span>${playIcon}</button>`).join("")}</div>
+    <button class="pill" id="freeBtn">👆 ${FREE[lang]}</button>`;
+  overlay.querySelectorAll(".go").forEach(b=>b.onclick=()=>play(b.dataset.l));
+  $("freeBtn").onclick=freePlay;
+  overlay.querySelectorAll(".sticker").forEach(b=>b.onclick=()=>{ac(); say([`this-${b.dataset.p}`])});
+}
+
+/* the big "yes!" */
+function celebrate(x,y){
+  const st=stage, STAR='M12 2l3 7 7 .6-5.4 4.7 1.7 7.2L12 17.8 5.7 21.5l1.7-7.2L2 9.6 9 9z';
+  const big=document.createElementNS(NS,"svg"); big.setAttribute("viewBox","0 0 24 24"); big.classList.add("bigstar");
+  big.innerHTML=`<path d="${STAR}" fill="#ffd25a" stroke="#f5a623" stroke-width="1.2" stroke-linejoin="round"/><circle cx="9.6" cy="11" r=".9" fill="#5a3a12"/><circle cx="14.4" cy="11" r=".9" fill="#5a3a12"/><path d="M9.8 13.6q2.2 1.8 4.4 0" fill="none" stroke="#5a3a12" stroke-width=".8" stroke-linecap="round"/>`;
+  big.style.left=x; big.style.top=y; st.appendChild(big); setTimeout(()=>big.remove(),1200);
+  const COL=["#ffd25a","#f06292","#fff","#5fbf7f","#6ec6ff","#ff8a50","#b388ff"];
+  for(let i=0;i<40;i++){const s=document.createElementNS(NS,"svg"), z=22+Math.random()*44; s.setAttribute("viewBox","0 0 24 24"); s.classList.add("star");
+    s.innerHTML=`<path d="${STAR}" fill="${COL[i%COL.length]}" stroke="#0002" stroke-width=".6"/>`;
+    s.style.cssText=`left:${x};top:${y};width:${z}px;height:${z}px;margin:${-z/2}px 0 0 ${-z/2}px;animation-duration:${(1.5+Math.random()*.9).toFixed(2)}s`;
+    s.style.setProperty("--dx",(Math.random()*90-45)+"vw"); s.style.setProperty("--dy",(Math.random()*90-45)+"vh");
+    st.appendChild(s); setTimeout(()=>s.remove(),2600)}
+  for(let i=0;i<34;i++){const c=document.createElement("div"); c.className="confetti";
+    c.style.cssText=`left:${Math.random()*100}%;background:${COL[(i+2)%COL.length]};--dx:${(Math.random()*24-12).toFixed(1)}vw;--r:${Math.round(Math.random()*900-450)}deg;--t:${(2+Math.random()*1.2).toFixed(2)}s;--dl:${(Math.random()*.5).toFixed(2)}s`;
+    if(i%3===0){c.style.borderRadius="50%"; c.style.height="13px"}
+    st.appendChild(c); setTimeout(()=>c.remove(),3900)}
+  try{const t=ac().currentTime; [1319,1568,1760,2093,2637].forEach((f,i)=>tone("sine",f,f*1.01,t+.05+i*.07,.25,.08))}catch(e){}
+}
+startScreen(false);
+</script>
+</body>
+</html>
