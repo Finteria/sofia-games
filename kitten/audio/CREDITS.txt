@@ -1,0 +1,4 @@
+Voices: Microsoft neural voices made with edge-tts (https://github.com/rany2/edge-tts), then trimmed and loudness-normalized:
+English "en-US-AnaNeural" (a child's voice), Russian "ru-RU-SvetlanaNeural", Latvian "lv-LV-EveritaNeural".
+Files are <clip>-<lang>.mp3.
+The kitten's meow is the band's meow (../../band/audio/meow.mp3), played higher.
