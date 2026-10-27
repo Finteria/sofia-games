@@ -94,7 +94,7 @@ body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:
 .plate{position:relative;width:var(--pw);height:calc(var(--pw)*.78);border:0;padding:0;background:none;cursor:grab;touch-action:none}
 .plate svg{position:absolute;left:0;bottom:0;width:100%;height:auto}
 .plate .food{position:absolute;left:50%;bottom:22%;translate:-50% 0;font-size:calc(var(--pw)*.56);line-height:1;z-index:2;pointer-events:none}
-.plate .food.lift{z-index:20;scale:1.25;filter:drop-shadow(0 10px 6px #0003)}
+.plate .food.lift{z-index:20;font-size:calc(var(--pw)*.7);filter:drop-shadow(0 10px 6px #0003)}   /* bigger by font size: a scale would also scale the move */
 .plate.low{translate:0 40vh;transition:none}
 .plate{transition:translate .5s cubic-bezier(.2,.8,.3,1)}
 .plate.nudge .food{animation:nudge .9s ease-in-out}
