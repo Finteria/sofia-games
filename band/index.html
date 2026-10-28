@@ -68,9 +68,9 @@ body{background:#2b2350;color:#fff;font-family:var(--display);overflow:hidden;
 .tab:active{transform:scale(.94)}
 
 #inst{position:absolute;left:calc(var(--sx) + var(--sw) + 2vw);right:2vw;top:calc(max(12px,env(safe-area-inset-top,0px)) + min(17vw,96px) + 18px);bottom:calc(9% + 96px);z-index:4;
-  display:flex;align-items:center;justify-content:center}
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
 /* kitten piano and xylophone: eight keys, C to C */
-.keys{display:flex;gap:1.2%;width:100%;height:100%;align-items:center;justify-content:center}
+.keys{display:flex;gap:1.2%;width:100%;flex:1 1 0;min-height:0;align-items:center;justify-content:center}
 .key{position:relative;flex:1;max-width:120px;border:0;padding:0;cursor:pointer;touch-action:none}
 .piano .key{height:100%;border-radius:22px 22px 28px 28px;background:linear-gradient(#fff 0 55%,var(--c) 55%);box-shadow:0 8px 0 #0005,inset 0 -10px 0 #0002}
 .piano .key .kit{position:absolute;left:4%;right:4%;top:6%;aspect-ratio:1}
@@ -89,6 +89,38 @@ body{background:#2b2350;color:#fff;font-family:var(--display);overflow:hidden;
 .xylo .key.hit{translate:0 6px;box-shadow:0 2px 0 #0005,inset 0 -8px 0 #0002;filter:brightness(1.15)}
 .key.next{outline:6px solid #fff;outline-offset:4px;animation:next .8s ease-in-out infinite}
 @keyframes next{50%{outline-color:#ffd25a;scale:1.04}}
+.key.next.hit{animation:none}
+/* on the glowing key: how many times in a row; a long note is a tall pill that fills while she holds the key */
+.cnt{position:absolute;left:50%;bottom:9%;translate:-50% 0;width:min(72%,60px);aspect-ratio:1;border-radius:999px;background:#fff;box-shadow:0 3px 0 #0003;
+  overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--ink);font:900 clamp(17px,3.4vw,40px)/1 var(--display);z-index:2;pointer-events:none}
+.cnt i{position:absolute;left:0;right:0;bottom:0;height:0;background:var(--c);opacity:.55}
+.cnt b{position:relative}
+.key.holding .cnt i{height:100%;transition:height var(--hold) linear}
+.cnt.pop{animation:pop .3s ease-out}
+@keyframes pop{0%{scale:.5}60%{scale:1.25}}
+.xylo .cnt{bottom:auto;top:50%;translate:-50% -50%}
+.demo .key.next{outline:none;animation:none}
+.demo .cnt{display:none}
+/* the song strip above the keys: one dot per note of this line, a long note is a long dot */
+.road{flex:none;--u:min(34px,6vw);display:flex;align-items:center;gap:calc(var(--u)*.3);max-width:100%;padding:6px 14px 6px 6px;border-radius:999px;background:#ffffff1f}
+.listen{flex:none;width:52px;height:52px;border:0;border-radius:50%;background:#ffd25a;font-size:28px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 0 #0003}
+.listen:active{translate:0 3px;box-shadow:0 1px 0 #0003}
+.demo .listen{animation:pulse .6s ease-in-out infinite}
+.line{display:flex;align-items:center;gap:calc(var(--u)*.3);padding-left:4px}
+.line.in{animation:slide .45s ease-out}
+@keyframes slide{from{translate:40px 0;opacity:0}}
+.dot{position:relative;flex:none;width:calc(var(--d)*var(--u) + (var(--d) - 1)*var(--u)*.3);height:var(--u);border-radius:999px;background:var(--c);
+  box-shadow:inset 0 -4px 0 #0003;overflow:hidden;transition:opacity .3s,scale .3s}
+.dot i{position:absolute;left:0;top:0;bottom:0;width:0;background:#fff9}
+.dot.done{opacity:.35;scale:.75}
+.dot.now{outline:4px solid #fff;outline-offset:3px;animation:hop .8s ease-in-out infinite}
+.dot.now.holding i{width:100%;transition:width var(--hold) linear}
+.dot.play{outline:4px solid #fff;outline-offset:3px;scale:1.25}
+.demo .dot.now{outline:none;animation:none}
+@keyframes hop{50%{translate:0 -5px}}
+.pips{display:flex;gap:5px;margin-left:8px}
+.pips span{width:10px;height:10px;border-radius:50%;background:#ffffff40}
+.pips span.done{background:#ffd25a}
 /* drums */
 .drums{display:grid;grid-template-columns:repeat(3,1fr);gap:3vmin;width:100%;height:100%;max-width:820px}
 .pad{border:0;border-radius:32px;background:#ffffff1a;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:6%;touch-action:none}
@@ -134,8 +166,9 @@ body{background:#2b2350;color:#fff;font-family:var(--display);overflow:hidden;
   #songs{left:calc(var(--sx) + var(--sw) + 3vw);right:3vw;bottom:calc(5% + var(--sh)*.3);height:76px}
   #beat{top:max(14px,env(safe-area-inset-top,0px));bottom:auto;width:60px;height:60px;font-size:32px}   /* top right, the songs need the bottom row */
 }
-@media (orientation:portrait) and (max-width:520px){.song{width:60px;height:60px;font-size:34px}#songs{gap:10px;height:60px}.tab{width:64px;height:64px}#inst{top:96px}}
-@media (max-height:520px){:root{--sh:64vh}.tab{width:64px;height:64px}#inst{top:84px;bottom:calc(9% + 84px)}#songs{height:64px}.song,#beat{width:64px;height:64px;font-size:34px}}
+@media (orientation:portrait) and (max-width:520px){.song{width:60px;height:60px;font-size:34px}#songs{gap:10px;height:60px}.tab{width:64px;height:64px}#inst{top:96px}
+  .road{--u:5.2vw;padding-right:10px}.listen{width:44px;height:44px;font-size:24px}.pips{gap:4px;margin-left:4px}.pips span{width:7px;height:7px}}
+@media (max-height:520px){:root{--sh:64vh}.tab{width:64px;height:64px}#inst{top:84px;bottom:calc(9% + 84px);gap:8px}.road{--u:24px;padding-block:4px}.listen{width:40px;height:40px;font-size:22px}.cnt{width:min(50%,40px);font-size:18px}#songs{height:64px}.song,#beat{width:64px;height:64px;font-size:34px}}
 </style>
 </head>
 <body>
@@ -248,11 +281,20 @@ let noiseBuf=null;
 function noise(t,peak,decay,type,freq,q=1){const c=ac(); if(!noiseBuf){noiseBuf=c.createBuffer(1,c.sampleRate*2,c.sampleRate); const d=noiseBuf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1}
   const s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain(); s.buffer=noiseBuf; f.type=type; f.frequency.value=freq; f.Q.value=q; env(g,t,peak,decay);
   s.connect(f).connect(g).connect(master); s.start(t); s.stop(t+decay+.05)}
-function piano(i,t){const c=ac(); t=t||c.currentTime;
+/* with hold, the note goes on until the returned stop() — the kitten hums after its meow, the xylophone rolls */
+function piano(i,t,hold){const c=ac(); t=t||c.currentTime;
   if(meow){const s=c.createBufferSource(),g=c.createGain(); s.buffer=meow; s.playbackRate.value=.85*Math.pow(2,SEMI[i]/12); g.gain.value=.9; s.connect(g).connect(master); s.start(t)}
-  else osc("triangle",FREQ[i],t,.4,.6)}
-function xylo(i,t){t=t||ac().currentTime; const f=FREQ[i]*2;
-  osc("sine",f,t,.5,1.4); osc("sine",f*3.98,t,.12,.25); osc("sine",f*9.2,t,.04,.08); noise(t,.15,.03,"highpass",4000)}
+  else osc("triangle",FREQ[i],t,.4,.6)
+  if(!hold) return ()=>{};
+  const o=c.createOscillator(),v=c.createOscillator(),vg=c.createGain(),f=c.createBiquadFilter(),g=c.createGain();
+  o.type="triangle"; o.frequency.value=FREQ[i]; v.frequency.value=5.5; vg.gain.value=FREQ[i]*.012; v.connect(vg).connect(o.frequency);
+  f.type="lowpass"; f.frequency.value=FREQ[i]*3; g.gain.setValueAtTime(0,t); g.gain.setValueAtTime(0,t+.3); g.gain.linearRampToValueAtTime(.16,t+.55);
+  o.connect(f).connect(g).connect(master); o.start(t); v.start(t);
+  return ()=>{const n=c.currentTime; g.gain.cancelScheduledValues(n); g.gain.setValueAtTime(g.gain.value,n); g.gain.linearRampToValueAtTime(0,n+.15); o.stop(n+.2); v.stop(n+.2)}}
+function xylo(i,t,hold){t=t||ac().currentTime; const f=FREQ[i]*2, hit=(t,v)=>{osc("sine",f,t,.5*v,1.4); osc("sine",f*3.98,t,.12*v,.25); osc("sine",f*9.2,t,.04*v,.08); noise(t,.15*v,.03,"highpass",4000)};
+  hit(t,1); if(!hold) return ()=>{};
+  let roll=null; const wait=setTimeout(()=>roll=setInterval(()=>hit(ac().currentTime,.45),95),250);
+  return ()=>{clearTimeout(wait); clearInterval(roll)}}
 const DRUMS={
   kick(t){osc("sine",160,t,1,.45,42); noise(t,.2,.02,"lowpass",900)},
   snare(t){noise(t,.7,.22,"highpass",1500); osc("triangle",190,t,.4,.12,150)},
@@ -272,12 +314,17 @@ const PAD={
   bell:`<svg viewBox="0 0 120 110"><path d="M60 10v8" stroke="#c79100" stroke-width="6" stroke-linecap="round"/><path d="M60 18c-22 0-30 18-30 40 0 14-8 22-14 28h88c-6-6-14-14-14-28 0-22-8-40-30-40z" fill="#ffca28" stroke="#c79100" stroke-width="4" stroke-linejoin="round"/><circle cx="60" cy="94" r="9" fill="#c79100"/><path d="M42 40q6-10 14-12" stroke="#fff9" stroke-width="5" stroke-linecap="round" fill="none"/></svg>`,
 };
 
-/* ---------- songs to play along: the next key glows; her tap on it plays the note and moves on ---------- */
+/* ---------- songs to play along: the next key glows with how many times in a row it comes; her tap on it plays the note and moves on.
+   A strip above the keys shows the line she is on (long notes are long dots), and 👂 plays that line first.
+   Tunes are written line by line ("|"); C D E F G A B c are the eight keys, a number after a note is how many beats it lasts ---------- */
 const SONGS={
-  twinkle:{icon:"⭐",notes:[0,0,4,4,5,5,4, 3,3,2,2,1,1,0, 4,4,3,3,2,2,1, 4,4,3,3,2,2,1, 0,0,4,4,5,5,4, 3,3,2,2,1,1,0]},
-  lamb:{icon:"🐑",notes:[2,1,0,1,2,2,2, 1,1,1, 2,4,4, 2,1,0,1,2,2,2, 2,1,1,2,1,0]},
-  bells:{icon:"🔔",notes:[2,2,2, 2,2,2, 2,4,0,1,2, 3,3,3,3, 3,2,2,2, 2,1,1,2,1,4]},
+  twinkle:{icon:"⭐",tune:"C C G G A A G2 | F F E E D D C2 | G G F F E E D2 | G G F F E E D2 | C C G G A A G2 | F F E E D D C2"},
+  lamb:{icon:"🐑",tune:"E D C D E E E2 | D D D2 E G G2 | E D C D E E E E | D D E D C4"},
+  bells:{icon:"🔔",tune:"E E E2 E E E2 | E G C D E4 | F F F F F E E E | E D D E D2 G2"},
 };
+for(const S of Object.values(SONGS)){S.notes=[]; S.dur=[]; S.lines=[0];
+  for(const line of S.tune.split("|")){for(const w of line.trim().split(/\s+/)){S.notes.push("CDEFGABc".indexOf(w[0])); S.dur.push(+w.slice(1)||1)} S.lines.push(S.notes.length)}}
+const BEAT=.6;   // seconds, the same as the backing beat
 let mode=store.get("band-mode")||"piano", song=null, pos=0;
 
 /* ---------- drawing the instruments ---------- */
@@ -288,36 +335,80 @@ function drawTabs(){$("tabs").innerHTML=Object.keys(TABS).map(m=>`<button class=
   $("tabs").querySelectorAll(".tab").forEach(b=>b.onclick=()=>{ac(); setMode(b.dataset.m)})}
 function setMode(m){mode=m; store.set("band-mode",m); song=null; drawTabs(); draw()}
 function draw(){
+  stopDemo();
   if(mode==="drums"){
     inst.innerHTML=`<div class="drums">${Object.keys(PAD).map(d=>`<button class="pad" data-d="${d}" aria-label="${d}">${PAD[d]}</button>`).join("")}</div>`;
     $("songs").innerHTML="";
   }else{
-    inst.innerHTML=`<div class="keys ${mode}">${FREQ.map((f,i)=>`<button class="key" data-i="${i}" style="--c:${COL[i]};--i:${i}" aria-label="note ${i+1}">${mode==="piano"?`<span class="kit">${catSVG(LOOK[i])}</span>`:""}</button>`).join("")}</div>`;
+    inst.innerHTML=(song?`<div class="road"><button class="listen" aria-label="Listen">👂</button><div class="line"></div><div class="pips"></div></div>`:"")+
+      `<div class="keys ${mode}">${FREQ.map((f,i)=>`<button class="key" data-i="${i}" style="--c:${COL[i]};--i:${i}" aria-label="note ${i+1}">${mode==="piano"?`<span class="kit">${catSVG(LOOK[i])}</span>`:""}</button>`).join("")}</div>`;
     $("songs").innerHTML=Object.keys(SONGS).map(s=>`<button class="song${s===song?" on":""}" data-s="${s}" aria-label="${s}">${SONGS[s].icon}</button>`).join("");
     $("songs").querySelectorAll(".song").forEach(b=>b.onclick=()=>{ac(); startSong(b.dataset.s)});
+    const l=inst.querySelector(".listen"); if(l) l.onclick=()=>{ac(); demo()};
     markNext();
   }
 }
-function markNext(){inst.querySelectorAll(".key").forEach(k=>k.classList.remove("next"));
-  if(song) inst.querySelector(`.key[data-i="${SONGS[song].notes[pos]}"]`)?.classList.add("next")}
+const lineOf=n=>{const L=SONGS[song].lines; let j=0; while(L[j+1]<=n) j++; return j};
+let shownLine=-1;
+function drawRoad(){const S=SONGS[song], j=lineOf(pos), line=inst.querySelector(".line"); if(!line) return;
+  line.innerHTML=S.notes.slice(S.lines[j],S.lines[j+1]).map((i,k)=>{const n=S.lines[j]+k;
+    return `<span class="dot${n<pos?" done":n===pos?" now":""}" data-n="${n}" style="--c:${COL[i]};--d:${S.dur[n]};--hold:${(S.dur[n]*BEAT).toFixed(2)}s"><i></i></span>`}).join("");
+  if(j!==shownLine){line.classList.remove("in"); void line.offsetWidth; line.classList.add("in"); shownLine=j}
+  inst.querySelector(".pips").innerHTML=S.lines.slice(1).map((_,k)=>`<span${k<j?' class="done"':""}></span>`).join("")}
+function markNext(){inst.querySelectorAll(".key").forEach(k=>{k.classList.remove("next","holding"); k.querySelector(".cnt")?.remove()});
+  if(!song) return;
+  const S=SONGS[song], i=S.notes[pos], k=inst.querySelector(`.key[data-i="${i}"]`); let times=1; while(S.notes[pos+times]===i) times++;
+  const d=S.dur[pos]; k.classList.add("next"); k.style.setProperty("--hold",(d*BEAT).toFixed(2)+"s");
+  k.insertAdjacentHTML("beforeend",`<span class="cnt pop" style="aspect-ratio:1/${(.6+.4*d).toFixed(2)}"><i></i><b>${times}</b></span>`);
+  drawRoad()}
 function startSong(s){
   if(song===s){song=null; draw(); return}   // a second tap stops it
-  song=s; pos=0; draw();
+  song=s; pos=0; shownLine=-1; draw(); setTimeout(()=>{if(song===s&&pos===0) demo()},500);   // hear the first line before playing it
+}
+
+/* ---------- 👂: the kittens play the line she is on, in time, lighting up the keys and the dots ---------- */
+let demoTok=0, demoStop=null;
+function stopDemo(){demoTok++; demoStop?.(); demoStop=null; inst.classList.remove("demo");
+  inst.querySelectorAll(".dot.play").forEach(d=>d.classList.remove("play")); inst.querySelectorAll(".key.hit").forEach(k=>{if(![...held.values()].some(h=>h.k===k)) k.classList.remove("hit")})}
+async function demo(){
+  stopDemo(); if(!song) return; const tok=demoTok, S=SONGS[song], j=lineOf(pos); inst.classList.add("demo");
+  for(let n=S.lines[j]; n<S.lines[j+1]; n++){
+    const i=S.notes[n], k=inst.querySelector(`.key[data-i="${i}"]`), dot=inst.querySelector(`.dot[data-n="${n}"]`), ms=S.dur[n]*BEAT*1000;
+    demoStop=(mode==="piano"?piano:xylo)(i,0,S.dur[n]>1); k.classList.add("hit"); dot?.classList.add("play"); floatNote(k,COL[i]); dance();
+    await wait(ms*.85); if(tok!==demoTok) return;
+    demoStop(); demoStop=null; k.classList.remove("hit"); dot?.classList.remove("play");
+    await wait(ms*.15); if(tok!==demoTok) return;
+  }
+  inst.classList.remove("demo");
 }
 
 /* ---------- playing: pointerdown, so it answers at once and two fingers play two notes ---------- */
 function flash(el){el.classList.remove("hit"); void el.offsetWidth; el.classList.add("hit"); setTimeout(()=>el.classList.remove("hit"),220)}
-function floatNote(el,color){const r=el.getBoundingClientRect(), n=document.createElement("div"); n.className="note"; n.textContent=Math.random()<.5?"♪":"♫";
+function floatNote(el,color,text){const r=el.getBoundingClientRect(), n=document.createElement("div"); n.className="note"; n.textContent=text||(Math.random()<.5?"♪":"♫");
   n.style.cssText=`left:${r.left+r.width/2}px;top:${r.top+r.height*.25}px;color:${color}`; n.style.setProperty("--dx",(Math.random()*80-40)+"px"); stage.appendChild(n); setTimeout(()=>n.remove(),1400)}
 let danceT=null;
 function dance(){sofia.classList.add("talk"); clearTimeout(danceT); danceT=setTimeout(()=>sofia.classList.remove("talk"),300);
   sofia.animate([{translate:"0 0",rotate:"0deg"},{translate:"0 -4%",rotate:(Math.random()<.5?-4:4)+"deg"},{translate:"0 0",rotate:"0deg"}],{duration:320,easing:"ease-out"})}
+/* a key sounds as long as it is held; in a song the note counts when she lets go, or once she has held it its full length */
+const held=new Map();   // pointerId -> {k, stop, n: the song note this press plays, or null}
 inst.addEventListener("pointerdown",e=>{
   ac(); const k=e.target.closest(".key"), p=e.target.closest(".pad"); if(!k&&!p) return; e.preventDefault();
+  if(inst.classList.contains("demo")) stopDemo();
   if(p){DRUMS[p.dataset.d](ac().currentTime); flash(p); dance(); return}
-  const i=+k.dataset.i; (mode==="piano"?piano:xylo)(i); flash(k); floatNote(k,COL[i]); dance();
-  if(song&&i===SONGS[song].notes[pos]){ if(++pos>=SONGS[song].notes.length) songDone(); else markNext() }
+  const i=+k.dataset.i, h={k,stop:(mode==="piano"?piano:xylo)(i,0,true),n:null};
+  k.classList.remove("hit"); void k.offsetWidth; k.classList.add("hit"); floatNote(k,COL[i]); dance();
+  if(song&&i===SONGS[song].notes[pos]&&![...held.values()].some(o=>o.n===pos)){
+    const d=SONGS[song].dur[pos]; h.n=pos; k.classList.add("holding"); inst.querySelector(`.dot[data-n="${pos}"]`)?.classList.add("holding");
+    h.timer=setTimeout(()=>{if(d>1) floatNote(k,"#ffd25a","★"); played(h)},d*BEAT*1000)}
+  held.set(e.pointerId,h);
 });
+function letGo(e){const h=held.get(e.pointerId); if(!h) return; held.delete(e.pointerId); h.stop();
+  if(![...held.values()].some(o=>o.k===h.k)) h.k.classList.remove("hit"); played(h)}
+addEventListener("pointerup",letGo); addEventListener("pointercancel",letGo);
+function played(h){if(h.n===null) return; const n=h.n; h.n=null; clearTimeout(h.timer); h.k.classList.remove("holding");
+  if(!song||pos!==n) return;
+  if(++pos>=SONGS[song].notes.length) songDone();
+  else{if(SONGS[song].lines.includes(pos)) setTimeout(dance,150); markNext()}}
 async function songDone(){
   const s=song; song=null; draw();
   celebrate("50%","40%"); const c=ac(), t=c.currentTime; [0,2,4,7].forEach((n,k)=>(mode==="piano"?piano:xylo)(n,t+k*.15));
