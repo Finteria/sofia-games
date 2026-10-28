@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Veggie power! · Сила овощей! · Dārzeņu spēks!</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap">
@@ -169,6 +169,10 @@ body{background:#e3f4ff;color:var(--ink);font-family:var(--display);overflow:hid
 @keyframes fall{to{transform:translate(var(--dx),112vh) rotate(var(--r))}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important}}
 </style>
+<style>/* no zooming by accident: no double-tap zoom on anything (own touch-action rules still win) */
+*{touch-action:manipulation}</style>
+<script>/* Safari on the iPad still zooms on a pinch, so stop the pinch gesture */
+["gesturestart","gesturechange"].forEach(t => document.addEventListener(t, e => e.preventDefault(), {passive: false}));</script>
 </head>
 <body>
 <div id="stage">

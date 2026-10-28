@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Feed the animals · Покорми зверят · Pabaro dzīvniekus</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap">
@@ -155,6 +155,10 @@ body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:
 }
 @media (max-height:520px){:root{--sh:66vh;--aw:min(30vh,22vw);--pw:min(22vh,13vw);--mw:64px}#repeat svg{width:34px;height:34px}#field{top:6%}}
 </style>
+<style>/* no zooming by accident: no double-tap zoom on anything (own touch-action rules still win) */
+*{touch-action:manipulation}</style>
+<script>/* Safari on the iPad still zooms on a pinch, so stop the pinch gesture */
+["gesturestart","gesturechange"].forEach(t => document.addEventListener(t, e => e.preventDefault(), {passive: false}));</script>
 </head>
 <body>
 <div id="stage">

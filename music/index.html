@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Музыка · Mūzika</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap">
@@ -99,6 +99,10 @@ body.playing #cover .eyes{animation:blink 4s infinite;transform-origin:100px 108
 }
 @media (prefers-reduced-motion:reduce){body.playing #cover .cat,body.playing #cover .ear-l,body.playing #cover .ear-r,.note{animation:none!important}.note{display:none}}
 </style>
+<style>/* no zooming by accident: no double-tap zoom on anything (own touch-action rules still win) */
+*{touch-action:manipulation}</style>
+<script>/* Safari on the iPad still zooms on a pinch, so stop the pinch gesture */
+["gesturestart","gesturechange"].forEach(t => document.addEventListener(t, e => e.preventDefault(), {passive: false}));</script>
 </head>
 <body>
 <a class="corner home" href="../index.html" aria-label="Меню"><svg viewBox="0 0 40 40"><path d="M6 19L20 7l14 12M11 16v16h18V16" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>

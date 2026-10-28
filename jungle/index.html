@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>София в джунглях</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap">
@@ -164,6 +164,10 @@ body{background:var(--sky);color:var(--ink);font-family:var(--display);overflow:
 /* phones on their side: no room above the animal, so the name card goes to the top-right corner */
 @media (max-height:520px){#card{top:44px;padding:6px 18px;left:auto;right:12px;transform:translate(0,-30px)}#card.show{transform:none}:root{--sh:60vh;--mw:72px}#mic .ic{width:38px;height:38px}}
 </style>
+<style>/* no zooming by accident: no double-tap zoom on anything (own touch-action rules still win) */
+*{touch-action:manipulation}</style>
+<script>/* Safari on the iPad still zooms on a pinch, so stop the pinch gesture */
+["gesturestart","gesturechange"].forEach(t => document.addEventListener(t, e => e.preventDefault(), {passive: false}));</script>
 </head>
 <body>
 <div id="stage">

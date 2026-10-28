@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Animal band · Оркестр · Orķestris</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap">
@@ -170,6 +170,10 @@ body{background:#2b2350;color:#fff;font-family:var(--display);overflow:hidden;
   .road{--u:5.2vw;padding-right:10px}.listen{width:44px;height:44px;font-size:24px}.pips{gap:4px;margin-left:4px}.pips span{width:7px;height:7px}}
 @media (max-height:520px){:root{--sh:64vh}.tab{width:64px;height:64px}#inst{top:84px;bottom:calc(9% + 84px);gap:8px}.road{--u:24px;padding-block:4px}.listen{width:40px;height:40px;font-size:22px}.cnt{width:min(50%,40px);font-size:18px}#songs{height:64px}.song,#beat{width:64px;height:64px;font-size:34px}}
 </style>
+<style>/* no zooming by accident: no double-tap zoom on anything (own touch-action rules still win) */
+*{touch-action:manipulation}</style>
+<script>/* Safari on the iPad still zooms on a pinch, so stop the pinch gesture */
+["gesturestart","gesturechange"].forEach(t => document.addEventListener(t, e => e.preventDefault(), {passive: false}));</script>
 </head>
 <body>
 <div id="stage">

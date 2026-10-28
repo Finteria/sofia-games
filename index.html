@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Игры Софии · Sofijas spēles</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap">
@@ -30,6 +30,10 @@ a.game span{font-size:23px;line-height:1.15}
 /* a wide iPad on its side: six a row, so three rows still fit */
 @media (min-aspect-ratio:1/1) and (min-width:960px){:root{--cw:min(156px,calc((100vw - 112px) / 6))}.games{max-width:calc(6*var(--cw) + 5*16px)}a.game{width:var(--cw)}}
 </style>
+<style>/* no zooming by accident: no double-tap zoom on anything (own touch-action rules still win) */
+*{touch-action:manipulation}</style>
+<script>/* Safari on the iPad still zooms on a pinch, so stop the pinch gesture */
+["gesturestart","gesturechange"].forEach(t => document.addEventListener(t, e => e.preventDefault(), {passive: false}));</script>
 </head>
 <body>
 <h1><span>Игры Софии</span><span lang="lv">Sofijas spēles</span></h1>
