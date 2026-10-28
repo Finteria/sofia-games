@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Sofia's shop · Магазин · Veikals</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap">
+<style>
+/* layout: Sofia behind her shop counter on the left, a friend peeking over it on the right; fruit and balloons in crates on the front
+   of the counter, the basket on top of it in front of Sofia. The speech bubble and Sofia's answers go between them (landscape) or above (portrait). */
+:root{
+  --ink:#24352b; --card:#fffdf6; --pink:#f06292;
+  --display:"Nunito","Trebuchet MS",system-ui,sans-serif;
+  color-scheme:light;
+  --ch:31vh; --sh:min(84vh,900px); --fh:min(30vh,24vw); --crate:min(19vh,9.4vw);
+}
+@media (orientation:portrait){:root{--ch:30vh; --sh:min(62vh,95vw,900px); --fh:min(22vh,32vw); --crate:min(12vh,17vw)}}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:#d8f3e6;color:var(--ink);font-family:var(--display);overflow:hidden;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+#stage{position:fixed;inset:0;overflow:hidden;overflow:clip}
+#wall{position:absolute;inset:0;pointer-events:none;background:radial-gradient(#c3ead7 3px,transparent 4px) 0 0/48px 48px,#d8f3e6}
+#awning{position:absolute;left:0;right:0;top:0;height:min(9vh,70px);z-index:1;pointer-events:none;
+  background:repeating-linear-gradient(90deg,#ef5350 0 60px,#fff 60px 120px);
+  -webkit-mask:radial-gradient(30px at 30px 100%,#0000 98%,#000) 0 0/60px 100%;mask:radial-gradient(30px at 30px 100%,#0000 98%,#000) 0 0/60px 100%}
+#progress{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:0;right:0;display:flex;justify-content:center;gap:10px;z-index:5;pointer-events:none}
+.dot{width:38px;height:38px;border-radius:50%;background:#ffffffcc;border:3px solid #7cc4a0;display:flex;align-items:center;justify-content:center;font-size:22px;transition:transform .3s}
+.dot.done{background:#fff;border-color:#2f8f5b;transform:scale(1.15)}
+@media (max-width:500px){#progress{gap:6px}.dot{width:30px;height:30px;font-size:17px}}
+
+/* Sofia stands behind the counter: it hides her below the waist */
+#sofia{position:absolute;left:max(4vw,env(safe-area-inset-left,0px));bottom:calc(var(--ch) - var(--sh) * .42);height:var(--sh);aspect-ratio:800/1730;z-index:2;
+  transform-origin:50% 100%;animation:bob 2.4s ease-in-out infinite}
+#sofia svg{display:block;width:100%;height:100%;overflow:visible}
+#sofia svg *{transform-box:view-box}
+#sofia .ink{stroke:#1b1717;stroke-linecap:round;stroke-linejoin:round}
+#sofia .skin{fill:#ffe3cf}
+#sofia .hair{fill:#3b2a20}
+#sofia .eye{transform-box:fill-box;transform-origin:center;animation:blink 4.2s infinite}
+#sofia .mouth.open{opacity:0}
+#sofia.talk .mouth.open{animation:flap .3s steps(1,end) infinite}
+#sofia.talk .mouth.shut{animation:flap .3s steps(1,end) infinite -.15s}
+#sofia .head{transform-origin:400px 870px}
+#sofia .arm.l{transform-origin:262px 955px;animation:sway 2.4s ease-in-out infinite}
+#sofia .arm.r{transform-origin:538px 955px;animation:sway 2.4s ease-in-out infinite reverse}
+#sofia .leg.l{transform-origin:335px 1390px}
+#sofia .leg.r{transform-origin:465px 1390px}
+#sofia.walk{animation:stride .6s ease-in-out infinite}
+#sofia.walk .leg.l{animation:stepL .6s ease-in-out infinite}
+#sofia.walk .leg.r{animation:stepR .6s ease-in-out infinite}
+#sofia.walk .arm.l{animation:swingL .6s ease-in-out infinite}
+#sofia.walk .arm.r{animation:swingR .6s ease-in-out infinite}
+#sofia.walk .head{animation:nod .6s ease-in-out infinite}
+#sofia.talk .head{animation:chat .32s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+@keyframes flap{0%{opacity:1}50%{opacity:0}}
+@keyframes sway{50%{transform:rotate(4deg)}}
+@keyframes stride{0%,50%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-3%) rotate(-2deg)}75%{transform:translateY(-3%) rotate(2deg)}}
+@keyframes stepL{0%,50%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-60px) rotate(7deg)}}
+@keyframes stepR{0%,50%,100%{transform:translateY(0) rotate(0)}75%{transform:translateY(-60px) rotate(-7deg)}}
+@keyframes swingL{0%,100%{transform:rotate(-16deg)}50%{transform:rotate(10deg)}}
+@keyframes swingR{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(16deg)}}
+@keyframes nod{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(3deg)}75%{transform:rotate(-3deg)}}
+@keyframes chat{0%,100%{transform:rotate(-3deg) scale(1)}50%{transform:rotate(3deg) scale(1.03)}}
+#sofia.listen .head{animation:none;transform:rotate(-7deg)}
+
+/* the counter with the crates on its front */
+#counter{position:absolute;left:0;right:0;bottom:0;height:var(--ch);z-index:4;background:#e0a96d;box-shadow:inset 0 14px 0 #f3c98f,inset 0 18px 0 #c98b4c;
+  display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:1.2vh 1.2vw;padding:22px 2vw calc(10px + env(safe-area-inset-bottom,0px));box-sizing:border-box}
+#counter .group{display:flex;gap:1.2vw;justify-content:center}
+@media (orientation:portrait){#counter .group{flex-basis:100%}}
+.crate{position:relative;width:var(--crate);height:calc(var(--crate) * .9);border:0;padding:0;cursor:pointer;border-radius:12px;background:#a86a32;
+  box-shadow:inset 0 0 0 4px #8a5222,0 5px 0 #0002;display:flex;align-items:flex-end;justify-content:center;touch-action:none}
+.crate .pile{position:absolute;left:0;right:0;bottom:30%;display:flex;justify-content:center;font-size:calc(var(--crate) * .36);line-height:1;pointer-events:none}
+.crate .pile span:nth-child(2){margin:0 -.38em;translate:0 -.32em;z-index:1}
+.crate::after{content:"";position:absolute;left:0;right:0;bottom:0;height:42%;border-radius:0 0 12px 12px;background:repeating-linear-gradient(#b97a3e 0 8px,#9d6129 8px 11px);pointer-events:none}
+.crate.bal{background:#7fc8a9;box-shadow:inset 0 0 0 4px #5aa886,0 5px 0 #0002}
+.crate.bal::after{background:repeating-linear-gradient(#6db897 0 8px,#59a382 8px 11px)}
+.crate.bal .pile{bottom:12%}
+.crate.bal svg{height:calc(var(--crate) * .78);width:auto}
+.crate.help{outline:6px solid #ffd25a;outline-offset:3px;animation:pulse 1s ease-in-out infinite}
+.crate.wiggle{animation:wiggle .7s ease-in-out}
+.crate:active{translate:0 3px}
+
+/* the basket on the counter in front of Sofia, and the coin jar */
+#basket{position:absolute;z-index:5;width:min(24vh,22vw);aspect-ratio:1.5;translate:-50% 0;pointer-events:none}
+#basket .in{position:absolute;left:8%;right:8%;bottom:42%;display:flex;flex-wrap:wrap-reverse;justify-content:center;align-items:flex-end;font-size:min(8vh,6.4vw);line-height:.9}
+#basket .in svg{height:1.6em;width:auto;margin:0 -.15em}
+#basket .front{position:absolute;inset:auto 0 0 0;height:62%}
+#basket.full{filter:drop-shadow(0 0 14px #ffd25a)}
+#jar{position:absolute;z-index:5;width:min(10vh,9vw);aspect-ratio:.8;pointer-events:none}
+#jar .coins{position:absolute;left:12%;right:12%;bottom:10%;display:flex;flex-wrap:wrap-reverse;justify-content:center;font-size:min(3.6vh,3vw);line-height:.8}
+
+/* the friend peeks over the counter */
+#friend{position:absolute;z-index:3;right:max(5vw,env(safe-area-inset-right,0px));bottom:calc(var(--ch) - var(--fh) * .12);font-size:var(--fh);line-height:1;cursor:pointer;
+  transform-origin:50% 100%;filter:drop-shadow(0 8px 6px #0003)}
+#friend span{display:block;animation:fbob 2s ease-in-out infinite}
+#friend.talk span{animation:ftalk .34s ease-in-out infinite}
+@keyframes fbob{50%{transform:translateY(-4%)}}
+@keyframes ftalk{50%{transform:scale(1.05,.95) translateY(2%)}}
+#think{position:absolute;z-index:6;background:#fff;border-radius:40px;padding:10px 18px;display:flex;gap:4px;font-size:min(8vh,9vw);line-height:1;
+  box-shadow:0 6px 0 #0002;translate:-50% -100%;pointer-events:none;animation:pop .4s ease-out}
+#think svg{height:1.4em;width:auto}
+#think::before,#think::after{content:"";position:absolute;background:#fff;border-radius:50%}
+#think::before{width:22px;height:22px;right:18%;bottom:-18px}
+#think::after{width:12px;height:12px;right:12%;bottom:-34px}
+@keyframes pop{from{scale:.3;opacity:0}}
+.ghost{position:fixed;z-index:12;pointer-events:none;translate:-50% -50%;font-size:min(9vh,8vw);line-height:1}
+.ghost svg{height:1.5em;width:auto}
+/* the middle: what is being said, and Sofia's answers */
+#mid{position:absolute;z-index:6;display:flex;flex-direction:column;align-items:center;gap:12px;box-sizing:border-box;pointer-events:none}
+#bubble{position:relative;visibility:hidden;max-width:100%;box-sizing:border-box;background:#fff;border-radius:26px;padding:12px 20px;text-align:center;
+  box-shadow:0 6px 0 #0002;font-weight:900;font-size:clamp(18px,2.6vw,30px);line-height:1.2}
+#bubble.on{visibility:visible}
+#bubble .tr{display:block;font-size:.66em;font-weight:700;color:#6d6457;margin-top:4px;transition:color .2s}
+#bubble .tr.speak{color:#c2185b}
+#bubble::after{content:"";position:absolute;bottom:-14px;width:28px;height:28px;background:#fff;clip-path:polygon(0 0,100% 0,50% 100%)}
+#bubble.left::after{left:16%;clip-path:polygon(0 0,100% 0,0 100%)}
+#bubble.right::after{right:16%;clip-path:polygon(0 0,100% 0,100% 100%)}
+#answers{flex:1;width:100%;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:12px;pointer-events:auto}
+.ans{border:0;cursor:pointer;font-family:var(--display);background:var(--card);color:var(--ink);border-radius:28px;box-shadow:0 7px 0 #0002;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 16px;transition:transform .1s;min-width:120px}
+.ans:active{transform:translateY(5px);box-shadow:0 2px 0 #0002}
+.ans .e{font-size:clamp(40px,7vh,64px);line-height:1.1}
+.ans .t{font-weight:900;font-size:clamp(16px,2.3vh,22px)}
+.ans.one{flex-direction:row;gap:14px;padding:14px 24px;max-width:100%}
+.ans.one .t{font-size:clamp(18px,3vh,28px);text-align:left}
+.ans.four{width:calc(50% - 8px);max-width:220px;min-width:0}
+.ans.wiggle{animation:wiggle .7s ease-in-out}
+.ans.help{outline:6px solid #ffd25a;outline-offset:3px;animation:pulse 1s ease-in-out infinite}
+@keyframes wiggle{20%{rotate:-5deg}40%{rotate:5deg}60%{rotate:-4deg}80%{rotate:3deg}}
+@keyframes pulse{50%{scale:1.06}}
+.num{display:inline-flex;width:1.3em;height:1.3em;border-radius:50%;background:#ffd25a;color:#7a4a00;font-weight:900;align-items:center;justify-content:center;font-size:.9em}
+#mic{width:76px;height:76px;flex:none;border-radius:50%;border:0;cursor:pointer;background:#fff;box-shadow:0 7px 0 #0002;display:flex;align-items:center;justify-content:center;align-self:center}
+#mic svg{width:42px;height:42px}
+#mic.rec{background:#e53935;box-shadow:0 0 0 calc(var(--lvl,0) * 26px + 6px) #e5393555}
+#mic.rec svg path{stroke:#fff}
+#mic.rec svg rect{fill:#fff}
+
+.fx{position:absolute;z-index:8;pointer-events:none;translate:-50% -50%;font-size:46px;animation:rise 1.6s ease-out forwards}
+@keyframes rise{from{transform:translate(0,0) scale(.5);opacity:0}15%{opacity:1}to{transform:translate(var(--dx),-160px) scale(1.2);opacity:0}}
+.flyer{position:absolute;z-index:8;pointer-events:none;translate:-50% -50%;line-height:1}
+#party{position:absolute;left:0;right:0;top:30%;z-index:7;display:flex;justify-content:center;gap:2vw;font-size:min(16vh,14vw);pointer-events:none}
+#party span{animation:hop .6s ease-in-out infinite alternate}
+#party span:nth-child(2n){animation-delay:.3s}
+@keyframes hop{to{transform:translateY(-18%)}}
+
+.corner{position:absolute;top:max(14px,env(safe-area-inset-top,0px));width:60px;height:60px;border-radius:50%;z-index:13;
+  background:#ffffff55;border:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.corner svg{width:34px;height:34px}
+.home{left:max(14px,env(safe-area-inset-left,0px))}
+#stage>.home{background:#3d9a7299}
+
+#overlay{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+  background:#3bae7ef2;color:#fff;text-align:center;padding:24px;overflow-y:auto}
+#overlay>h1{margin-top:auto!important}
+#overlay>:last-child{margin-bottom:auto}
+#overlay h1{margin:0;font-size:clamp(40px,7.5vw,80px);font-weight:900;line-height:1.05;text-shadow:0 4px 0 #0003}
+#overlay .sub{margin:-8px 0 0;font-size:clamp(20px,3.4vw,28px);font-weight:900;opacity:.92}
+.langs{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+.go{width:min(40vw,220px);padding:16px 10px 14px;border:0;border-radius:32px;background:var(--card);cursor:pointer;font-family:var(--display);
+  box-shadow:0 8px 0 #0003;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--ink);transition:transform .1s}
+.go:active{transform:translateY(6px);box-shadow:0 2px 0 #0003}
+.go .e{font-size:clamp(44px,7vw,64px);line-height:1.1;white-space:nowrap}
+.go .name{font-size:clamp(20px,3vw,26px);font-weight:900}
+.go .with{font-size:clamp(15px,2.2vw,19px);font-weight:700;color:#4c7d65;min-height:1.2em}
+.go svg{width:48px;height:48px}
+.go.last{outline:5px solid #ffd25a;outline-offset:3px}
+.stickers{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:760px}
+.sticker{width:84px;height:84px;border-radius:22px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:52px;border:0;cursor:pointer}
+@media (max-height:520px){.go{padding:10px 8px}.go .e{font-size:40px}.go svg{width:38px;height:38px}#overlay{gap:12px}.sticker{width:64px;height:64px;font-size:40px}#mic{width:62px;height:62px}}
+
+/* the big "yes!" */
+.star{position:absolute;width:40px;height:40px;z-index:9;pointer-events:none;animation:fly 1.6s ease-out forwards}
+@keyframes fly{from{transform:translate(0,0) scale(.3) rotate(0);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(1.2) rotate(240deg);opacity:0}}
+.bigstar{position:absolute;width:min(42vmin,280px);height:min(42vmin,280px);translate:-50% -50%;z-index:9;pointer-events:none;animation:bigstar 1.1s ease-out forwards}
+@keyframes bigstar{0%{scale:0;rotate:-60deg;opacity:1}40%{scale:1.15;rotate:8deg;opacity:1}100%{scale:1.6;rotate:0deg;opacity:0}}
+.confetti{position:absolute;top:-5vh;width:13px;height:20px;border-radius:3px;z-index:9;pointer-events:none;animation:fall var(--t) cubic-bezier(.25,.6,.6,1) var(--dl) forwards}
+@keyframes fall{to{transform:translate(var(--dx),112vh) rotate(var(--r))}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important}}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="wall"></div>
+  <div id="awning"></div>
+  <div id="progress"></div>
+  <div id="sofia" role="img" aria-label="Sofia">
+    <svg viewBox="0 0 800 1730" aria-hidden="true">
+      <defs>
+        <g id="leg">
+          <path class="ink" d="M335 1380 L331 1640" fill="none" stroke-width="68"/>
+          <path d="M335 1380 L331 1640" stroke="#ffe3cf" stroke-width="50" stroke-linecap="round"/>
+          <path d="M331 1590 L331 1640" stroke="#fff" stroke-width="50"/>
+          <path d="M305 1592 H357" stroke="#f06292" stroke-width="10" stroke-linecap="round"/>
+          <ellipse class="ink" cx="318" cy="1672" rx="60" ry="34" fill="#d6453d" stroke-width="9"/>
+          <ellipse cx="300" cy="1660" rx="16" ry="8" fill="#fff" opacity=".5"/>
+        </g>
+        <g id="arm">
+          <path class="ink" d="M262 965 Q232 1085 218 1200" fill="none" stroke-width="64"/>
+          <circle cx="216" cy="1222" r="34" fill="#1b1717"/>
+          <path d="M262 965 Q232 1085 218 1200" fill="none" stroke="#ffe3cf" stroke-width="46" stroke-linecap="round"/>
+          <circle class="skin" cx="216" cy="1222" r="25"/>
+          <ellipse class="ink" cx="266" cy="955" rx="58" ry="48" fill="#f7a8c4" stroke-width="9"/>
+        </g>
+      </defs>
+      <g class="leg l"><use href="#leg"/></g>
+      <g class="leg r"><use href="#leg" transform="translate(800 0) scale(-1 1)"/></g>
+      <path class="skin ink" d="M352 820 L350 925 Q400 950 450 925 L448 820Z" stroke-width="8"/>
+      <path class="ink" d="M305 900 Q400 945 495 900 L535 918 Q565 990 562 1080 L640 1420 Q400 1478 160 1420 L238 1080 Q235 990 265 918 Z" fill="#f7a8c4" stroke-width="9"/>
+      <path d="M190 1385 Q400 1440 610 1385" fill="none" stroke="#f06292" stroke-width="12" stroke-linecap="round" stroke-dasharray="2 34"/>
+      <g fill="#fff" opacity=".8"><circle cx="330" cy="1060" r="13"/><circle cx="450" cy="1110" r="13"/><circle cx="390" cy="1210" r="13"/><circle cx="280" cy="1270" r="13"/><circle cx="510" cy="1260" r="13"/><circle cx="400" cy="1340" r="13"/><circle cx="240" cy="1370" r="12"/><circle cx="560" cy="1370" r="12"/></g>
+      <path class="ink" d="M308 902 Q322 980 400 950 L400 930 Q352 936 308 902Z M492 902 Q478 980 400 950 L400 930 Q448 936 492 902Z" fill="#fff" stroke-width="7"/>
+      <g class="arm l"><use href="#arm"/></g>
+      <g class="arm r"><use href="#arm" transform="translate(800 0) scale(-1 1)"/></g>
+      <g class="head"><g transform="rotate(-4 400 560)">
+        <!-- cartoon Sofia after her portrait: round cheeks, top-knot curling right; Amélie-style bob with short blunt bangs -->
+        <path class="hair ink" d="M118 600 C92 360 212 168 400 166 C588 168 708 360 682 600 L694 770 C698 812 650 822 616 800 L184 800 C150 822 102 812 106 770Z" stroke-width="9"/>
+        <g class="tuft">
+          <path class="hair ink" d="M448 230 C400 175 345 150 290 158 C345 118 425 140 472 212Z" stroke-width="9"/>
+          <path class="hair ink" d="M450 225 C428 140 455 70 515 25 C512 95 512 160 490 228Z" stroke-width="9"/>
+          <path class="hair ink" d="M462 228 C495 120 600 62 688 102 C712 150 680 196 648 170 C668 140 632 118 600 128 C555 145 525 185 500 240Z" stroke-width="9"/>
+          <path d="M468 200 C470 140 485 95 508 60 M495 210 C530 145 590 112 650 115" fill="none" stroke="#6b4a36" stroke-width="6" stroke-linecap="round"/>
+        </g>
+        <path class="skin ink" d="M158 540 C158 360 270 280 400 280 C530 280 642 360 642 540 C642 700 610 795 530 842 C475 872 325 872 270 842 C190 795 158 700 158 540Z" stroke-width="9"/>
+        <path d="M262 505 Q300 485 340 500 M462 508 Q502 490 542 506" fill="none" stroke="#3b2a20" stroke-width="10" stroke-linecap="round"/>
+        <g class="eye"><ellipse cx="300" cy="575" rx="27" ry="33" fill="#1b1717"/><circle cx="290" cy="563" r="10" fill="#fff"/><circle cx="310" cy="590" r="4.5" fill="#fff"/></g>
+        <g class="eye"><ellipse cx="500" cy="580" rx="27" ry="33" fill="#1b1717"/><circle cx="490" cy="568" r="10" fill="#fff"/><circle cx="510" cy="595" r="4.5" fill="#fff"/></g>
+        <ellipse cx="252" cy="668" rx="46" ry="30" fill="#ff8fab" opacity=".45"/>
+        <ellipse cx="548" cy="672" rx="46" ry="30" fill="#ff8fab" opacity=".45"/>
+        <path d="M388 640 Q400 656 414 640" fill="none" stroke="#c98f7a" stroke-width="8" stroke-linecap="round"/>
+        <path class="mouth shut" d="M345 705 Q400 752 455 705" fill="none" stroke="#1b1717" stroke-width="10" stroke-linecap="round"/>
+        <g class="mouth open"><path d="M350 700 Q400 706 450 700 Q444 768 400 772 Q356 768 350 700Z" fill="#8e2a3a" stroke="#1b1717" stroke-width="8" stroke-linejoin="round"/><ellipse cx="400" cy="752" rx="26" ry="12" fill="#f28b9b"/></g>
+        <path class="hair ink" d="M168 430 C142 560 146 700 172 795 C196 812 232 800 228 776 C210 690 206 560 222 440Z M632 430 C658 560 654 700 628 795 C604 812 568 800 572 776 C590 690 594 560 578 440Z" stroke-width="9"/>
+        <path class="hair ink" d="M170 480 C150 320 265 208 400 208 C535 208 650 320 630 480 C560 458 480 452 400 454 C320 452 240 458 170 480Z" stroke-width="9"/>
+        <path d="M250 300 C320 255 470 250 550 290 M300 452 L304 418 M400 450 L400 414 M500 452 L496 418 M196 560 L192 700 M604 560 L608 700" fill="none" stroke="#6b4a36" stroke-width="7" stroke-linecap="round"/>
+        <path d="M470 215 L408 172 L414 262 Z M470 215 L536 178 L526 266 Z" fill="#f06292" stroke="#c2185b" stroke-width="6" stroke-linejoin="round"/>
+        <circle cx="470" cy="217" r="21" fill="#e04a7f" stroke="#c2185b" stroke-width="6"/>
+      </g></g>
+    </svg>
+  </div>
+  <div id="friend" hidden><span></span></div>
+  <div id="counter"></div>
+  <div id="basket"><div class="in"></div><svg class="front" viewBox="0 0 150 62" preserveAspectRatio="none" aria-hidden="true"><path d="M4 4h142l-12 54H16z" fill="#c8893f" stroke="#8a5222" stroke-width="4" stroke-linejoin="round"/><path d="M10 20h130M14 36h122M40 4l6 54M75 4v54M110 4l-6 54" stroke="#8a5222" stroke-width="3" opacity=".55"/></svg></div>
+  <div id="jar"><svg viewBox="0 0 80 100" aria-hidden="true" style="position:absolute;inset:0"><rect x="14" y="4" width="52" height="12" rx="4" fill="#90a4ae"/><path d="M10 18h60v70a8 8 0 0 1-8 8H18a8 8 0 0 1-8-8z" fill="#e1f5fe99" stroke="#90a4ae" stroke-width="4"/></svg><div class="coins"></div></div>
+  <div id="mid"><div id="bubble"></div><div id="answers"></div></div>
+  <a class="corner home" href="../index.html" aria-label="Menu"><svg viewBox="0 0 40 40"><path d="M6 19L20 7l14 12M11 16v16h18V16" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+  <div id="overlay"></div>
+</div>
+<script>
+const FRIENDS={"leo": ["🦁", ["Leo", "Лео", "Leo"]], "bella": ["🐰", ["Bella", "Белла", "Bella"]], "max": ["🐶", ["Max", "Макс", "Makss"]], "coco": ["🐵", ["Coco", "Коко", "Koko"]], "ted": ["🐻", ["Ted", "Тед", "Teds"]], "pip": ["🐧", ["Pip", "Пип", "Pips"]], "rosie": ["🐷", ["Rosie", "Рози", "Rozija"]], "oscar": ["🦉", ["Oscar", "Оскар", "Oskars"]]};
+const FT={"hello": ["Hello, Sofia!", "Привет, София!", "Sveika, Sofija!"], "thanks": ["Thank you!", "Спасибо!", "Paldies!"], "coin": ["Here's a coin for you!", "Вот тебе монетка!", "Lūk, tev monētiņa!"], "bye": ["Goodbye, Sofia!", "До свидания, София!", "Uz redzēšanos, Sofija!"], "want-apple-1": ["Can I have an apple, please?", "Можно мне яблоко, пожалуйста?", "Lūdzu, iedod man ābolu!"], "want-apple-2": ["Can I have two apples, please?", "Можно мне два яблока, пожалуйста?", "Lūdzu, iedod man divus ābolus!"], "want-apple-3": ["Can I have three apples, please?", "Можно мне три яблока, пожалуйста?", "Lūdzu, iedod man trīs ābolus!"], "want-banana-1": ["Can I have a banana, please?", "Можно мне банан, пожалуйста?", "Lūdzu, iedod man banānu!"], "want-banana-2": ["Can I have two bananas, please?", "Можно мне два банана, пожалуйста?", "Lūdzu, iedod man divus banānus!"], "want-banana-3": ["Can I have three bananas, please?", "Можно мне три банана, пожалуйста?", "Lūdzu, iedod man trīs banānus!"], "want-orange-1": ["Can I have an orange, please?", "Можно мне апельсин, пожалуйста?", "Lūdzu, iedod man apelsīnu!"], "want-orange-2": ["Can I have two oranges, please?", "Можно мне два апельсина, пожалуйста?", "Lūdzu, iedod man divus apelsīnus!"], "want-orange-3": ["Can I have three oranges, please?", "Можно мне три апельсина, пожалуйста?", "Lūdzu, iedod man trīs apelsīnus!"], "want-pear-1": ["Can I have a pear, please?", "Можно мне грушу, пожалуйста?", "Lūdzu, iedod man bumbieri!"], "want-pear-2": ["Can I have two pears, please?", "Можно мне две груши, пожалуйста?", "Lūdzu, iedod man divus bumbierus!"], "want-pear-3": ["Can I have three pears, please?", "Можно мне три груши, пожалуйста?", "Lūdzu, iedod man trīs bumbierus!"], "want-strawberry-1": ["Can I have a strawberry, please?", "Можно мне клубничку, пожалуйста?", "Lūdzu, iedod man zemeni!"], "want-strawberry-2": ["Can I have two strawberries, please?", "Можно мне две клубнички, пожалуйста?", "Lūdzu, iedod man divas zemenes!"], "want-strawberry-3": ["Can I have three strawberries, please?", "Можно мне три клубнички, пожалуйста?", "Lūdzu, iedod man trīs zemenes!"], "want-red-1": ["Can I have a red balloon, please?", "Можно мне красный шарик, пожалуйста?", "Lūdzu, iedod man sarkanu balonu!"], "want-red-2": ["Can I have two red balloons, please?", "Можно мне два красных шарика, пожалуйста?", "Lūdzu, iedod man divus sarkanus balonus!"], "want-blue-1": ["Can I have a blue balloon, please?", "Можно мне синий шарик, пожалуйста?", "Lūdzu, iedod man zilu balonu!"], "want-blue-2": ["Can I have two blue balloons, please?", "Можно мне два синих шарика, пожалуйста?", "Lūdzu, iedod man divus zilus balonus!"], "want-yellow-1": ["Can I have a yellow balloon, please?", "Можно мне жёлтый шарик, пожалуйста?", "Lūdzu, iedod man dzeltenu balonu!"], "want-yellow-2": ["Can I have two yellow balloons, please?", "Можно мне два жёлтых шарика, пожалуйста?", "Lūdzu, iedod man divus dzeltenus balonus!"], "want-green-1": ["Can I have a green balloon, please?", "Можно мне зелёный шарик, пожалуйста?", "Lūdzu, iedod man zaļu balonu!"], "want-green-2": ["Can I have two green balloons, please?", "Можно мне два зелёных шарика, пожалуйста?", "Lūdzu, iedod man divus zaļus balonus!"]};
+const ST={"hello": ["Hello! What would you like?", "Привет! Что тебе дать?", "Sveiki! Ko tu vēlies?"], "here": ["Here you are!", "Вот, держи!", "Lūdzu, ņem!"], "welcome": ["You're welcome!", "Пожалуйста!", "Nav par ko!"], "bye": ["Bye-bye!", "Пока-пока!", "Atā!"], "one": ["One!", "Один!", "Viens!"], "two": ["Two!", "Два!", "Divi!"], "three": ["Three!", "Три!", "Trīs!"], "oops-apple": ["Oops! That's an apple!", "Ой! Это яблоко!", "Ak! Tas ir ābols!"], "oops-banana": ["Oops! That's a banana!", "Ой! Это банан!", "Ak! Tas ir banāns!"], "oops-orange": ["Oops! That's an orange!", "Ой! Это апельсин!", "Ak! Tas ir apelsīns!"], "oops-pear": ["Oops! That's a pear!", "Ой! Это груша!", "Ak! Tas ir bumbieris!"], "oops-strawberry": ["Oops! That's a strawberry!", "Ой! Это клубничка!", "Ak! Tas ir zemene!"], "oops-red": ["Oops! That's a red balloon!", "Ой! Это красный шарик!", "Ak! Tas ir sarkans balons!"], "oops-blue": ["Oops! That's a blue balloon!", "Ой! Это синий шарик!", "Ak! Tas ir zils balons!"], "oops-yellow": ["Oops! That's a yellow balloon!", "Ой! Это жёлтый шарик!", "Ak! Tas ir dzeltens balons!"], "oops-green": ["Oops! That's a green balloon!", "Ой! Это зелёный шарик!", "Ak! Tas ir zaļš balons!"]};
+const ITEMS={"apple": "🍎", "banana": "🍌", "orange": "🍊", "pear": "🍐", "strawberry": "🍓"};
+const $=id=>document.getElementById(id);
+const stage=$("stage"), overlay=$("overlay"), sofia=$("sofia"), friendEl=$("friend"), bubble=$("bubble"), answers=$("answers"), mid=$("mid"), counter=$("counter"), basket=$("basket"), jar=$("jar");
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const NS="http://www.w3.org/2000/svg";
+const LI={en:0,ru:1,lv:2};
+const svg=sofia.querySelector("svg"), armR=svg.querySelector(".arm.r"), armL=svg.querySelector(".arm.l");
+
+/* ---------- where things go ---------- */
+function layout(){
+  const W=innerWidth, H=innerHeight, s=sofia.getBoundingClientRect(), c=counter.getBoundingClientRect(), f=friendEl.hidden?null:friendEl.getBoundingClientRect();
+  const fl=f?f.left:W-W*.05-parseFloat(getComputedStyle(friendEl).fontSize)*1.2, ft=f?f.top:c.top-parseFloat(getComputedStyle(friendEl).fontSize);
+  /* the basket in front of Sofia, the jar to its left */
+  const bw=basket.offsetWidth; basket.style.left=Math.max(bw/2+4,s.left+s.width*.55)+"px"; basket.style.top=(c.top-basket.offsetHeight*.72)+"px";
+  jar.style.left=Math.max(6,s.left+s.width*.55-bw/2-jar.offsetWidth-6)+"px"; jar.style.top=(c.top-jar.offsetHeight*.92)+"px";
+  let x0,x1,y0=Math.max(64,H*.09),y1;
+  if(W>H*1.05){x0=Math.max(s.right,s.left+s.width*.55+bw/2)+10; x1=fl-10; y1=c.top-14}
+  else{x0=14; x1=W-14; y1=Math.min(s.top,ft)-8}
+  Object.assign(mid.style,{left:x0+"px",top:y0+"px",width:(x1-x0)+"px",height:Math.max(150,y1-y0)+"px"});
+}
+addEventListener("resize",layout);
+
+/* ---------- audio ---------- */
+let lang=store.get("shop-lang")||"en";
+let ctx=null, current=null;
+function ac(){ if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)(); if(ctx.state!=="running") ctx.resume(); return ctx }
+const decode=ab=>new Promise((res,rej)=>ac().decodeAudioData(ab,res,rej));
+const cache={};
+function load(url){return cache[url]||(cache[url]=fetch(url).then(r=>r.ok?r.arrayBuffer():Promise.reject()).then(decode).catch(()=>null))}
+const url=stem=>`audio/${stem}.mp3`;
+function playBuffer(buf){return new Promise(res=>{const c=ac(),s=c.createBufferSource();s.buffer=buf;s.connect(c.destination);
+  if(current) try{current.stop()}catch(e){}; current=s; s.onended=()=>{if(current===s) current=null; res()}; s.start(); setTimeout(res,buf.duration*1000+300)})}
+function stopVoice(){if(current) try{current.stop()}catch(e){}; current=null}
+function talking(who,on){ if(who==="sofia") sofia.classList.toggle("talk",on); if(who==="friend") friendEl.classList.toggle("talk",on) }
+let token=0;   // a new game makes the old one's lines stop
+async function clip(stem,who){const t=token; const buf=await load(url(stem)); if(!buf||t!==token) return; talking(who,true); await playBuffer(buf); talking(who,false)}
+function tone(type,f0,f1,t0,dur,vol=.3){
+  const c=ac(),o=c.createOscillator(),g=c.createGain(); o.type=type;
+  o.frequency.setValueAtTime(f0,t0); o.frequency.exponentialRampToValueAtTime(f1,t0+dur);
+  g.gain.setValueAtTime(.0001,t0); g.gain.exponentialRampToValueAtTime(vol,t0+.02); g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
+  o.connect(g).connect(c.destination); o.start(t0); o.stop(t0+dur+.05);
+}
+function noise(dur,type,freq,vol,when=0){const c=ac(), n=c.sampleRate*dur, b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0);
+  for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3);
+  const s=c.createBufferSource(), f=c.createBiquadFilter(), g=c.createGain(); s.buffer=b; f.type=type; f.frequency.value=freq; g.gain.value=vol;
+  s.connect(f).connect(g).connect(c.destination); s.start(c.currentTime+when)}
+const sfx={
+  ding(){const t=ac().currentTime; tone("sine",1319,1319,t,.5,.18); tone("sine",1047,1047,t+.25,.7,.18)},
+  pop(){const t=ac().currentTime; tone("sine",500,900,t,.12,.2)},
+  boing(){const t=ac().currentTime; tone("triangle",260,160,t,.3,.25)},
+  beep(hi){const t=ac().currentTime; tone("sine",hi?990:660,hi?990:660,t,.16,.2)},
+  chaching(){const t=ac().currentTime; noise(.08,"highpass",3000,.6); tone("triangle",1568,1568,t+.08,.25,.15); tone("triangle",2093,2093,t+.2,.5,.15)},
+  yay(){const t=ac().currentTime;[523,659,784,1047].forEach((f,i)=>tone("triangle",f,f,t+i*.12,.3,.25))}
+};
+
+/* ---------- the friends and their words ---------- */
+let fid="leo";
+const seen={};
+function showBubble(side,en,tr){
+  bubble.className="on "+side; bubble.innerHTML=`${en}${tr?`<span class="tr">${tr}</span>`:""}`;
+}
+function hideBubble(){bubble.className=""}
+const tail=who=>who==="sofia"?"left":"right";
+async function translate(stem){   // the helper says it in her language, the first two times
+  if(lang==="en") return; if((seen[stem]||0)>=2) return; seen[stem]=(seen[stem]||0)+1;
+  const tr=bubble.querySelector(".tr"); tr?.classList.add("speak"); await clip(stem,"help"); tr?.classList.remove("speak")
+}
+let lastF=null;
+async function fsay(key,{again=false}={}){
+  const t=FT[key], L=LI[lang]; lastF=key;
+  showBubble(tail("friend"),t[0],L?t[L]:"");
+  await clip(`f-${fid}-${key}-en`,"friend"); if(again) return; await wait(250);
+  await translate(`t-f${key}-${lang}`);
+}
+async function ssay(key){
+  const t=ST[key], L=LI[lang];
+  showBubble(tail("sofia"),t[0],L?t[L]:"");
+  await clip(`s-${key}-en`,"sofia"); await wait(250); await translate(`t-s${key}-${lang}`);
+}
+function prompt(key){return clip(`${key}-${lang}`,"help")}
+
+/* ---------- Sofia's turn: big answer bubbles (and a microphone for saying it herself) ---------- */
+let turnsSeen={one:0,many:0};
+const micIcon=`<svg viewBox="0 0 40 40" aria-hidden="true"><rect x="14" y="4" width="12" height="20" rx="6" fill="#e53935"/><path d="M9 19a11 11 0 0 0 22 0M20 30v6M14 36h12" fill="none" stroke="#e53935" stroke-width="3.5" stroke-linecap="round"/></svg>`;
+let micOK=!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&(window.AudioContext||window.webkitAudioContext));
+function turn(opts){
+  return new Promise(res=>{
+    const one=opts.length===1, cls=one?"one":opts.length===4?"four":"";
+    answers.innerHTML=opts.map(o=>`<button class="ans ${cls}" data-k="${o.k}"><span class="e">${o.e}</span><span class="t">${o.t||ST[o.k][0]}</span></button>`).join("")
+      +(one&&micOK?`<button id="mic" aria-label="I say it myself">${micIcon}</button>`:"");
+    const kind=one?"one":"many", first=turnsSeen[kind]++<2;
+    let done=false, timers=[];
+    const finish=r=>{if(done) return; done=true; timers.forEach(clearTimeout); stopVoice(); talking("friend",false); res(r)};
+    answers.querySelectorAll(".ans").forEach(b=>b.onclick=()=>{ac(); finish({k:b.dataset.k})});
+    if(one&&micOK) $("mic").onclick=()=>{ac(); finish({k:opts[0].k,mic:true})};
+    const btns=[...answers.querySelectorAll(".ans")];
+    const wiggle=()=>btns.forEach((b,i)=>{b.classList.remove("wiggle"); void b.offsetWidth; setTimeout(()=>b.classList.add("wiggle"),i*120)});
+    if(first) prompt(one?"turn":"choose");
+    timers.push(setTimeout(()=>!done&&wiggle(),first?6000:5000));
+    timers.push(setTimeout(async()=>{if(done) return; btns.forEach(b=>b.classList.add("help")); if(lastF) await fsay(lastF,{again:true}); if(!done) prompt(one?"turn":"choose")},14000));
+  }).then(r=>{answers.innerHTML=""; return r});
+}
+async function sofiaTurn(opts,{wave=false}={}){
+  const r=await turn(opts);
+  if(wave) waveArm();
+  if(r.mic) await sayItYourself(r.k); else await ssay(r.k);
+  return r.k;
+}
+/* she says it herself: Sofia says it first, then «Now you say it!», a beep, about 3 s of recording, and her own voice comes back */
+async function sayItYourself(key){
+  await ssay(key);
+  let stream=null;
+  try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}})}
+  catch(e){micOK=false; return}
+  await prompt("mic");
+  answers.innerHTML=`<button id="mic" class="rec" aria-label="Listening">${micIcon}</button>`; const m=$("mic");
+  sofia.classList.add("listen"); sfx.beep(false); await wait(200);
+  const c=ac(), src=c.createMediaStreamSource(stream), pr=c.createScriptProcessor(4096,1,1), chunks=[];
+  pr.onaudioprocess=e=>{const d=e.inputBuffer.getChannelData(0); chunks.push(new Float32Array(d));
+    let s=0; for(let i=0;i<d.length;i+=8) s+=d[i]*d[i]; m.style.setProperty("--lvl",Math.min(1,Math.sqrt(s/(d.length/8))*8).toFixed(2))};
+  src.connect(pr); pr.connect(c.destination);
+  await wait(3400);
+  pr.disconnect(); src.disconnect(); stream.getTracks().forEach(t=>t.stop()); sfx.beep(true); sofia.classList.remove("listen");
+  answers.innerHTML="";
+  /* her voice: cut the quiet start, make it loud enough, and play it back */
+  const n=chunks.reduce((a,b)=>a+b.length,0); if(!n) return;
+  const all=new Float32Array(n); let o=0; for(const ch of chunks){all.set(ch,o); o+=ch.length}
+  let peak=0, start=0; for(let i=0;i<n;i++) peak=Math.max(peak,Math.abs(all[i]));
+  if(peak<.01) return;   // nothing heard: just go on
+  for(let i=0;i<n;i++) if(Math.abs(all[i])>peak*.12){start=Math.max(0,i-c.sampleRate*.08|0); break}
+  const buf=c.createBuffer(1,n-start,c.sampleRate), g=.9/peak, d=buf.getChannelData(0);
+  for(let i=start;i<n;i++) d[i-start]=all[i]*g;
+  await wait(300); await playBuffer(buf);
+  const r=sofia.getBoundingClientRect(); celebrate(r.left+r.width/2+"px",r.top+r.height*.2+"px",.5); await wait(500);
+}
+
+
+/* ---------- moving about ---------- */
+const A=(e,k,o)=>e.animate(k,o).finished.catch(()=>{});
+function waveArm(){A(armR,[{transform:"rotate(0)"},{transform:"rotate(-150deg)",offset:.25},{transform:"rotate(-120deg)",offset:.42},{transform:"rotate(-155deg)",offset:.6},{transform:"rotate(-120deg)",offset:.78},{transform:"rotate(0)"}],{duration:1900,easing:"ease-in-out"})}
+function friendWave(){return A(friendEl.firstElementChild,[{rotate:"0deg"},{rotate:"-14deg"},{rotate:"14deg"},{rotate:"-14deg"},{rotate:"14deg"},{rotate:"0deg"}],{duration:1200})}
+function onSofia(x,y){const r=sofia.getBoundingClientRect(); return [r.left+x/800*r.width, r.top+y/1730*r.height]}
+function friendXY(){const r=friendEl.getBoundingClientRect(); return [r.left+r.width/2, r.top+r.height*.45]}
+function fx(x,y,chars,n=4,size){for(let i=0;i<n;i++){const f=document.createElement("div"); f.className="fx"; f.textContent=chars[i%chars.length];
+  f.style.cssText=`left:${x+(Math.random()*80-40)}px;top:${y}px;animation-delay:${i*.2}s${size?`;font-size:${size}px`:""}`; f.style.setProperty("--dx",(Math.random()*120-60)+"px");
+  stage.appendChild(f); setTimeout(()=>f.remove(),2400)}}
+/* something flies in an arc from a to b */
+function arc(el,[ax,ay],[bx,by],ms=900){
+  const h=Math.min(innerHeight*.25,Math.abs(bx-ax)*.4)+40, k=[];
+  for(let i=0;i<=12;i++){const t=i/12; k.push({left:ax+(bx-ax)*t+"px",top:ay+(by-ay)*t-h*4*t*(1-t)+"px",rotate:t*540+"deg"})}
+  return A(el,k,{duration:ms,easing:"linear",fill:"forwards"}).then(()=>{el.style.left=bx+"px"; el.style.top=by+"px"});
+}
+const BAL={red:"#e53935",blue:"#1e88e5",green:"#43a047",yellow:"#fdd835",pink:"#f06292",purple:"#8e24aa",orange:"#fb8c00"};
+const balloonSvg=c=>`<svg viewBox="0 0 60 110" aria-hidden="true"><path d="M30 70 Q26 88 32 96 T30 110" fill="none" stroke="#666" stroke-width="2"/><ellipse cx="30" cy="34" rx="26" ry="32" fill="${BAL[c]}"/><path d="M26 66h8l-4 6z" fill="${BAL[c]}"/><ellipse cx="20" cy="22" rx="6" ry="10" fill="#fff6"/></svg>`;
+/* ---------- the shop: crates of fruit and balloons; a tap (or a drag to the basket) puts one in the basket ---------- */
+const FRUITS=["apple","banana","orange","pear","strawberry"], BALS=["red","blue","yellow","green"];
+const isBal=it=>BALS.includes(it);
+const itemHtml=it=>isBal(it)?balloonSvg(it):ITEMS[it];
+function fillCounter(){
+  const crate=it=>`<button class="crate${isBal(it)?" bal":""}" data-it="${it}" aria-label="${it}"><span class="pile">${isBal(it)?balloonSvg(it):`<span>${ITEMS[it]}</span><span>${ITEMS[it]}</span><span>${ITEMS[it]}</span>`}</span></button>`;
+  counter.innerHTML=`<div class="group">${FRUITS.map(crate).join("")}</div><div class="group">${BALS.map(crate).join("")}</div>`;
+}
+const crateOf=it=>counter.querySelector(`.crate[data-it="${it}"]`);
+const centre=el=>{const r=el.getBoundingClientRect(); return [r.left+r.width/2,r.top+r.height/2]};
+let req=null, have=0, wrongs=0, accepting=false, gotAll=null, hintT=[];
+function clearHints(){hintT.forEach(clearTimeout); hintT=[]}
+function think(on){
+  $("think")?.remove(); if(!on||!req) return;
+  const t=document.createElement("div"); t.id="think"; t.innerHTML=Array(req.n).fill(itemHtml(req.it)).join("");
+  const r=friendEl.getBoundingClientRect(); t.style.left=Math.max(90,r.left+r.width*.1)+"px"; t.style.top=Math.max(150,r.top-8)+"px"; stage.appendChild(t);
+  const b=t.getBoundingClientRect(); if(b.left<8) t.style.left=(parseFloat(t.style.left)+8-b.left)+"px";
+}
+function nudge(){const c=crateOf(req.it); c.classList.remove("wiggle"); void c.offsetWidth; c.classList.add("wiggle")}
+function hintTimers(){clearHints();
+  hintT.push(setTimeout(()=>{if(accepting){think(true); nudge()}},8000));
+  hintT.push(setTimeout(async()=>{if(!accepting) return; crateOf(req.it).classList.add("help"); await fsay(`want-${req.it}-${req.n}`,{again:true}); if(accepting) hintTimers()},16000));
+}
+async function give(it,from,el){
+  if(!accepting) return; accepting=false; clearHints();
+  const fl=el||document.createElement("div"); if(!el){fl.className="ghost"; fl.innerHTML=itemHtml(it); stage.appendChild(fl)}
+  fl.style.left=from[0]+"px"; fl.style.top=from[1]+"px";
+  const r=basket.getBoundingClientRect(), to=[r.left+r.width/2,r.top+r.height*.35];
+  await arc(fl,from,to,550);
+  if(it===req.it){
+    fl.remove(); have++; sfx.pop();
+    const s=document.createElement("span"); s.innerHTML=itemHtml(it); basket.querySelector(".in").appendChild(s);
+    A(basket,[{scale:"1"},{scale:"1.08 .94"},{scale:"1"}],{duration:300});
+    if(req.n>1){const w=["one","two","three"][have-1], L=LI[lang]; showBubble("left",ST[w][0],L?ST[w][L]:""); await clip(`s-${w}-en`,"sofia")}
+    if(have>=req.n){crateOf(it).classList.remove("help"); think(false); basket.classList.add("full"); gotAll(); return}
+    accepting=true; hintTimers(); return;
+  }
+  /* not that one: it hops back to its crate, Sofia says what it is, the friend asks again */
+  wrongs++; sfx.boing(); await arc(fl,to,centre(crateOf(it)),600); fl.remove();
+  await ssay(`oops-${it}`); think(true);
+  if(wrongs>=2) crateOf(req.it).classList.add("help");
+  await fsay(`want-${req.it}-${req.n}`,{again:true});
+  accepting=true; hintTimers();
+}
+/* tap or drag */
+let drag=null;
+counter.addEventListener("pointerdown",e=>{
+  const c=e.target.closest(".crate"); if(!c||!overlay.hidden) return; ac(); e.preventDefault();
+  try{c.setPointerCapture(e.pointerId)}catch(_){}
+  drag={c,it:c.dataset.it,x:e.clientX,y:e.clientY,ghost:null,id:e.pointerId};
+});
+counter.addEventListener("pointermove",e=>{
+  if(!drag||e.pointerId!==drag.id||!accepting) return;
+  if(!drag.ghost&&Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>12){drag.ghost=document.createElement("div"); drag.ghost.className="ghost"; drag.ghost.innerHTML=itemHtml(drag.it); stage.appendChild(drag.ghost)}
+  if(drag.ghost){drag.ghost.style.left=e.clientX+"px"; drag.ghost.style.top=e.clientY+"px"}
+});
+function endDrag(e,cancel){
+  if(!drag||e.pointerId!==drag.id) return; const d=drag; drag=null;
+  if(!accepting){d.ghost?.remove(); if(!cancel){d.c.classList.remove("wiggle"); void d.c.offsetWidth; d.c.classList.add("wiggle")} return}
+  if(!d.ghost){ if(!cancel) give(d.it,centre(d.c)); return }
+  const r=basket.getBoundingClientRect(), m=60;
+  if(!cancel&&e.clientX>r.left-m&&e.clientX<r.right+m&&e.clientY>r.top-m*2&&e.clientY<r.bottom+m) give(d.it,[e.clientX,e.clientY],d.ghost);
+  else arc(d.ghost,[e.clientX,e.clientY],centre(d.c),400).then(()=>d.ghost.remove());
+}
+counter.addEventListener("pointerup",e=>endDrag(e,false));
+counter.addEventListener("pointercancel",e=>endDrag(e,true));
+
+/* ---------- friends come and go ---------- */
+async function friendIn(){
+  friendEl.firstElementChild.textContent=FRIENDS[fid][0]; friendEl.hidden=false; sfx.ding();
+  await A(friendEl,[{transform:"translateX(60vw)"},{transform:"translateX(30vw) translateY(-12%)",offset:.3},{transform:"translateX(15vw)",offset:.55},{transform:"translateX(4vw) translateY(-8%)",offset:.8},{transform:"translateX(0)"}],{duration:1400,easing:"ease-out"});
+  layout();
+}
+async function friendOut(){
+  await A(friendEl,[{transform:"translateX(0)"},{transform:"translateX(15vw) translateY(-12%)",offset:.4},{transform:"translateX(60vw)"}],{duration:1100,easing:"ease-in"});
+  friendEl.hidden=true;
+}
+async function handOver(){   // the basket goes over to the friend, and an empty one comes back
+  const b=basket.getBoundingClientRect(), [fx0,fy0]=friendXY();
+  await A(basket,[{transform:"translate(0,0)",opacity:1},{transform:`translate(${fx0-b.left-b.width/2}px,${fy0-b.top-b.height*.2}px) scale(.8)`,opacity:1,offset:.8},{transform:`translate(${fx0-b.left-b.width/2}px,${fy0-b.top}px) scale(.6)`,opacity:0}],{duration:1100,easing:"ease-in-out"});
+  basket.querySelector(".in").innerHTML=""; basket.classList.remove("full");
+  A(basket,[{opacity:0,transform:"translateY(20px)"},{opacity:1,transform:"translateY(0)"}],{duration:500});
+}
+async function pay(){
+  const c=document.createElement("div"); c.className="ghost"; c.textContent="🪙"; stage.appendChild(c);
+  const from=friendXY(), r=jar.getBoundingClientRect(); await arc(c,from,[r.left+r.width/2,r.top+r.height*.5],900); c.remove();
+  sfx.chaching(); const s=document.createElement("span"); s.textContent="🪙"; jar.querySelector(".coins").appendChild(s);
+  A(jar,[{rotate:"0deg"},{rotate:"-8deg"},{rotate:"8deg"},{rotate:"0deg"}],{duration:500});
+}
+
+/* ---------- a customer, and a game of six ---------- */
+const CUSTOMERS=6;
+let round=[], reqs=[], served=[];
+function pickRound(){
+  const ids=Object.keys(FRIENDS); let q=null; try{q=JSON.parse(store.get("shop-next"))}catch(e){}
+  if(!Array.isArray(q)) q=shuffle([...ids]);
+  q=q.filter(id=>ids.includes(id)); if(q.length<CUSTOMERS) q=q.concat(shuffle(ids.filter(id=>!q.includes(id))));
+  store.set("shop-next",JSON.stringify(q.slice(CUSTOMERS))); return q.slice(0,CUSTOMERS);
+}
+function pickReqs(){const f=shuffle([...FRUITS]), b=shuffle([...BALS]);   // it gets harder: one fruit, two or three, then balloons
+  return [{it:f[0],n:1},{it:f[1],n:1},{it:f[2],n:2},{it:f[3],n:3},{it:b[0],n:1},{it:b[1],n:2}]}
+async function customer(i){
+  fid=round[i]; req=reqs[i]; have=0; wrongs=0; const t=token;
+  await friendIn(); if(t!==token) return; await wait(200);
+  friendWave(); await fsay("hello");
+  await sofiaTurn([{k:"hello",e:"👋"}],{wave:true});
+  await fsay(`want-${req.it}-${req.n}`); if(t!==token) return;
+  const done=new Promise(r=>gotAll=r); accepting=true; hintTimers();
+  if(i<2) prompt("basket");
+  await done; accepting=false; clearHints(); if(t!==token) return;
+  sfx.yay(); const b=basket.getBoundingClientRect(); celebrate(b.left+b.width/2+"px",b.top+"px",.5);
+  await wait(500);
+  await sofiaTurn([{k:"here",e:"🧺"}]);
+  await handOver();
+  await fsay("thanks");
+  await sofiaTurn([{k:"welcome",e:"😊"}]);
+  const coin=fsay("coin"); await wait(600); await pay(); await coin;
+  const w=friendWave(); fsay("bye"); await wait(300); waveArm(); await w; await wait(900);
+  await ssay("bye"); hideBubble(); served.push(fid);
+  const dot=$("progress").children[i]; dot.textContent=FRIENDS[fid][0]; dot.classList.add("done");
+  await friendOut(); await wait(400);
+}
+function preload(){
+  ["start","basket","turn","mic","end"].forEach(k=>load(url(`${k}-${lang}`)));
+  Object.keys(ST).forEach(k=>load(url(`s-${k}-en`)));
+}
+function preloadCustomer(i){ if(i>=CUSTOMERS) return; const f=round[i], r=reqs[i];
+  ["hello","thanks","coin","bye",`want-${r.it}-${r.n}`].forEach(k=>load(url(`f-${f}-${k}-en`))) }
+async function play(l){
+  ac(); lang=l; store.set("shop-lang",l); document.documentElement.lang=l;
+  const t=++token; overlay.hidden=true; served=[]; turnsSeen={one:0,many:0}; for(const k in seen) delete seen[k];
+  round=pickRound(); reqs=pickReqs(); jar.querySelector(".coins").innerHTML=""; basket.querySelector(".in").innerHTML="";
+  $("progress").innerHTML=round.map(()=>'<div class="dot"></div>').join(""); preload(); preloadCustomer(0); layout();
+  await prompt("start"); await wait(300);
+  for(let i=0;i<CUSTOMERS;i++){ if(t!==token) return; preloadCustomer(i+1); await customer(i) }
+  if(t===token) finale();
+}
+async function finale(){
+  sfx.yay(); hideBubble();
+  const party=document.createElement("div"); party.id="party"; party.innerHTML=served.map(f=>`<span>${FRIENDS[f][0]}</span>`).join(""); stage.appendChild(party);
+  const r=sofia.getBoundingClientRect(); celebrate(r.left+r.width/2+"px",r.top+r.height*.3+"px");
+  waveArm(); A(jar,[{rotate:"0deg"},{rotate:"-10deg"},{rotate:"10deg"},{rotate:"-10deg"},{rotate:"0deg"}],{duration:900});
+  await prompt("end"); await wait(2200); party.remove();
+  if(overlay.hidden) startScreen(true);
+}
+friendEl.addEventListener("click",()=>{ac(); if(current) return; if(accepting&&req) fsay(`want-${req.it}-${req.n}`,{again:true}); else if(lastF&&answers.children.length) fsay(lastF,{again:true})});
+
+/* ---------- start screen ---------- */
+const TITLE={en:"Sofia's shop",ru:"Магазин Софии",lv:"Sofijas veikals"};
+const LNAME={en:"English",ru:"English",lv:"English"}, WITH={en:"",ru:"+ по-русски",lv:"+ latviski"}, LEMO={en:"🍎🎈",ru:"🍌🍓",lv:"🍐🍊"};
+const playIcon=`<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="var(--pink)"/><path d="M15 11l14 9-14 9z" fill="#fff"/></svg>`;
+function startScreen(after){
+  token++; stopVoice(); clearHints(); accepting=false; answers.innerHTML=""; hideBubble(); think(false); friendEl.hidden=true;
+  overlay.hidden=false;
+  overlay.innerHTML=`<h1>${after?TITLE[lang]:TITLE.en}</h1><p class="sub">${after?"":"Магазин Софии · Sofijas veikals"}</p>
+    ${after?`<div class="stickers">${served.map(f=>`<button class="sticker" data-f="${f}" aria-label="${FRIENDS[f][1][0]}">${FRIENDS[f][0]}</button>`).join("")}</div>`:""}
+    <div class="langs">${["en","ru","lv"].map(l=>`<button class="go${l===lang?" last":""}" data-l="${l}"><span class="e">${LEMO[l]}</span><span class="name">${LNAME[l]}</span><span class="with">${WITH[l]}</span>${playIcon}</button>`).join("")}</div>`;
+  overlay.querySelectorAll(".go").forEach(b=>b.onclick=()=>play(b.dataset.l));
+  overlay.querySelectorAll(".sticker").forEach(b=>b.onclick=()=>{ac(); clip(`f-${b.dataset.f}-hello-en`)});
+}
+
+/* the big "yes!" */
+function celebrate(x,y,amount=1){
+  const st=stage, STAR='M12 2l3 7 7 .6-5.4 4.7 1.7 7.2L12 17.8 5.7 21.5l1.7-7.2L2 9.6 9 9z';
+  if(amount>=1){const big=document.createElementNS(NS,"svg"); big.setAttribute("viewBox","0 0 24 24"); big.classList.add("bigstar");
+    big.innerHTML=`<path d="${STAR}" fill="#ffd25a" stroke="#f5a623" stroke-width="1.2" stroke-linejoin="round"/><circle cx="9.6" cy="11" r=".9" fill="#5a3a12"/><circle cx="14.4" cy="11" r=".9" fill="#5a3a12"/><path d="M9.8 13.6q2.2 1.8 4.4 0" fill="none" stroke="#5a3a12" stroke-width=".8" stroke-linecap="round"/>`;
+    big.style.left=x; big.style.top=y; st.appendChild(big); setTimeout(()=>big.remove(),1200)}
+  const COL=["#ffd25a","#f06292","#fff","#5fbf7f","#6ec6ff","#ff8a50","#b388ff"];
+  for(let i=0;i<40*amount;i++){const s=document.createElementNS(NS,"svg"), z=22+Math.random()*44; s.setAttribute("viewBox","0 0 24 24"); s.classList.add("star");
+    s.innerHTML=`<path d="${STAR}" fill="${COL[i%COL.length]}" stroke="#0002" stroke-width=".6"/>`;
+    s.style.cssText=`left:${x};top:${y};width:${z}px;height:${z}px;margin:${-z/2}px 0 0 ${-z/2}px;animation-duration:${(1.5+Math.random()*.9).toFixed(2)}s`;
+    s.style.setProperty("--dx",(Math.random()*90-45)+"vw"); s.style.setProperty("--dy",(Math.random()*90-45)+"vh");
+    st.appendChild(s); setTimeout(()=>s.remove(),2600)}
+  if(amount>=1) for(let i=0;i<34;i++){const c=document.createElement("div"); c.className="confetti";
+    c.style.cssText=`left:${Math.random()*100}%;background:${COL[(i+2)%COL.length]};--dx:${(Math.random()*24-12).toFixed(1)}vw;--r:${Math.round(Math.random()*900-450)}deg;--t:${(2+Math.random()*1.2).toFixed(2)}s;--dl:${(Math.random()*.5).toFixed(2)}s`;
+    if(i%3===0){c.style.borderRadius="50%"; c.style.height="13px"}
+    st.appendChild(c); setTimeout(()=>c.remove(),3900)}
+  try{const t=ac().currentTime; [1319,1568,1760,2093,2637].forEach((f,i)=>tone("sine",f,f*1.01,t+.05+i*.07,.25,.08))}catch(e){}
+}
+fillCounter(); layout(); startScreen(false);
+</script>
+</body>
+</html>

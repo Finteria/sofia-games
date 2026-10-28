@@ -18,7 +18,7 @@ body{background:var(--bg);color:var(--ink);font-family:"Nunito","Trebuchet MS",s
 h1{margin:0;font-size:clamp(34px,6.5vw,60px);font-weight:900;line-height:1.1;display:flex;flex-direction:column;gap:.15em}
 /* wide screens: the title on one line, so three rows of cards fit without scrolling */
 @media (min-aspect-ratio:1/1) and (min-width:700px){h1{flex-direction:row;gap:.3em;font-size:clamp(30px,4.6vw,50px)}h1 span+span::before{content:"· ";opacity:.5}}
-/* five cards a row on an iPad in landscape, four upright, two on a phone; a short last row sits in the middle */
+/* six cards a row on an iPad in landscape, four upright, two on a phone; a short last row sits in the middle */
 .games{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;max-width:calc(5*156px + 4*16px)}
 @media (max-width:879px){.games{max-width:calc(4*156px + 3*16px)}}
 @media (max-width:640px){.games{max-width:calc(2*min(42vw,156px) + 16px)}}
@@ -27,6 +27,8 @@ a.game{display:flex;flex-direction:column;align-items:center;gap:6px;width:min(4
 a.game:active{transform:scale(.96)}
 a.game svg{width:66%;height:auto}
 a.game span{font-size:23px;line-height:1.15}
+/* a wide iPad on its side: six a row, so three rows still fit */
+@media (min-aspect-ratio:1/1) and (min-width:960px){:root{--cw:min(156px,calc((100vw - 112px) / 6))}.games{max-width:calc(6*var(--cw) + 5*16px)}a.game{width:var(--cw)}}
 </style>
 </head>
 <body>
@@ -175,6 +177,48 @@ a.game span{font-size:23px;line-height:1.15}
     </svg>
     <span>Котёнок</span>
     <span lang="lv">Kaķēns</span>
+  </a>
+  <a class="game" href="hello/index.html">
+    <svg viewBox="0 0 200 200" aria-hidden="true">
+      <rect x="104" y="40" width="80" height="150" rx="8" fill="#f6e2c0" stroke="#b9844b" stroke-width="5"/>
+      <rect x="114" y="50" width="60" height="140" fill="#8fd3ff"/><rect x="114" y="140" width="60" height="50" fill="#7cc96b"/>
+      <path d="M174 50l14 -6v150l-14 -4z" fill="#d47a3c" stroke="#a85a26" stroke-width="3" stroke-linejoin="round"/>
+      <ellipse cx="134" cy="92" rx="9" ry="26" fill="#fff" stroke="#bdbdbd" stroke-width="3"/><ellipse cx="156" cy="92" rx="9" ry="26" fill="#fff" stroke="#bdbdbd" stroke-width="3"/>
+      <ellipse cx="134" cy="94" rx="4" ry="17" fill="#f8bbd0"/><ellipse cx="156" cy="94" rx="4" ry="17" fill="#f8bbd0"/>
+      <circle cx="145" cy="142" r="30" fill="#fff" stroke="#bdbdbd" stroke-width="3"/>
+      <circle cx="135" cy="138" r="4.5" fill="#3b2a20"/><circle cx="155" cy="138" r="4.5" fill="#3b2a20"/><path d="M141 149h8l-4 4z" fill="#ff7f9a"/>
+      <path d="M8 34h84a14 14 0 0 1 14 14v34a14 14 0 0 1-14 14H44l-18 18v-18H8z" fill="#fff" stroke="#f06292" stroke-width="5" stroke-linejoin="round"/>
+      <text x="52" y="76" text-anchor="middle" font-family="Nunito,Trebuchet MS,sans-serif" font-weight="900" font-size="34" fill="#f06292">Hi!</text>
+    </svg>
+    <span>Привет!</span>
+    <span lang="lv">Sveiks!</span>
+  </a>
+  <a class="game" href="shop/index.html">
+    <svg viewBox="0 0 200 200" aria-hidden="true">
+      <path d="M16 28h168v34H16z" fill="#fff"/><path d="M16 28h28v34H16zM72 28h28v34H72zM128 28h28v34h-28z" fill="#ef5350"/>
+      <path d="M16 62q14 14 28 0q14 14 28 0q14 14 28 0q14 14 28 0q14 14 28 0q14 14 28 0" fill="none" stroke="#ef5350" stroke-width="5"/>
+      <path d="M26 66v54M174 66v54" stroke="#a86a32" stroke-width="7"/>
+      <rect x="10" y="120" width="180" height="66" rx="10" fill="#e0a96d" stroke="#a86a32" stroke-width="5"/>
+      <circle cx="62" cy="112" r="22" fill="#e53935"/><path d="M62 92q2-10 10-12" fill="none" stroke="#5d4037" stroke-width="4" stroke-linecap="round"/><ellipse cx="72" cy="86" rx="8" ry="4" fill="#43a047" transform="rotate(-25 72 86)"/>
+      <path d="M140 132q-6 12 2 22" fill="none" stroke="#666" stroke-width="3"/>
+      <ellipse cx="140" cy="96" rx="22" ry="27" fill="#1e88e5"/><path d="M136 122h8l-4 6z" fill="#1e88e5"/><ellipse cx="132" cy="86" rx="5" ry="8" fill="#fff6"/>
+      <circle cx="100" cy="160" r="12" fill="#ffd25a" stroke="#c79100" stroke-width="3"/>
+    </svg>
+    <span>Магазин</span>
+    <span lang="lv">Veikals</span>
+  </a>
+  <a class="game" href="veggie/index.html">
+    <svg viewBox="0 0 200 200" aria-hidden="true">
+      <ellipse cx="100" cy="160" rx="90" ry="28" fill="#fff" stroke="#cfd8dc" stroke-width="5"/>
+      <path d="M30 168 L104 72 Q122 70 124 90 Z" fill="#ff9800" stroke="#e65100" stroke-width="5" stroke-linejoin="round"/>
+      <path d="M62 132l10 6M80 110l10 6M96 90l9 6" stroke="#e65100" stroke-width="4" stroke-linecap="round"/>
+      <path d="M112 76 q2 -26 16 -32 M116 80 q16 -18 30 -14 M120 86 q22 -2 28 10" fill="none" stroke="#43a047" stroke-width="8" stroke-linecap="round"/>
+      <path d="M150 168 v-30" stroke="#7cb342" stroke-width="14" stroke-linecap="round"/>
+      <g fill="#43a047" stroke="#1b5e20" stroke-width="4"><circle cx="136" cy="128" r="16"/><circle cx="164" cy="128" r="16"/><circle cx="150" cy="112" r="18"/></g>
+      <path d="M176 18 L160 50 h12 l-8 28 l26 -36 h-13 l9 -24 z" fill="#ffd25a" stroke="#c79100" stroke-width="3.5" stroke-linejoin="round"/>
+    </svg>
+    <span>Овощи</span>
+    <span lang="lv">Dārzeņi</span>
   </a>
   <a class="game" href="music/index.html">
     <svg viewBox="0 0 200 200" aria-hidden="true">

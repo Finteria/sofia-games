@@ -1,0 +1,56 @@
+Crunches and slurps: real recordings from Freesound, all CC0 (public domain). Each clip is one bite cut from the recording, faded and loudness-normalized.
+
+crunch-1.mp3
+  "Eating a Carrot.wav" by Chelly01 (Freesound). CC0
+  https://freesound.org/s/541080/
+
+crunch-2.mp3
+  "20180305_Cracking carrots.wav" by cabled_mess (Freesound). CC0
+  https://freesound.org/s/564674/
+
+crunch-3.mp3
+  "Eating a Carrot.wav" by Chelly01 (Freesound). CC0
+  https://freesound.org/s/541080/
+
+crunch-4.mp3
+  "Eating a carrot.wav" by eZZin (Freesound). CC0
+  https://freesound.org/s/667121/
+
+crunch-5.mp3
+  "Eating Carrots" by unfa (Freesound). CC0
+  https://freesound.org/s/534378/
+
+crunch-6.mp3
+  "Eating a carrot.wav" by eZZin (Freesound). CC0
+  https://freesound.org/s/667121/
+
+crunch-7.mp3
+  "Eating Carrots" by unfa (Freesound). CC0
+  https://freesound.org/s/534378/
+
+juicy-1.mp3
+  "Biting a Cucumber.wav" by v23 (Freesound). CC0
+  https://freesound.org/s/589149/
+
+juicy-2.mp3
+  "Biting a Cucumber.wav" by v23 (Freesound). CC0
+  https://freesound.org/s/589149/
+
+juicy-3.mp3
+  "Biting a Cucumber.wav" by v23 (Freesound). CC0
+  https://freesound.org/s/589149/
+
+slurp-1.mp3
+  "slurping (for animation/game)" by Tetoszka (Freesound). CC0
+  https://freesound.org/s/622776/
+
+slurp-2.mp3
+  "slurping (for animation/game)" by Tetoszka (Freesound). CC0
+  https://freesound.org/s/622776/
+
+slurp-3.mp3
+  "Slurping soup  making noise -  tomando sopa fazendo barulho" by levi_cunha (Freesound). CC0
+  https://freesound.org/s/872130/
+
+Voices: Microsoft neural voices made with edge-tts (https://github.com/rany2/edge-tts), trimmed and loudness-normalized:
+English "en-US-AnaNeural" (a child's voice), Russian "ru-RU-SvetlanaNeural" and Latvian "lv-LV-EveritaNeural" raised (+70 Hz) to sound younger. Files are <clip>-<lang>.mp3.

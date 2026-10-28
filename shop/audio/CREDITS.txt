@@ -1,0 +1,5 @@
+Voices: Microsoft neural voices made with edge-tts (https://github.com/rany2/edge-tts), then trimmed and loudness-normalized.
+Sofia speaks English with "en-US-AnaNeural" (a child's voice). The helper and the translations: English Ana, Russian "ru-RU-SvetlanaNeural" and Latvian "lv-LV-EveritaNeural", both raised (+70 Hz) to sound younger.
+The friends, each with its own voice (pitch shifted a little): Leo en-US-GuyNeural, Bella en-GB-LibbyNeural, Max en-US-RogerNeural,
+Coco en-AU-NatashaNeural, Ted en-GB-RyanNeural, Pip en-US-EmmaNeural, Rosie en-IE-EmilyNeural, Oscar en-GB-ThomasNeural.
+Files: f-<friend>-<line>-en.mp3 (a friend), s-<line>-en.mp3 (Sofia), t-<line>-<lang>.mp3 (a translation), <line>-<lang>.mp3 (the helper).

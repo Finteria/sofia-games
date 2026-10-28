@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Hello, friend! · Привет, друг! · Sveiks, draugs!</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;900&display=swap">
+<style>
+/* layout: Sofia on the left, a big door on the right; friends knock, come in and talk with her in English.
+   The middle (landscape) or the top (portrait) holds the speech bubble and Sofia's answers. */
+:root{
+  --ink:#24352b; --card:#fffdf6; --pink:#f06292;
+  --display:"Nunito","Trebuchet MS",system-ui,sans-serif;
+  color-scheme:light;
+  --floor:14vh; --sh:min(82vh,900px); --dh:min(68vh,760px);
+}
+@media (orientation:portrait){:root{--sh:min(56vh,95vw,900px); --dh:min(44vh,77vw,700px)}}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:#ffe9b8;color:var(--ink);font-family:var(--display);overflow:hidden;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+#stage{position:fixed;inset:0;overflow:hidden;overflow:clip}
+#wall{position:absolute;inset:0;pointer-events:none;background:
+  repeating-linear-gradient(90deg,#ffe3a3 0 34px,#ffeec4 34px 68px)}
+#wall::after{content:"";position:absolute;left:0;right:0;bottom:0;height:var(--floor);background:
+  repeating-linear-gradient(90deg,#c98b52 0 90px,#bd7f47 90px 92px);border-top:10px solid #a96a36}
+#progress{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));left:0;right:0;display:flex;justify-content:center;gap:10px;z-index:5;pointer-events:none}
+.dot{width:38px;height:38px;border-radius:50%;background:#ffffffaa;border:3px solid #d6a55c;display:flex;align-items:center;justify-content:center;font-size:22px;transition:transform .3s}
+.dot.done{background:#fff;border-color:#2f8f5b;transform:scale(1.15)}
+@media (max-width:500px){#progress{gap:6px}.dot{width:30px;height:30px;font-size:17px}}
+
+/* Sofia */
+#sofia{position:absolute;left:max(3vw,env(safe-area-inset-left,0px));bottom:calc(var(--floor) * .3);height:var(--sh);aspect-ratio:800/1730;z-index:3;
+  transform-origin:50% 100%;animation:bob 2.4s ease-in-out infinite}
+#sofia svg{display:block;width:100%;height:100%;overflow:visible}
+#sofia svg *{transform-box:view-box}
+#sofia .ink{stroke:#1b1717;stroke-linecap:round;stroke-linejoin:round}
+#sofia .skin{fill:#ffe3cf}
+#sofia .hair{fill:#3b2a20}
+#sofia .eye{transform-box:fill-box;transform-origin:center;animation:blink 4.2s infinite}
+#sofia .mouth.open{opacity:0}
+#sofia.talk .mouth.open{animation:flap .3s steps(1,end) infinite}
+#sofia.talk .mouth.shut{animation:flap .3s steps(1,end) infinite -.15s}
+#sofia .head{transform-origin:400px 870px}
+#sofia .arm.l{transform-origin:262px 955px;animation:sway 2.4s ease-in-out infinite}
+#sofia .arm.r{transform-origin:538px 955px;animation:sway 2.4s ease-in-out infinite reverse}
+#sofia .leg.l{transform-origin:335px 1390px}
+#sofia .leg.r{transform-origin:465px 1390px}
+#sofia.walk{animation:stride .6s ease-in-out infinite}
+#sofia.walk .leg.l{animation:stepL .6s ease-in-out infinite}
+#sofia.walk .leg.r{animation:stepR .6s ease-in-out infinite}
+#sofia.walk .arm.l{animation:swingL .6s ease-in-out infinite}
+#sofia.walk .arm.r{animation:swingR .6s ease-in-out infinite}
+#sofia.walk .head{animation:nod .6s ease-in-out infinite}
+#sofia.talk .head{animation:chat .32s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+@keyframes flap{0%{opacity:1}50%{opacity:0}}
+@keyframes sway{50%{transform:rotate(4deg)}}
+@keyframes stride{0%,50%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-3%) rotate(-2deg)}75%{transform:translateY(-3%) rotate(2deg)}}
+@keyframes stepL{0%,50%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-60px) rotate(7deg)}}
+@keyframes stepR{0%,50%,100%{transform:translateY(0) rotate(0)}75%{transform:translateY(-60px) rotate(-7deg)}}
+@keyframes swingL{0%,100%{transform:rotate(-16deg)}50%{transform:rotate(10deg)}}
+@keyframes swingR{0%,100%{transform:rotate(-10deg)}50%{transform:rotate(16deg)}}
+@keyframes nod{0%,50%,100%{transform:rotate(0)}25%{transform:rotate(3deg)}75%{transform:rotate(-3deg)}}
+@keyframes chat{0%,100%{transform:rotate(-3deg) scale(1)}50%{transform:rotate(3deg) scale(1.03)}}
+#sofia.listen .head{animation:none;transform:rotate(-7deg)}
+
+/* the door: a frame in the wall, the outside behind it, the door itself swings open on its right side */
+#door{position:absolute;right:max(4vw,env(safe-area-inset-right,0px));bottom:var(--floor);height:var(--dh);aspect-ratio:.52;z-index:2;cursor:pointer;
+  background:#f6e2c0;border-radius:14px 14px 0 0;padding:4% 5% 0;box-sizing:border-box;box-shadow:0 0 0 6px #b9844b inset}
+#outside{position:relative;width:100%;height:100%;border-radius:8px 8px 0 0;overflow:hidden;perspective:900px;
+  background:linear-gradient(#8fd3ff 0 62%,#7cc96b 62%)}
+#outside::before{content:"";position:absolute;left:12%;top:18%;width:30%;aspect-ratio:1;border-radius:50%;background:#fff6;box-shadow:40px 10px 0 -6px #fff6}
+#leaf{position:absolute;inset:0;transform-origin:100% 50%;transition:transform 1s cubic-bezier(.4,.1,.3,1);border-radius:6px 6px 0 0;
+  background:#d47a3c;box-shadow:inset 0 0 0 5px #a85a26}
+#leaf .panel{position:absolute;left:14%;right:14%;border-radius:8px;box-shadow:inset 0 0 0 5px #b8662d}
+#leaf .p1{top:30%;height:26%}#leaf .p2{top:62%;height:30%}
+#leaf .win{position:absolute;left:30%;top:7%;width:40%;aspect-ratio:1;border-radius:50%;background:#bfe7ff;box-shadow:inset 0 0 0 5px #a85a26}
+#leaf .knob{position:absolute;left:10%;top:56%;width:11%;aspect-ratio:1;border-radius:50%;background:#ffd25a;box-shadow:inset -3px -3px 0 #d39b1f}
+#door.open #leaf{transform:rotateY(-108deg)}
+#door.knock{animation:knock .5s ease-in-out 3}
+#door.glow{box-shadow:0 0 0 6px #b9844b inset,0 0 0 8px #ffd25a,0 0 40px 12px #ffd25a}
+@keyframes knock{30%{transform:translateX(-5px)}60%{transform:translateX(5px)}}
+
+/* the friend: a big animal standing in front of the door */
+#friend{position:absolute;z-index:4;bottom:calc(var(--floor) * .45);font-size:calc(var(--dh) * .5);line-height:1;translate:-50% 0;cursor:pointer;
+  transform-origin:50% 100%;filter:drop-shadow(0 10px 6px #0003)}
+#friend span{display:block;animation:fbob 2s ease-in-out infinite}
+#friend.talk span{animation:ftalk .34s ease-in-out infinite}
+@keyframes fbob{50%{transform:translateY(-4%)}}
+@keyframes ftalk{50%{transform:scale(1.05,.95) translateY(2%)}}
+
+/* the middle: what is being said, and Sofia's answers */
+#mid{position:absolute;z-index:6;display:flex;flex-direction:column;align-items:center;gap:12px;box-sizing:border-box;pointer-events:none}
+#bubble{position:relative;visibility:hidden;max-width:100%;box-sizing:border-box;background:#fff;border-radius:26px;padding:12px 20px;text-align:center;
+  box-shadow:0 6px 0 #0002;font-weight:900;font-size:clamp(18px,2.6vw,30px);line-height:1.2}
+#bubble.on{visibility:visible}
+#bubble .tr{display:block;font-size:.66em;font-weight:700;color:#6d6457;margin-top:4px;transition:color .2s}
+#bubble .tr.speak{color:#c2185b}
+#bubble::after{content:"";position:absolute;bottom:-14px;width:28px;height:28px;background:#fff;clip-path:polygon(0 0,100% 0,50% 100%)}
+#bubble.left::after{left:16%;clip-path:polygon(0 0,100% 0,0 100%)}
+#bubble.right::after{right:16%;clip-path:polygon(0 0,100% 0,100% 100%)}
+#answers{flex:1;width:100%;display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:12px;pointer-events:auto}
+.ans{border:0;cursor:pointer;font-family:var(--display);background:var(--card);color:var(--ink);border-radius:28px;box-shadow:0 7px 0 #0002;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 16px;transition:transform .1s;min-width:120px}
+.ans:active{transform:translateY(5px);box-shadow:0 2px 0 #0002}
+.ans .e{font-size:clamp(40px,7vh,64px);line-height:1.1}
+.ans .t{font-weight:900;font-size:clamp(16px,2.3vh,22px)}
+.ans.one{flex-direction:row;gap:14px;padding:14px 24px;max-width:100%}
+.ans.one .t{font-size:clamp(18px,3vh,28px);text-align:left}
+.ans.four{width:calc(50% - 8px);max-width:220px;min-width:0}
+.ans.wiggle{animation:wiggle .7s ease-in-out}
+.ans.help{outline:6px solid #ffd25a;outline-offset:3px;animation:pulse 1s ease-in-out infinite}
+@keyframes wiggle{20%{rotate:-5deg}40%{rotate:5deg}60%{rotate:-4deg}80%{rotate:3deg}}
+@keyframes pulse{50%{scale:1.06}}
+.num{display:inline-flex;width:1.3em;height:1.3em;border-radius:50%;background:#ffd25a;color:#7a4a00;font-weight:900;align-items:center;justify-content:center;font-size:.9em}
+.ball-dot{display:inline-block;width:1em;height:1.2em}
+#mic{width:76px;height:76px;flex:none;border-radius:50%;border:0;cursor:pointer;background:#fff;box-shadow:0 7px 0 #0002;display:flex;align-items:center;justify-content:center;align-self:center}
+#mic svg{width:42px;height:42px}
+#mic.rec{background:#e53935;box-shadow:0 0 0 calc(var(--lvl,0) * 26px + 6px) #e5393555}
+#mic.rec svg path{stroke:#fff}
+#mic.rec svg rect{fill:#fff}
+
+.fx{position:absolute;z-index:8;pointer-events:none;translate:-50% -50%;font-size:46px;animation:rise 1.6s ease-out forwards}
+@keyframes rise{from{transform:translate(0,0) scale(.5);opacity:0}15%{opacity:1}to{transform:translate(var(--dx),-160px) scale(1.2);opacity:0}}
+.flyer{position:absolute;z-index:8;pointer-events:none;translate:-50% -50%;line-height:1}
+#ball{position:absolute;z-index:8;translate:-50% -50%;font-size:min(10vh,70px);line-height:1;cursor:pointer;filter:drop-shadow(0 6px 4px #0003)}
+#ball.help{animation:pulse 1s ease-in-out infinite;filter:drop-shadow(0 0 14px #ffd25a)}
+.balloon{position:absolute;z-index:8;pointer-events:none;width:min(12vh,90px);translate:-50% 0;animation:float 4s ease-in forwards}
+@keyframes float{from{transform:translateY(0)}to{transform:translateY(-110vh) rotate(8deg)}}
+#party{position:absolute;left:0;right:0;top:30%;z-index:7;display:flex;justify-content:center;gap:2vw;font-size:min(16vh,14vw);pointer-events:none}
+#party span{animation:hop .6s ease-in-out infinite alternate}
+#party span:nth-child(2n){animation-delay:.3s}
+@keyframes hop{to{transform:translateY(-18%)}}
+
+.corner{position:absolute;top:max(14px,env(safe-area-inset-top,0px));width:60px;height:60px;border-radius:50%;z-index:13;
+  background:#ffffff55;border:0;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.corner svg{width:34px;height:34px}
+.home{left:max(14px,env(safe-area-inset-left,0px))}
+#stage>.home{background:#d39b4f99}
+
+#overlay{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+  background:#f0a03cf2;color:#fff;text-align:center;padding:24px;overflow-y:auto}
+#overlay>h1{margin-top:auto!important}
+#overlay>:last-child{margin-bottom:auto}
+#overlay h1{margin:0;font-size:clamp(40px,7.5vw,80px);font-weight:900;line-height:1.05;text-shadow:0 4px 0 #0003}
+#overlay .sub{margin:-8px 0 0;font-size:clamp(20px,3.4vw,28px);font-weight:900;opacity:.92}
+.langs{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+.go{width:min(40vw,220px);padding:16px 10px 14px;border:0;border-radius:32px;background:var(--card);cursor:pointer;font-family:var(--display);
+  box-shadow:0 8px 0 #0003;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--ink);transition:transform .1s}
+.go:active{transform:translateY(6px);box-shadow:0 2px 0 #0003}
+.go .e{font-size:clamp(44px,7vw,64px);line-height:1.1;white-space:nowrap}
+.go .name{font-size:clamp(20px,3vw,26px);font-weight:900}
+.go .with{font-size:clamp(15px,2.2vw,19px);font-weight:700;color:#8a6d4a;min-height:1.2em}
+.go svg{width:48px;height:48px}
+.go.last{outline:5px solid #ffd25a;outline-offset:3px}
+.stickers{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;max-width:760px}
+.sticker{width:84px;height:84px;border-radius:22px;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:52px;border:0;cursor:pointer}
+@media (max-height:520px){.go{padding:10px 8px}.go .e{font-size:40px}.go svg{width:38px;height:38px}#overlay{gap:12px}.sticker{width:64px;height:64px;font-size:40px}#mic{width:62px;height:62px}}
+
+/* the big "yes!" */
+.star{position:absolute;width:40px;height:40px;z-index:9;pointer-events:none;animation:fly 1.6s ease-out forwards}
+@keyframes fly{from{transform:translate(0,0) scale(.3) rotate(0);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(1.2) rotate(240deg);opacity:0}}
+.bigstar{position:absolute;width:min(42vmin,280px);height:min(42vmin,280px);translate:-50% -50%;z-index:9;pointer-events:none;animation:bigstar 1.1s ease-out forwards}
+@keyframes bigstar{0%{scale:0;rotate:-60deg;opacity:1}40%{scale:1.15;rotate:8deg;opacity:1}100%{scale:1.6;rotate:0deg;opacity:0}}
+.confetti{position:absolute;top:-5vh;width:13px;height:20px;border-radius:3px;z-index:9;pointer-events:none;animation:fall var(--t) cubic-bezier(.25,.6,.6,1) var(--dl) forwards}
+@keyframes fall{to{transform:translate(var(--dx),112vh) rotate(var(--r))}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01s!important}}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="wall"></div>
+  <div id="progress"></div>
+  <div id="door" role="button" aria-label="The door"><div id="outside"><div id="leaf"><div class="win"></div><div class="panel p1"></div><div class="panel p2"></div><div class="knob"></div></div></div></div>
+  <div id="sofia" role="img" aria-label="Sofia">
+    <svg viewBox="0 0 800 1730" aria-hidden="true">
+      <defs>
+        <g id="leg">
+          <path class="ink" d="M335 1380 L331 1640" fill="none" stroke-width="68"/>
+          <path d="M335 1380 L331 1640" stroke="#ffe3cf" stroke-width="50" stroke-linecap="round"/>
+          <path d="M331 1590 L331 1640" stroke="#fff" stroke-width="50"/>
+          <path d="M305 1592 H357" stroke="#f06292" stroke-width="10" stroke-linecap="round"/>
+          <ellipse class="ink" cx="318" cy="1672" rx="60" ry="34" fill="#d6453d" stroke-width="9"/>
+          <ellipse cx="300" cy="1660" rx="16" ry="8" fill="#fff" opacity=".5"/>
+        </g>
+        <g id="arm">
+          <path class="ink" d="M262 965 Q232 1085 218 1200" fill="none" stroke-width="64"/>
+          <circle cx="216" cy="1222" r="34" fill="#1b1717"/>
+          <path d="M262 965 Q232 1085 218 1200" fill="none" stroke="#ffe3cf" stroke-width="46" stroke-linecap="round"/>
+          <circle class="skin" cx="216" cy="1222" r="25"/>
+          <ellipse class="ink" cx="266" cy="955" rx="58" ry="48" fill="#f7a8c4" stroke-width="9"/>
+        </g>
+      </defs>
+      <g class="leg l"><use href="#leg"/></g>
+      <g class="leg r"><use href="#leg" transform="translate(800 0) scale(-1 1)"/></g>
+      <path class="skin ink" d="M352 820 L350 925 Q400 950 450 925 L448 820Z" stroke-width="8"/>
+      <path class="ink" d="M305 900 Q400 945 495 900 L535 918 Q565 990 562 1080 L640 1420 Q400 1478 160 1420 L238 1080 Q235 990 265 918 Z" fill="#f7a8c4" stroke-width="9"/>
+      <path d="M190 1385 Q400 1440 610 1385" fill="none" stroke="#f06292" stroke-width="12" stroke-linecap="round" stroke-dasharray="2 34"/>
+      <g fill="#fff" opacity=".8"><circle cx="330" cy="1060" r="13"/><circle cx="450" cy="1110" r="13"/><circle cx="390" cy="1210" r="13"/><circle cx="280" cy="1270" r="13"/><circle cx="510" cy="1260" r="13"/><circle cx="400" cy="1340" r="13"/><circle cx="240" cy="1370" r="12"/><circle cx="560" cy="1370" r="12"/></g>
+      <path class="ink" d="M308 902 Q322 980 400 950 L400 930 Q352 936 308 902Z M492 902 Q478 980 400 950 L400 930 Q448 936 492 902Z" fill="#fff" stroke-width="7"/>
+      <g class="arm l"><use href="#arm"/></g>
+      <g class="arm r"><use href="#arm" transform="translate(800 0) scale(-1 1)"/></g>
+      <g class="head"><g transform="rotate(-4 400 560)">
+        <!-- cartoon Sofia after her portrait: round cheeks, top-knot curling right; Amélie-style bob with short blunt bangs -->
+        <path class="hair ink" d="M118 600 C92 360 212 168 400 166 C588 168 708 360 682 600 L694 770 C698 812 650 822 616 800 L184 800 C150 822 102 812 106 770Z" stroke-width="9"/>
+        <g class="tuft">
+          <path class="hair ink" d="M448 230 C400 175 345 150 290 158 C345 118 425 140 472 212Z" stroke-width="9"/>
+          <path class="hair ink" d="M450 225 C428 140 455 70 515 25 C512 95 512 160 490 228Z" stroke-width="9"/>
+          <path class="hair ink" d="M462 228 C495 120 600 62 688 102 C712 150 680 196 648 170 C668 140 632 118 600 128 C555 145 525 185 500 240Z" stroke-width="9"/>
+          <path d="M468 200 C470 140 485 95 508 60 M495 210 C530 145 590 112 650 115" fill="none" stroke="#6b4a36" stroke-width="6" stroke-linecap="round"/>
+        </g>
+        <path class="skin ink" d="M158 540 C158 360 270 280 400 280 C530 280 642 360 642 540 C642 700 610 795 530 842 C475 872 325 872 270 842 C190 795 158 700 158 540Z" stroke-width="9"/>
+        <path d="M262 505 Q300 485 340 500 M462 508 Q502 490 542 506" fill="none" stroke="#3b2a20" stroke-width="10" stroke-linecap="round"/>
+        <g class="eye"><ellipse cx="300" cy="575" rx="27" ry="33" fill="#1b1717"/><circle cx="290" cy="563" r="10" fill="#fff"/><circle cx="310" cy="590" r="4.5" fill="#fff"/></g>
+        <g class="eye"><ellipse cx="500" cy="580" rx="27" ry="33" fill="#1b1717"/><circle cx="490" cy="568" r="10" fill="#fff"/><circle cx="510" cy="595" r="4.5" fill="#fff"/></g>
+        <ellipse cx="252" cy="668" rx="46" ry="30" fill="#ff8fab" opacity=".45"/>
+        <ellipse cx="548" cy="672" rx="46" ry="30" fill="#ff8fab" opacity=".45"/>
+        <path d="M388 640 Q400 656 414 640" fill="none" stroke="#c98f7a" stroke-width="8" stroke-linecap="round"/>
+        <path class="mouth shut" d="M345 705 Q400 752 455 705" fill="none" stroke="#1b1717" stroke-width="10" stroke-linecap="round"/>
+        <g class="mouth open"><path d="M350 700 Q400 706 450 700 Q444 768 400 772 Q356 768 350 700Z" fill="#8e2a3a" stroke="#1b1717" stroke-width="8" stroke-linejoin="round"/><ellipse cx="400" cy="752" rx="26" ry="12" fill="#f28b9b"/></g>
+        <path class="hair ink" d="M168 430 C142 560 146 700 172 795 C196 812 232 800 228 776 C210 690 206 560 222 440Z M632 430 C658 560 654 700 628 795 C604 812 568 800 572 776 C590 690 594 560 578 440Z" stroke-width="9"/>
+        <path class="hair ink" d="M170 480 C150 320 265 208 400 208 C535 208 650 320 630 480 C560 458 480 452 400 454 C320 452 240 458 170 480Z" stroke-width="9"/>
+        <path d="M250 300 C320 255 470 250 550 290 M300 452 L304 418 M400 450 L400 414 M500 452 L496 418 M196 560 L192 700 M604 560 L608 700" fill="none" stroke="#6b4a36" stroke-width="7" stroke-linecap="round"/>
+        <path d="M470 215 L408 172 L414 262 Z M470 215 L536 178 L526 266 Z" fill="#f06292" stroke="#c2185b" stroke-width="6" stroke-linejoin="round"/>
+        <circle cx="470" cy="217" r="21" fill="#e04a7f" stroke="#c2185b" stroke-width="6"/>
+      </g></g>
+    </svg>
+  </div>
+  <div id="friend" hidden><span></span></div>
+  <div id="mid"><div id="bubble"></div><div id="answers"></div></div>
+  <a class="corner home" href="../index.html" aria-label="Menu"><svg viewBox="0 0 40 40"><path d="M6 19L20 7l14 12M11 16v16h18V16" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+  <div id="overlay"></div>
+</div>
+<script>
+const FRIENDS={"leo": ["🦁", ["Leo", "Лео", "Leo"]], "bella": ["🐰", ["Bella", "Белла", "Bella"]], "max": ["🐶", ["Max", "Макс", "Makss"]], "coco": ["🐵", ["Coco", "Коко", "Koko"]], "ted": ["🐻", ["Ted", "Тед", "Teds"]], "pip": ["🐧", ["Pip", "Пип", "Pips"]], "rosie": ["🐷", ["Rosie", "Рози", "Rozija"]], "oscar": ["🦉", ["Oscar", "Оскар", "Oskars"]]};
+const FT={"hi": ["Hello!", "Привет!", "Sveiki!"], "helloname": ["Hello! My name is {N}. What's your name?", "Привет! Меня зовут {N}. А тебя как зовут?", "Sveiki! Mani sauc {N}. Kā tevi sauc?"], "name": ["My name is {N}! What's your name?", "Меня зовут {N}! А тебя как зовут?", "Mani sauc {N}! Kā tevi sauc?"], "nice": ["Nice to meet you, Sofia!", "Приятно познакомиться, София!", "Prieks iepazīties, Sofija!"], "age": ["How old are you, Sofia?", "Сколько тебе лет, София?", "Cik tev gadu, Sofija?"], "how": ["How are you today?", "Как у тебя дела сегодня?", "Kā tev šodien iet?"], "r-happy": ["I'm happy too! Let's dance!", "Мне тоже весело! Давай потанцуем!", "Man arī ir jautri! Dejosim!"], "r-sleepy": ["You're sleepy? Let's have a little rest!", "Хочешь спать? Давай немножко отдохнём!", "Gribi gulēt? Mazliet atpūtīsimies!"], "r-hungry": ["You're hungry? Here's an apple for you!", "Хочешь кушать? Вот тебе яблоко!", "Gribi ēst? Lūk, tev ābols!"], "fine": ["I'm fine, thank you!", "У меня всё хорошо, спасибо!", "Man iet labi, paldies!"], "colour": ["What's your favourite colour?", "Какой твой любимый цвет?", "Kura ir tava mīļākā krāsa?"], "play": ["Do you want to play with me?", "Хочешь поиграть со мной?", "Vai gribi ar mani paspēlēties?"], "catch": ["Hooray! Catch the ball!", "Ура! Лови мячик!", "Urrā! Ķer bumbu!"], "fun": ["That was fun! Thank you, Sofia!", "Было весело! Спасибо, София!", "Bija jautri! Paldies, Sofija!"], "bye": ["I have to go now. Goodbye, Sofia!", "Мне пора идти. До свидания, София!", "Man jāiet. Uz redzēšanos, Sofija!"], "num-2": ["Two! You are so big!", "Два! Какая ты большая!", "Divi! Tu jau esi liela!"], "num-3": ["Three! You are so big!", "Три! Какая ты большая!", "Trīs! Tu jau esi liela!"], "num-4": ["Four! You are so big!", "Четыре! Какая ты большая!", "Četri! Tu jau esi liela!"], "num-5": ["Five! You are so big!", "Пять! Какая ты большая!", "Pieci! Tu jau esi liela!"], "col-red": ["Red! I love red too!", "Красный! Я тоже люблю красный!", "Sarkanā krāsa! Man arī tā patīk!"], "col-blue": ["Blue! I love blue too!", "Синий! Я тоже люблю синий!", "Zilā krāsa! Man arī tā patīk!"], "col-green": ["Green! I love green too!", "Зелёный! Я тоже люблю зелёный!", "Zaļā krāsa! Man arī tā patīk!"], "col-yellow": ["Yellow! I love yellow too!", "Жёлтый! Я тоже люблю жёлтый!", "Dzeltenā krāsa! Man arī tā patīk!"], "col-pink": ["Pink! I love pink too!", "Розовый! Я тоже люблю розовый!", "Rozā krāsa! Man arī tā patīk!"], "col-purple": ["Purple! I love purple too!", "Фиолетовый! Я тоже люблю фиолетовый!", "Violetā krāsa! Man arī tā patīk!"], "col-orange": ["Orange! I love orange too!", "Оранжевый! Я тоже люблю оранжевый!", "Oranžā krāsa! Man arī tā patīk!"]};
+const ST={"helloname": ["Hello! My name is Sofia!", "Привет! Меня зовут София!", "Sveiki! Mani sauc Sofija!"], "hellowhat": ["Hello! What's your name?", "Привет! Как тебя зовут?", "Sveiki! Kā tevi sauc?"], "name": ["My name is Sofia!", "Меня зовут София!", "Mani sauc Sofija!"], "nice": ["Nice to meet you too!", "Мне тоже очень приятно!", "Man arī ļoti prieks!"], "happy": ["I'm happy!", "Мне весело!", "Es esmu priecīga!"], "sleepy": ["I'm sleepy!", "Я хочу спать!", "Es gribu gulēt!"], "hungry": ["I'm hungry!", "Я хочу кушать!", "Es gribu ēst!"], "how": ["How are you?", "А как у тебя дела?", "Un kā tev iet?"], "yes": ["Yes, please!", "Да, пожалуйста!", "Jā, lūdzu!"], "catch": ["Catch!", "Лови!", "Ķer bumbu!"], "bye": ["Goodbye! See you later!", "До свидания! До встречи!", "Uz redzēšanos! Tiksimies!"], "age-2": ["I am two!", "Мне два года!", "Man ir divi gadi!"], "age-3": ["I am three!", "Мне три года!", "Man ir trīs gadi!"], "age-4": ["I am four!", "Мне четыре года!", "Man ir četri gadi!"], "age-5": ["I am five!", "Мне пять лет!", "Man ir pieci gadi!"], "fav-red": ["My favourite colour is red!", "Мой любимый цвет — красный!", "Mana mīļākā krāsa ir sarkanā!"], "fav-blue": ["My favourite colour is blue!", "Мой любимый цвет — синий!", "Mana mīļākā krāsa ir zilā!"], "fav-green": ["My favourite colour is green!", "Мой любимый цвет — зелёный!", "Mana mīļākā krāsa ir zaļā!"], "fav-yellow": ["My favourite colour is yellow!", "Мой любимый цвет — жёлтый!", "Mana mīļākā krāsa ir dzeltenā!"], "fav-pink": ["My favourite colour is pink!", "Мой любимый цвет — розовый!", "Mana mīļākā krāsa ir rozā!"], "fav-purple": ["My favourite colour is purple!", "Мой любимый цвет — фиолетовый!", "Mana mīļākā krāsa ir violetā!"], "fav-orange": ["My favourite colour is orange!", "Мой любимый цвет — оранжевый!", "Mana mīļākā krāsa ir oranžā!"]};
+const $=id=>document.getElementById(id);
+const stage=$("stage"), overlay=$("overlay"), sofia=$("sofia"), door=$("door"), friendEl=$("friend"), bubble=$("bubble"), answers=$("answers"), mid=$("mid");
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const NS="http://www.w3.org/2000/svg";
+const LI={en:0,ru:1,lv:2};
+const svg=sofia.querySelector("svg"), armR=svg.querySelector(".arm.r"), armL=svg.querySelector(".arm.l");
+
+/* ---------- where things go: the speech bubble and the answers sit between Sofia and the door (landscape) or above them (portrait) ---------- */
+function layout(){
+  const W=innerWidth, H=innerHeight, s=sofia.getBoundingClientRect(), d=door.getBoundingClientRect();
+  let x0,x1,y0=Math.max(64,H*.09),y1;
+  if(W>H*1.05){x0=s.right+10; x1=d.left-10; y1=H-H*.14*.6}
+  else{x0=14; x1=W-14; y1=Math.min(s.top,d.top)-8}
+  Object.assign(mid.style,{left:x0+"px",top:y0+"px",width:(x1-x0)+"px",height:Math.max(160,y1-y0)+"px"});
+  const f=friendEl; f.style.left=(d.left+d.width/2)+"px";
+}
+addEventListener("resize",layout);
+
+/* ---------- audio ---------- */
+let lang=store.get("hello-lang")||"en";
+let ctx=null, current=null;
+function ac(){ if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)(); if(ctx.state!=="running") ctx.resume(); return ctx }
+const decode=ab=>new Promise((res,rej)=>ac().decodeAudioData(ab,res,rej));
+const cache={};
+function load(url){return cache[url]||(cache[url]=fetch(url).then(r=>r.ok?r.arrayBuffer():Promise.reject()).then(decode).catch(()=>null))}
+const url=stem=>`audio/${stem}.mp3`;
+function playBuffer(buf){return new Promise(res=>{const c=ac(),s=c.createBufferSource();s.buffer=buf;s.connect(c.destination);
+  if(current) try{current.stop()}catch(e){}; current=s; s.onended=()=>{if(current===s) current=null; res()}; s.start(); setTimeout(res,buf.duration*1000+300)})}
+function stopVoice(){if(current) try{current.stop()}catch(e){}; current=null}
+function talking(who,on){ if(who==="sofia") sofia.classList.toggle("talk",on); if(who==="friend") friendEl.classList.toggle("talk",on) }
+let token=0;   // a new game makes the old one's lines stop
+async function clip(stem,who){const t=token; const buf=await load(url(stem)); if(!buf||t!==token) return; talking(who,true); await playBuffer(buf); talking(who,false)}
+function tone(type,f0,f1,t0,dur,vol=.3){
+  const c=ac(),o=c.createOscillator(),g=c.createGain(); o.type=type;
+  o.frequency.setValueAtTime(f0,t0); o.frequency.exponentialRampToValueAtTime(f1,t0+dur);
+  g.gain.setValueAtTime(.0001,t0); g.gain.exponentialRampToValueAtTime(vol,t0+.02); g.gain.exponentialRampToValueAtTime(.0001,t0+dur);
+  o.connect(g).connect(c.destination); o.start(t0); o.stop(t0+dur+.05);
+}
+function noise(dur,type,freq,vol,when=0){const c=ac(), n=c.sampleRate*dur, b=c.createBuffer(1,n,c.sampleRate), d=b.getChannelData(0);
+  for(let i=0;i<n;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3);
+  const s=c.createBufferSource(), f=c.createBiquadFilter(), g=c.createGain(); s.buffer=b; f.type=type; f.frequency.value=freq; g.gain.value=vol;
+  s.connect(f).connect(g).connect(c.destination); s.start(c.currentTime+when)}
+const sfx={
+  knock(){const t=ac().currentTime; [0,.22,.44].forEach(w=>{noise(.09,"lowpass",500,2.2,w); tone("sine",170,90,t+w,.1,.35)})},
+  creak(){const t=ac().currentTime; tone("sawtooth",240,330,t,.5,.04); tone("triangle",180,260,t+.1,.5,.06)},
+  shut(){noise(.18,"lowpass",260,2.4)},
+  pop(){const t=ac().currentTime; tone("sine",500,900,t,.12,.2)},
+  beep(hi){const t=ac().currentTime; tone("sine",hi?990:660,hi?990:660,t,.16,.2)},
+  whee(){const t=ac().currentTime; tone("triangle",400,900,t,.45,.12)},
+  crunch(){noise(.12,"highpass",2000,.8); noise(.12,"highpass",1800,.7,.18)},
+  yay(){const t=ac().currentTime;[523,659,784,1047].forEach((f,i)=>tone("triangle",f,f,t+i*.12,.3,.25))},
+  dance(){const t=ac().currentTime; [523,659,784,659,523,659,784,1047,784,659,523].forEach((f,i)=>tone("triangle",f,f,t+i*.18,.16,.18))},
+  lull(){const t=ac().currentTime; [392,330,392,330,262].forEach((f,i)=>tone("sine",f,f,t+i*.4,.36,.12))}
+};
+
+/* ---------- the friends and their words ---------- */
+let fid="leo";
+const fname=i=>FRIENDS[fid][1][i];
+const NAMED=["helloname","name"];
+const seen={};
+function showBubble(side,en,tr){
+  bubble.className="on "+side; bubble.innerHTML=`${en}${tr?`<span class="tr">${tr}</span>`:""}`;
+}
+function hideBubble(){bubble.className=""}
+const tail=who=>who==="sofia"?"left":"right";
+async function translate(stem){   // the helper says it in her language, the first two times
+  if(lang==="en") return; if((seen[stem]||0)>=2) return; seen[stem]=(seen[stem]||0)+1;
+  const tr=bubble.querySelector(".tr"); tr?.classList.add("speak"); await clip(stem,"help"); tr?.classList.remove("speak")
+}
+let lastF=null;
+async function fsay(key,{again=false}={}){
+  const t=FT[key], L=LI[lang]; lastF=key;
+  showBubble(tail("friend"),t[0].replace("{N}",fname(0)),L?t[L].replace("{N}",fname(L)):"");
+  await clip(`f-${fid}-${key}-en`,"friend"); if(again) return; await wait(250);
+  await translate(NAMED.includes(key)?`t-${key}-${fid}-${lang}`:`t-f${key}-${lang}`);
+}
+async function ssay(key){
+  const t=ST[key], L=LI[lang];
+  showBubble(tail("sofia"),t[0],L?t[L]:"");
+  await clip(`s-${key}-en`,"sofia"); await wait(250); await translate(`t-s${key}-${lang}`);
+}
+function prompt(key){return clip(`${key}-${lang}`,"help")}
+
+/* ---------- Sofia's turn: big answer bubbles (and a microphone for saying it herself) ---------- */
+let turnsSeen={one:0,many:0};
+const micIcon=`<svg viewBox="0 0 40 40" aria-hidden="true"><rect x="14" y="4" width="12" height="20" rx="6" fill="#e53935"/><path d="M9 19a11 11 0 0 0 22 0M20 30v6M14 36h12" fill="none" stroke="#e53935" stroke-width="3.5" stroke-linecap="round"/></svg>`;
+let micOK=!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia&&(window.AudioContext||window.webkitAudioContext));
+function turn(opts){
+  return new Promise(res=>{
+    const one=opts.length===1, cls=one?"one":opts.length===4?"four":"";
+    answers.innerHTML=opts.map(o=>`<button class="ans ${cls}" data-k="${o.k}"><span class="e">${o.e}</span><span class="t">${o.t||ST[o.k][0]}</span></button>`).join("")
+      +(one&&micOK?`<button id="mic" aria-label="I say it myself">${micIcon}</button>`:"");
+    const kind=one?"one":"many", first=turnsSeen[kind]++<2;
+    let done=false, timers=[];
+    const finish=r=>{if(done) return; done=true; timers.forEach(clearTimeout); stopVoice(); talking("friend",false); res(r)};
+    answers.querySelectorAll(".ans").forEach(b=>b.onclick=()=>{ac(); finish({k:b.dataset.k})});
+    if(one&&micOK) $("mic").onclick=()=>{ac(); finish({k:opts[0].k,mic:true})};
+    const btns=[...answers.querySelectorAll(".ans")];
+    const wiggle=()=>btns.forEach((b,i)=>{b.classList.remove("wiggle"); void b.offsetWidth; setTimeout(()=>b.classList.add("wiggle"),i*120)});
+    if(first) prompt(one?"turn":"choose");
+    timers.push(setTimeout(()=>!done&&wiggle(),first?6000:5000));
+    timers.push(setTimeout(async()=>{if(done) return; btns.forEach(b=>b.classList.add("help")); if(lastF) await fsay(lastF,{again:true}); if(!done) prompt(one?"turn":"choose")},14000));
+  }).then(r=>{answers.innerHTML=""; return r});
+}
+async function sofiaTurn(opts,{wave=false}={}){
+  const r=await turn(opts);
+  if(wave) waveArm();
+  if(r.mic) await sayItYourself(r.k); else await ssay(r.k);
+  return r.k;
+}
+/* she says it herself: Sofia says it first, then «Now you say it!», a beep, about 3 s of recording, and her own voice comes back */
+async function sayItYourself(key){
+  await ssay(key);
+  let stream=null;
+  try{stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}})}
+  catch(e){micOK=false; return}
+  await prompt("mic");
+  answers.innerHTML=`<button id="mic" class="rec" aria-label="Listening">${micIcon}</button>`; const m=$("mic");
+  sofia.classList.add("listen"); sfx.beep(false); await wait(200);
+  const c=ac(), src=c.createMediaStreamSource(stream), pr=c.createScriptProcessor(4096,1,1), chunks=[];
+  pr.onaudioprocess=e=>{const d=e.inputBuffer.getChannelData(0); chunks.push(new Float32Array(d));
+    let s=0; for(let i=0;i<d.length;i+=8) s+=d[i]*d[i]; m.style.setProperty("--lvl",Math.min(1,Math.sqrt(s/(d.length/8))*8).toFixed(2))};
+  src.connect(pr); pr.connect(c.destination);
+  await wait(3400);
+  pr.disconnect(); src.disconnect(); stream.getTracks().forEach(t=>t.stop()); sfx.beep(true); sofia.classList.remove("listen");
+  answers.innerHTML="";
+  /* her voice: cut the quiet start, make it loud enough, and play it back */
+  const n=chunks.reduce((a,b)=>a+b.length,0); if(!n) return;
+  const all=new Float32Array(n); let o=0; for(const ch of chunks){all.set(ch,o); o+=ch.length}
+  let peak=0, start=0; for(let i=0;i<n;i++) peak=Math.max(peak,Math.abs(all[i]));
+  if(peak<.01) return;   // nothing heard: just go on
+  for(let i=0;i<n;i++) if(Math.abs(all[i])>peak*.12){start=Math.max(0,i-c.sampleRate*.08|0); break}
+  const buf=c.createBuffer(1,n-start,c.sampleRate), g=.9/peak, d=buf.getChannelData(0);
+  for(let i=start;i<n;i++) d[i-start]=all[i]*g;
+  await wait(300); await playBuffer(buf);
+  const r=sofia.getBoundingClientRect(); celebrate(r.left+r.width/2+"px",r.top+r.height*.2+"px",.5); await wait(500);
+}
+
+/* ---------- moving about ---------- */
+const A=(e,k,o)=>e.animate(k,o).finished.catch(()=>{});
+function waveArm(){A(armR,[{transform:"rotate(0)"},{transform:"rotate(-150deg)",offset:.25},{transform:"rotate(-120deg)",offset:.42},{transform:"rotate(-155deg)",offset:.6},{transform:"rotate(-120deg)",offset:.78},{transform:"rotate(0)"}],{duration:1900,easing:"ease-in-out"})}
+function friendWave(){return A(friendEl.firstElementChild,[{rotate:"0deg"},{rotate:"-14deg"},{rotate:"14deg"},{rotate:"-14deg"},{rotate:"14deg"},{rotate:"0deg"}],{duration:1200})}
+function knockUntilOpened(){
+  return new Promise(res=>{
+    let n=0, t=null; const t0=token;
+    const knock=async()=>{if(opened||t0!==token) return; door.classList.remove("knock"); void door.offsetWidth; door.classList.add("knock"); sfx.knock();
+      if(n++%2===0){await wait(900); if(opened) return; prompt("knock")} t=setTimeout(knock,n>1?7000:9000);
+      if(n>1) door.classList.add("glow")};
+    let opened=false;
+    door.onclick=()=>{if(opened) return; ac(); opened=true; clearTimeout(t); door.onclick=null; door.classList.remove("knock","glow"); stopVoice(); res()};
+    knock();
+  });
+}
+async function friendIn(){
+  const d=door.getBoundingClientRect();
+  sfx.creak(); door.classList.add("open"); await wait(700);
+  friendEl.firstElementChild.textContent=FRIENDS[fid][0]; layout(); friendEl.hidden=false;
+  await A(friendEl,[{transform:`translateY(${-d.height*.18}px) scale(.5)`,opacity:0},{transform:`translateY(${-d.height*.18}px) scale(.55)`,opacity:1,offset:.15},
+    {transform:"translateY(-12%) scale(.85)",offset:.6},{transform:"translateY(0) scale(1)"}],{duration:1300,easing:"ease-out"});
+  sfx.pop();
+}
+async function friendOut(){
+  const d=door.getBoundingClientRect();
+  await A(friendEl,[{transform:"translateY(0) scale(1)"},{transform:"translateY(-12%) scale(.85)",offset:.4},{transform:`translateY(${-d.height*.18}px) scale(.5)`,opacity:1,offset:.85},
+    {transform:`translateY(${-d.height*.18}px) scale(.45)`,opacity:0}],{duration:1200,easing:"ease-in"});
+  friendEl.hidden=true; door.classList.remove("open"); await wait(800); sfx.shut();
+}
+function onSofia(x,y){const r=sofia.getBoundingClientRect(); return [r.left+x/800*r.width, r.top+y/1730*r.height]}
+function friendXY(){const r=friendEl.getBoundingClientRect(); return [r.left+r.width/2, r.top+r.height*.45]}
+function fx(x,y,chars,n=4,size){for(let i=0;i<n;i++){const f=document.createElement("div"); f.className="fx"; f.textContent=chars[i%chars.length];
+  f.style.cssText=`left:${x+(Math.random()*80-40)}px;top:${y}px;animation-delay:${i*.2}s${size?`;font-size:${size}px`:""}`; f.style.setProperty("--dx",(Math.random()*120-60)+"px");
+  stage.appendChild(f); setTimeout(()=>f.remove(),2400)}}
+/* something flies in an arc from a to b */
+function arc(el,[ax,ay],[bx,by],ms=900){
+  const h=Math.min(innerHeight*.25,Math.abs(bx-ax)*.4)+40, k=[];
+  for(let i=0;i<=12;i++){const t=i/12; k.push({left:ax+(bx-ax)*t+"px",top:ay+(by-ay)*t-h*4*t*(1-t)+"px",rotate:t*540+"deg"})}
+  return A(el,k,{duration:ms,easing:"linear",fill:"forwards"}).then(()=>{el.style.left=bx+"px"; el.style.top=by+"px"});
+}
+const BAL={red:"#e53935",blue:"#1e88e5",green:"#43a047",yellow:"#fdd835",pink:"#f06292",purple:"#8e24aa",orange:"#fb8c00"};
+const balloonSvg=c=>`<svg viewBox="0 0 60 110" aria-hidden="true"><path d="M30 70 Q26 88 32 96 T30 110" fill="none" stroke="#666" stroke-width="2"/><ellipse cx="30" cy="34" rx="26" ry="32" fill="${BAL[c]}"/><path d="M26 66h8l-4 6z" fill="${BAL[c]}"/><ellipse cx="20" cy="22" rx="6" ry="10" fill="#fff6"/></svg>`;
+const colourDot=c=>`<svg class="ball-dot" viewBox="0 0 60 72" aria-hidden="true"><ellipse cx="30" cy="32" rx="26" ry="30" fill="${BAL[c]}" stroke="#0002" stroke-width="2"/><path d="M26 62h8l-4 6z" fill="${BAL[c]}"/><ellipse cx="20" cy="20" rx="6" ry="9" fill="#fff6"/></svg>`;
+
+/* ---------- the topics: one in every visit; there are no wrong answers, it's all about her ---------- */
+const TOPIC={
+  async age(){
+    await fsay("age");
+    const k=await sofiaTurn([2,3,4,5].map(n=>({k:`age-${n}`,e:`<span class="num">${n}</span>`})));
+    const n=+k.split("-")[1]; const [x,y]=onSofia(400,300); fx(x,y,[String(n),"🎂","⭐"],3,64);
+    A(sofia,[{translate:"0 0"},{translate:"0 -8%"},{translate:"0 0"}],{duration:600,easing:"ease-in-out"});
+    await fsay(`num-${n}`);
+  },
+  async how(){
+    await fsay("how");
+    const k=await sofiaTurn([{k:"happy",e:"😊"},{k:"sleepy",e:"😴"},{k:"hungry",e:"😋"}]);
+    const said=fsay(`r-${k}`);
+    if(k==="happy"){ sfx.dance(); const f=friendEl.firstElementChild;
+      A(sofia,[{rotate:"0deg"},{rotate:"-6deg"},{rotate:"6deg"},{rotate:"-6deg"},{rotate:"6deg"},{rotate:"0deg"}],{duration:2000});
+      A(f,[{transform:"translateY(0)"},{transform:"translateY(-15%) rotate(-10deg)"},{transform:"translateY(0)"},{transform:"translateY(-15%) rotate(10deg)"},{transform:"translateY(0)"}],{duration:1000,iterations:2});
+      fx(...friendXY(),["🎵","🎶"],4) }
+    if(k==="sleepy"){ sfx.lull(); const [x,y]=onSofia(560,350); fx(x,y,["💤"],3); fx(...friendXY(),["💤"],2) }
+    if(k==="hungry"){ await wait(1500); const ap=document.createElement("div"); ap.className="flyer"; ap.textContent="🍎"; ap.style.fontSize="min(9vh,64px)";
+      const [fx0,fy0]=friendXY(); ap.style.left=fx0+"px"; ap.style.top=fy0+"px"; stage.appendChild(ap);
+      await arc(ap,[fx0,fy0],onSofia(400,760),1000); sfx.crunch(); ap.remove(); const [x,y]=onSofia(400,700); fx(x,y,["😋","✨"],3) }
+    await said; await wait(400);
+    await sofiaTurn([{k:"how",e:"🙂"}]);
+    await fsay("fine");
+  },
+  async colour(){
+    await fsay("colour");
+    const cols=shuffle(Object.keys(BAL)).slice(0,4);
+    const k=await sofiaTurn(cols.map(c=>({k:`fav-${c}`,e:colourDot(c),t:c})));
+    const c=k.slice(4); const b=document.createElement("div"); b.className="balloon"; b.innerHTML=balloonSvg(c);
+    const [x]=friendXY(), r=sofia.getBoundingClientRect(); b.style.left=(r.right+x)/2+"px"; b.style.top=innerHeight*.55+"px"; stage.appendChild(b); setTimeout(()=>b.remove(),4200);
+    sfx.whee(); await fsay(`col-${c}`);
+  },
+  async play(){
+    await fsay("play");
+    await sofiaTurn([{k:"yes",e:"⚽"}]);
+    const ball=document.createElement("div"); ball.id="ball"; ball.textContent="⚽"; stage.appendChild(ball);
+    const [x,y]=friendXY(); ball.style.left=x+"px"; ball.style.top=y+"px";
+    await fsay("catch");
+    for(let i=0;i<2;i++){
+      sfx.whee(); await arc(ball,friendXY(),onSofia(560,1150)); sfx.pop();
+      await new Promise(res=>{let t1=setTimeout(()=>ball.classList.add("help"),5000), t2=setTimeout(()=>prompt("throw"),i===0?400:12000);
+        ball.onclick=()=>{ac(); clearTimeout(t1); clearTimeout(t2); ball.onclick=null; ball.classList.remove("help"); stopVoice(); res()}});
+      const said=ssay("catch"); A(armR,[{transform:"rotate(0)"},{transform:"rotate(-130deg)"},{transform:"rotate(0)"}],{duration:600});
+      sfx.whee(); await arc(ball,onSofia(560,1150),friendXY()); sfx.pop();
+      A(friendEl,[{transform:"translateY(0)"},{transform:"translateY(-10%)"},{transform:"translateY(0)"}],{duration:500}); await said; await wait(500);
+    }
+    ball.remove(); await fsay("fun");
+  }
+};
+
+/* ---------- a visit, and a game of five ---------- */
+const VISITS=5;
+let round=[], topics=[], met=[];
+function pickRound(){
+  const ids=Object.keys(FRIENDS); let q=null; try{q=JSON.parse(store.get("hello-next"))}catch(e){}
+  if(!Array.isArray(q)) q=shuffle([...ids]);
+  q=q.filter(id=>ids.includes(id)); if(q.length<VISITS) q=q.concat(shuffle(ids.filter(id=>!q.includes(id))));
+  store.set("hello-next",JSON.stringify(q.slice(VISITS))); return q.slice(0,VISITS);
+}
+async function visit(i){
+  fid=round[i]; const t=token;
+  await knockUntilOpened(); if(t!==token) return;
+  await friendIn(); await wait(200);
+  if(i%2===0){   // the friend asks first
+    await fsay("helloname");
+    await sofiaTurn([{k:"helloname",e:"👋"}],{wave:true});
+  } else {       // Sofia asks
+    friendWave(); await fsay("hi");
+    await sofiaTurn([{k:"hellowhat",e:"👋"}],{wave:true});
+    await fsay("name");
+    await sofiaTurn([{k:"name",e:"😊"}]);
+  }
+  await fsay("nice");
+  await sofiaTurn([{k:"nice",e:"🤝"}]);
+  await wait(300); await TOPIC[topics[i]](); await wait(300);
+  await fsay("bye");
+  const w=friendWave(); await sofiaTurn([{k:"bye",e:"👋"}],{wave:true}); await w;
+  hideBubble(); met.push(fid);
+  const dot=$("progress").children[i]; dot.textContent=FRIENDS[fid][0]; dot.classList.add("done"); sfx.yay();
+  await friendOut(); await wait(500);
+}
+function preload(){
+  ["start","knock","turn","choose","mic","end","throw"].forEach(k=>load(url(`${k}-${lang}`)));
+  round.slice(0,2).forEach(f=>Object.keys(FT).forEach(k=>load(url(`f-${f}-${k}-en`))));
+  Object.keys(ST).forEach(k=>load(url(`s-${k}-en`)));
+}
+async function play(l){
+  ac(); lang=l; store.set("hello-lang",l); document.documentElement.lang=l==="en"?"en":l;
+  const t=++token; overlay.hidden=true; met=[]; turnsSeen={one:0,many:0}; for(const k in seen) delete seen[k];
+  round=pickRound();
+  const T=Object.keys(TOPIC); topics=shuffle([...T,T[Math.floor(Math.random()*T.length)]]).slice(0,VISITS);
+  $("progress").innerHTML=round.map(()=>'<div class="dot"></div>').join(""); preload(); layout();
+  await prompt("start"); await wait(300);
+  for(let i=0;i<VISITS;i++){ if(t!==token) return; if(i+1<VISITS) Object.keys(FT).forEach(k=>load(url(`f-${round[i+1]}-${k}-en`))); await visit(i) }
+  if(t===token) finale();
+}
+async function finale(){
+  sfx.yay(); hideBubble();
+  const party=document.createElement("div"); party.id="party"; party.innerHTML=met.map(f=>`<span>${FRIENDS[f][0]}</span>`).join(""); stage.appendChild(party);
+  const r=sofia.getBoundingClientRect(); celebrate(r.left+r.width/2+"px",r.top+r.height*.3+"px");
+  waveArm(); await prompt("end"); await wait(2200); party.remove();
+  if(overlay.hidden) startScreen(true);
+}
+friendEl.addEventListener("click",()=>{ac(); if(lastF&&answers.children.length&&!current) fsay(lastF,{again:true})});
+
+/* ---------- start screen ---------- */
+const TITLE={en:"Hello, friend!",ru:"Привет, друг!",lv:"Sveiks, draugs!"};
+const LNAME={en:"English",ru:"English",lv:"English"}, WITH={en:"",ru:"+ по-русски",lv:"+ latviski"}, LEMO={en:"👋🦁",ru:"👋🐰",lv:"👋🐻"};
+const playIcon=`<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="var(--pink)"/><path d="M15 11l14 9-14 9z" fill="#fff"/></svg>`;
+function startScreen(after){
+  token++; stopVoice(); answers.innerHTML=""; hideBubble(); friendEl.hidden=true; door.classList.remove("open","glow","knock"); door.onclick=null;
+  overlay.hidden=false;
+  overlay.innerHTML=`<h1>${after?TITLE[lang]:TITLE.en}</h1><p class="sub">${after?"":"Привет, друг! · Sveiks, draugs!"}</p>
+    ${after?`<div class="stickers">${met.map(f=>`<button class="sticker" data-f="${f}" aria-label="${FRIENDS[f][1][0]}">${FRIENDS[f][0]}</button>`).join("")}</div>`:""}
+    <div class="langs">${["en","ru","lv"].map(l=>`<button class="go${l===lang?" last":""}" data-l="${l}"><span class="e">${LEMO[l]}</span><span class="name">${LNAME[l]}</span><span class="with">${WITH[l]}</span>${playIcon}</button>`).join("")}</div>`;
+  overlay.querySelectorAll(".go").forEach(b=>b.onclick=()=>play(b.dataset.l));
+  overlay.querySelectorAll(".sticker").forEach(b=>b.onclick=()=>{ac(); clip(`f-${b.dataset.f}-helloname-en`)});
+}
+
+/* the big "yes!" */
+function celebrate(x,y,amount=1){
+  const st=stage, STAR='M12 2l3 7 7 .6-5.4 4.7 1.7 7.2L12 17.8 5.7 21.5l1.7-7.2L2 9.6 9 9z';
+  if(amount>=1){const big=document.createElementNS(NS,"svg"); big.setAttribute("viewBox","0 0 24 24"); big.classList.add("bigstar");
+    big.innerHTML=`<path d="${STAR}" fill="#ffd25a" stroke="#f5a623" stroke-width="1.2" stroke-linejoin="round"/><circle cx="9.6" cy="11" r=".9" fill="#5a3a12"/><circle cx="14.4" cy="11" r=".9" fill="#5a3a12"/><path d="M9.8 13.6q2.2 1.8 4.4 0" fill="none" stroke="#5a3a12" stroke-width=".8" stroke-linecap="round"/>`;
+    big.style.left=x; big.style.top=y; st.appendChild(big); setTimeout(()=>big.remove(),1200)}
+  const COL=["#ffd25a","#f06292","#fff","#5fbf7f","#6ec6ff","#ff8a50","#b388ff"];
+  for(let i=0;i<40*amount;i++){const s=document.createElementNS(NS,"svg"), z=22+Math.random()*44; s.setAttribute("viewBox","0 0 24 24"); s.classList.add("star");
+    s.innerHTML=`<path d="${STAR}" fill="${COL[i%COL.length]}" stroke="#0002" stroke-width=".6"/>`;
+    s.style.cssText=`left:${x};top:${y};width:${z}px;height:${z}px;margin:${-z/2}px 0 0 ${-z/2}px;animation-duration:${(1.5+Math.random()*.9).toFixed(2)}s`;
+    s.style.setProperty("--dx",(Math.random()*90-45)+"vw"); s.style.setProperty("--dy",(Math.random()*90-45)+"vh");
+    st.appendChild(s); setTimeout(()=>s.remove(),2600)}
+  if(amount>=1) for(let i=0;i<34;i++){const c=document.createElement("div"); c.className="confetti";
+    c.style.cssText=`left:${Math.random()*100}%;background:${COL[(i+2)%COL.length]};--dx:${(Math.random()*24-12).toFixed(1)}vw;--r:${Math.round(Math.random()*900-450)}deg;--t:${(2+Math.random()*1.2).toFixed(2)}s;--dl:${(Math.random()*.5).toFixed(2)}s`;
+    if(i%3===0){c.style.borderRadius="50%"; c.style.height="13px"}
+    st.appendChild(c); setTimeout(()=>c.remove(),3900)}
+  try{const t=ac().currentTime; [1319,1568,1760,2093,2637].forEach((f,i)=>tone("sine",f,f*1.01,t+.05+i*.07,.25,.08))}catch(e){}
+}
+layout(); startScreen(false);
+</script>
+</body>
+</html>
