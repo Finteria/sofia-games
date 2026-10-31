@@ -286,7 +286,7 @@ let noiseBuf=null;
 function noise(t,peak,decay,type,freq,q=1){const c=ac(); if(!noiseBuf){noiseBuf=c.createBuffer(1,c.sampleRate*2,c.sampleRate); const d=noiseBuf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1}
   const s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain(); s.buffer=noiseBuf; f.type=type; f.frequency.value=freq; f.Q.value=q; env(g,t,peak,decay);
   s.connect(f).connect(g).connect(master); s.start(t); s.stop(t+decay+.05)}
-/* with hold, the note goes on until the returned stop() — the kitten hums after its meow, the xylophone rolls */
+/* with hold, the note goes on until the returned stop() — the kitten hums after its meow, the xylophone rings on */
 function piano(i,t,hold){const c=ac(); t=t||c.currentTime;
   if(meow){const s=c.createBufferSource(),g=c.createGain(), r=FREQ[i]/MEOW_HZ, len=(MEOW_OUT-MEOW_IN)/r;   // only the steady, in-tune part, so quick notes don't smear
     s.buffer=meow; s.playbackRate.value=r; g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(1.1,t+.02);
@@ -300,8 +300,12 @@ function piano(i,t,hold){const c=ac(); t=t||c.currentTime;
   return ()=>{const n=c.currentTime; g.gain.cancelScheduledValues(n); g.gain.setValueAtTime(g.gain.value,n); g.gain.linearRampToValueAtTime(0,n+.15); o.stop(n+.2); v.stop(n+.2)}}
 function xylo(i,t,hold){t=t||ac().currentTime; const f=FREQ[i]*2, hit=(t,v)=>{osc("sine",f,t,.5*v,1.4); osc("sine",f*3.98,t,.12*v,.25); osc("sine",f*9.2,t,.04*v,.08); noise(t,.15*v,.03,"highpass",4000)};
   hit(t,1); if(!hold) return ()=>{};
-  let roll=null; const wait=setTimeout(()=>roll=setInterval(()=>hit(ac().currentTime,.45),95),250);
-  return ()=>{clearTimeout(wait); clearInterval(roll)}}
+  // a long note rings on like a vibraphone: one strike, then a soft steady tone with a slow shimmer (a roll of quick hits sounded like beeping)
+  const c=ac(),o=c.createOscillator(),trem=c.createGain(),lfo=c.createOscillator(),lg=c.createGain(),g=c.createGain();
+  o.type="sine"; o.frequency.value=f; lfo.frequency.value=4.5; lg.gain.value=.25; lfo.connect(lg).connect(trem.gain);
+  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.2,t+.35);
+  o.connect(trem).connect(g).connect(master); o.start(t); lfo.start(t);
+  return ()=>{const n=c.currentTime; g.gain.cancelScheduledValues(n); g.gain.setValueAtTime(g.gain.value,n); g.gain.linearRampToValueAtTime(0,n+.3); o.stop(n+.35); lfo.stop(n+.35)}}
 const DRUMS={
   kick(t){osc("sine",160,t,1,.45,42); noise(t,.2,.02,"lowpass",900)},
   snare(t){noise(t,.7,.22,"highpass",1500); osc("triangle",190,t,.4,.12,150)},
