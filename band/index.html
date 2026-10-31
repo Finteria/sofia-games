@@ -248,7 +248,8 @@ const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},se
 const NS="http://www.w3.org/2000/svg";
 
 /* ---------- eight notes, C to C, each with its colour ---------- */
-const FREQ=[261.63,293.66,329.63,349.23,392.00,440.00,493.88,523.25], SEMI=[0,2,4,5,7,9,11,12];
+const FREQ=[392.00,440.00,493.88,523.25,587.33,659.26,739.99,783.99];   // G major from G4: the kitten's meow sings there, so meow, hum and xylophone agree
+const MEOW_HZ=443, MEOW_IN=.2, MEOW_OUT=.46;   // the meow's steady part (seconds in the recording): before it the meow is quiet and flat, after it slides up two notes
 const COL=["#ef5350","#ffa726","#ffd740","#66bb6a","#26c6da","#42a5f5","#7e57c2","#ec407a"];
 /* the kitten choir: the cartoon cat in eight coats; its mouth opens when it sings */
 const LOOK=[
@@ -287,12 +288,14 @@ function noise(t,peak,decay,type,freq,q=1){const c=ac(); if(!noiseBuf){noiseBuf=
   s.connect(f).connect(g).connect(master); s.start(t); s.stop(t+decay+.05)}
 /* with hold, the note goes on until the returned stop() — the kitten hums after its meow, the xylophone rolls */
 function piano(i,t,hold){const c=ac(); t=t||c.currentTime;
-  if(meow){const s=c.createBufferSource(),g=c.createGain(); s.buffer=meow; s.playbackRate.value=.85*Math.pow(2,SEMI[i]/12); g.gain.value=.9; s.connect(g).connect(master); s.start(t)}
+  if(meow){const s=c.createBufferSource(),g=c.createGain(), r=FREQ[i]/MEOW_HZ, len=(MEOW_OUT-MEOW_IN)/r;   // only the steady, in-tune part, so quick notes don't smear
+    s.buffer=meow; s.playbackRate.value=r; g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(1.1,t+.02);
+    g.gain.setValueAtTime(1.1,t+len*.7); g.gain.exponentialRampToValueAtTime(.0001,t+len); s.connect(g).connect(master); s.start(t,MEOW_IN); s.stop(t+len+.02)}
   else osc("triangle",FREQ[i],t,.4,.6)
   if(!hold) return ()=>{};
   const o=c.createOscillator(),v=c.createOscillator(),vg=c.createGain(),f=c.createBiquadFilter(),g=c.createGain();
   o.type="triangle"; o.frequency.value=FREQ[i]; v.frequency.value=5.5; vg.gain.value=FREQ[i]*.012; v.connect(vg).connect(o.frequency);
-  f.type="lowpass"; f.frequency.value=FREQ[i]*3; g.gain.setValueAtTime(0,t); g.gain.setValueAtTime(0,t+.3); g.gain.linearRampToValueAtTime(.16,t+.55);
+  f.type="lowpass"; f.frequency.value=FREQ[i]*3; g.gain.setValueAtTime(0,t); g.gain.setValueAtTime(0,t+.04); g.gain.linearRampToValueAtTime(.18,t+.16);   // the hum takes over as the meow fades, with no gap
   o.connect(f).connect(g).connect(master); o.start(t); v.start(t);
   return ()=>{const n=c.currentTime; g.gain.cancelScheduledValues(n); g.gain.setValueAtTime(g.gain.value,n); g.gain.linearRampToValueAtTime(0,n+.15); o.stop(n+.2); v.stop(n+.2)}}
 function xylo(i,t,hold){t=t||ac().currentTime; const f=FREQ[i]*2, hit=(t,v)=>{osc("sine",f,t,.5*v,1.4); osc("sine",f*3.98,t,.12*v,.25); osc("sine",f*9.2,t,.04*v,.08); noise(t,.15*v,.03,"highpass",4000)};
@@ -324,7 +327,7 @@ const PAD={
 const SONGS={
   twinkle:{icon:"⭐",tune:"C C G G A A G2 | F F E E D D C2 | G G F F E E D2 | G G F F E E D2 | C C G G A A G2 | F F E E D D C2"},
   lamb:{icon:"🐑",tune:"E D C D E E E2 | D D D2 E G G2 | E D C D E E E E | D D E D C4"},
-  bells:{icon:"🔔",tune:"E E E2 E E E2 | E G C D E4 | F F F F F E E E | E D D E D2 G2"},
+  bells:{icon:"🔔",tune:"E E E2 E E E2 | E G C D E4 | F F F F F E E E E | E D D E D2 G2"},
 };
 for(const S of Object.values(SONGS)){S.notes=[]; S.dur=[]; S.lines=[0];
   for(const line of S.tune.split("|")){for(const w of line.trim().split(/\s+/)){S.notes.push("CDEFGABc".indexOf(w[0])); S.dur.push(+w.slice(1)||1)} S.lines.push(S.notes.length)}}

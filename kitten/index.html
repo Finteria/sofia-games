@@ -379,14 +379,15 @@ async function nextStep(){
   if(stepI>=0) $("progress").querySelector(`[data-s="${STEPS[stepI]}"]`).className="dot done";
   if(++stepI>=STEPS.length) return;
   const s=STEPS[stepI]; $("progress").querySelector(`[data-s="${s}"]`).className="dot now";
-  if(s==="wash"){showTool("sponge"); await say(["wash"]); busy=false; idle("wash",glowTool)}
-  if(s==="rinse"){showTool(null); addShower(); await say(["rinse"]); busy=false; idle("rinse",()=>$("shower")?.classList.add("glow"))}
-  if(s==="dry"){showTool("towel"); await say(["dry"]); busy=false; idle("dry",glowTool)}
-  if(s==="feed"){showTool("bowl"); await say(["feed"]); busy=false; idle("feed",glowTool)}
-  if(s==="play"){throws=0; showTool("yarn"); await say(["play"]); busy=false; idle("play",glowTool)}
-  if(s==="sleep"){showTool("blanket"); await say(["sleep"]); busy=false; idle("sleep",glowTool)}
-  repeatBtn.hidden=false;
+  if(s==="wash"){showTool("sponge"); ready("wash",glowTool)}
+  if(s==="rinse"){showTool(null); addShower(); ready("rinse",()=>$("shower")?.classList.add("glow"))}
+  if(s==="dry"){showTool("towel"); ready("dry",glowTool)}
+  if(s==="feed"){showTool("bowl"); ready("feed",glowTool)}
+  if(s==="play"){throws=0; showTool("yarn"); ready("play",glowTool)}
+  if(s==="sleep"){showTool("blanket"); ready("sleep",glowTool)}
 }
+/* the thing can be used at once, while Sofia is still explaining */
+function ready(key,glow){busy=false; repeatBtn.hidden=false; say([key]); idle(key,glow)}
 repeatBtn.addEventListener("click",()=>{ac(); if(!busy&&stepI>=0) say([STEPS[stepI]==="sleep"&&lampTime?"lamp":STEPS[stepI]])});
 
 /* ---------- rubbing (wash and dry): the finger, with the sponge or towel under it, rubs the spots away ---------- */
@@ -446,13 +447,20 @@ function grab(e){
   if(t.dataset.t==="lamp") return lightsOut();
   const r=t.getBoundingClientRect(), f=document.createElement("div"); f.className="flying"; f.innerHTML=TOOLS[t.dataset.t];
   f.style.cssText=`left:${r.left+r.width/2}px;top:${r.top+r.height/2}px;width:${r.width}px;height:${r.height}px;font-size:${r.width*.66}px`; stage.appendChild(f);
-  t.classList.add("away"); drag={t,f,x0:e.clientX,y0:e.clientY,cx:r.left+r.width/2,cy:r.top+r.height/2,moved:false,id:e.pointerId}; sfx.pop();
+  t.classList.add("away"); drag={t,f,x0:e.clientX,y0:e.clientY,cx:r.left+r.width/2,cy:r.top+r.height/2,moved:false,id:e.pointerId,pts:[[performance.now(),e.clientX,e.clientY]]}; sfx.pop();
 }
 function moveDrag(e){if(e.pointerId!==drag.id) return; const dx=e.clientX-drag.x0, dy=e.clientY-drag.y0; if(Math.hypot(dx,dy)>12) drag.moved=true;
-  drag.f.style.left=drag.cx+dx+"px"; drag.f.style.top=drag.cy+dy+"px"}
+  drag.f.style.left=drag.cx+dx+"px"; drag.f.style.top=drag.cy+dy+"px"; drag.pts.push([performance.now(),e.clientX,e.clientY]); if(drag.pts.length>8) drag.pts.shift()}
 async function dropDrag(e,cancel){
   if(e.pointerId!==drag.id) return; const d=drag; drag=null; const kr=kit.getBoundingClientRect(), m=kr.width*.2;
   const over=e.clientX>kr.left-m&&e.clientX<kr.right+m&&e.clientY>kr.top-m&&e.clientY<kr.bottom+m;
+  if(d.t.dataset.t==="yarn"&&!cancel){   // the ball is thrown wherever the finger was going; a tap tosses it up to one side
+    const now=performance.now(), p=d.pts.filter(q=>now-q[0]<120); let vx=0, vy=0;
+    if(!d.moved){vx=(Math.random()<.5?-1:1)*innerWidth*(.35+Math.random()*.25); vy=-innerHeight*1.4}
+    else if(p.length>1){const a=p[0], b=p[p.length-1], dt=Math.max(.016,(b[0]-a[0])/1000); vx=(b[1]-a[1])/dt; vy=(b[2]-a[2])/dt}
+    const sp=Math.hypot(vx,vy), max=innerHeight*4.5; if(sp>max){vx*=max/sp; vy*=max/sp}
+    d.vx=vx; d.vy=vy; return use(d);
+  }
   if(cancel||(d.moved&&!over)){await glideTo(d.f,d.cx,d.cy,300); d.f.remove(); d.t.classList.remove("away"); idle(STEPS[stepI],glowTool); return}
   use(d);
 }
@@ -467,22 +475,58 @@ async function use(d){
     celebrateKit(); mew(1.3); await say(["yum"]); showTool(null); nextStep(); return;
   }
   if(kind==="yarn"){
-    /* the ball rolls to one side; the kitten pounces on it */
-    const side=throws%2?-1:1, cx=kr.left+kr.width/2, tx=Math.max(50,Math.min(innerWidth-50,cx+side*kr.width*.85)), ty=kr.bottom-kr.height*.06, jx=(tx-cx)*.7; sfx.whoosh();
-    d.f.animate([{rotate:"0deg"},{rotate:(side*720)+"deg"}],{duration:700}); await glideTo(d.f,tx,ty,700);
-    await kit.animate([{translate:"0 0"},{translate:`${jx*.55}px -${kr.height*.25}px`},{translate:`${jx}px 0`}],{duration:600,easing:"ease-out",fill:"forwards"}).finished.catch(()=>{});
-    sfx.boing(); mew(1.5); await say(["caught"]);
-    await kit.animate([{translate:`${jx}px 0`},{translate:"0 0"}],{duration:500,easing:"ease-in-out"}).finished.catch(()=>{}); kit.getAnimations().forEach(a=>a.cancel());
-    d.f.remove(); d.t.classList.remove("away");
-    if(++throws<3){await say(["again"]); busy=false; repeatBtn.hidden=false; idle("play",glowTool); return}
+    const more=++throws<3; await playYarn(d,more?["caught","again"]:["caught"]);
+    d.t.classList.remove("away");
+    if(more){busy=false; repeatBtn.hidden=false; idle("play",glowTool); return}
     celebrateKit(); await say([`good-${Math.random()<.5?1:2}`]); showTool(null); nextStep(); return;
   }
   if(kind==="blanket"){
     await glideTo(d.f,kr.left+kr.width*.5,kr.top+kr.height*.85,450); d.f.remove();
     kit.querySelector("#blanket").animate([{opacity:0,transform:"translateY(-30px)"},{opacity:1,transform:"none"}],{duration:500,fill:"forwards"});
     kit.className="sleep breathe"; mew(.9); await wait(600);
-    lampTime=true; showTool("lamp"); await say(["lamp"]); busy=false; repeatBtn.hidden=false; idle("lamp",glowTool);
+    lampTime=true; showTool("lamp"); ready("lamp",glowTool);
   }
+}
+/* ---------- play: the ball flies the way it was thrown, bounces off the floor and the sides, rolls; the kitten leaps after it ---------- */
+function ballStep(b,dt,floor,R,G){
+  b.vy+=G*dt; b.x+=b.vx*dt; b.y+=b.vy*dt; b.hit=false;
+  if(b.y>floor){b.y=floor; if(b.vy>220){b.vy*=-.5; b.hit=true} else b.vy=0}
+  if(b.y<R){b.y=R; b.vy=Math.abs(b.vy)*.5}
+  if(b.x<R){b.x=R; b.vx=Math.abs(b.vx)*.6; b.hit=true} else if(b.x>innerWidth-R){b.x=innerWidth-R; b.vx=-Math.abs(b.vx)*.6; b.hit=true}
+  if(b.y>=floor) b.vx*=Math.max(0,1-2.4*dt);   // rolling on the floor slows it down
+  b.rot+=b.vx*dt/R*57.3;
+}
+async function playYarn(d,words){
+  const f=d.f, kr=kit.getBoundingClientRect(), R=parseFloat(f.style.width)*.3, floor=kr.bottom-kr.height*.06, G=innerHeight*3.2;
+  const b={x:parseFloat(f.style.left), y:Math.min(parseFloat(f.style.top),floor), vx:d.vx, vy:d.vy, rot:0};
+  const show=()=>{f.style.left=b.x+"px"; f.style.top=b.y+"px"; f.style.rotate=b.rot+"deg"};
+  let mode="fly", t=performance.now(); const t0=t; sfx.whoosh();
+  await new Promise(res=>{   // the ball flies until the kitten makes up its mind
+    const tick=now=>{const dt=Math.min(.035,(now-t)/1000); t=now; ballStep(b,dt,floor,R,G); if(b.hit) sfx.pop(); show();
+      const el=(now-t0)/1000; if(el>1.3||(el>.45&&b.y>=floor-2&&Math.abs(b.vx)<120)||(el>.7&&b.y>=floor-2)) res(); else requestAnimationFrame(tick)};
+    requestAnimationFrame(tick)});
+  /* where will the ball be? the kitten aims there: high in the air it catches it at the top of its leap, on the floor at the landing */
+  const J=Math.min(.95,.55+Math.abs(b.x-(kr.left+kr.width/2))/innerWidth*.6), peek=secs=>{const c={...b}; for(let s=0;s<secs;s+=1/60) ballStep(c,1/60,floor,R,G); return c};
+  let at=peek(J/2), inAir=at.y<floor-kr.height*.3, cx=kr.left+kr.width/2;
+  if(!inAir) at=peek(J);
+  const tx=Math.max(kr.width*.5+6,Math.min(innerWidth-kr.width*.5-6,at.x)), jx=tx-cx;
+  const hold=inAir?.45:.72;   // where the ball sits on the kitten: up at its paws in a leap, at its feet on the floor
+  const peak=inAir?Math.max(kr.height*.3,Math.min(kr.top-4,kr.top+kr.height*hold-at.y)):kr.height*.28;
+  const land=inAir?jx*1.1:jx, landX=Math.max(kr.width*.5+6-cx,Math.min(innerWidth-kr.width*.5-6-cx,land));
+  mew(1.5);
+  const jump=kit.animate([{translate:"0 0",easing:"ease-out"},{translate:`${inAir?jx:jx*.55}px ${-peak}px`,easing:"ease-in"},{translate:`${landX}px 0`}],{duration:J*1000,fill:"forwards"});
+  const caughtAt=t+(inAir?J/2:J)*1000*.95;
+  await new Promise(res=>{   // the ball goes on until the kitten has it; then it stays in the kitten's paws
+    const tick=now=>{const dt=Math.min(.035,(now-t)/1000); t=now;
+      if(now<caughtAt){ballStep(b,dt,floor,R,G); if(b.hit) sfx.pop()}
+      else{if(mode==="fly"){mode="held"; sfx.boing(); say(words)} const r=kit.getBoundingClientRect(); b.x+=(r.left+r.width*.5-b.x)*.25; b.y+=(r.top+r.height*hold-b.y)*.25}
+      show(); if(jump.playState==="finished"&&mode==="held") res(); else requestAnimationFrame(tick)};
+    requestAnimationFrame(tick)});
+  await wait(500);
+  const back=kit.animate([{translate:`${landX}px 0`},{translate:"0 0"}],{duration:Math.min(900,300+Math.abs(landX)),easing:"ease-in-out"});
+  const follow=()=>{if(back.playState==="finished") return; const r=kit.getBoundingClientRect(); b.x=r.left+r.width*.5; b.y=r.top+r.height*.72; show(); requestAnimationFrame(follow)}; follow();
+  await back.finished.catch(()=>{}); jump.cancel();
+  f.remove();
 }
 let lampTime=false;
 async function lightsOut(){
